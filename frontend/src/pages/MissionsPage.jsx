@@ -6,6 +6,7 @@ import Card from '@/components/ui/Card'
 import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import { useToast } from '@/hooks/useToast'
 
 const periods = [
   { value: 'daily', label: 'Harian' },
@@ -23,10 +24,15 @@ const initialMissions = [
 ]
 
 export default function MissionsPage() {
+  const toast = useToast()
   const [missions, setMissions] = useState(initialMissions)
   const [period, setPeriod] = useState('daily')
 
-  const claim = (id) => setMissions((prev) => prev.map((m) => (m.id === id ? { ...m, claimed: true } : m)))
+  const claim = (id) => {
+    const mission = missions.find((x) => x.id === id)
+    setMissions((prev) => prev.map((x) => (x.id === id ? { ...x, claimed: true } : x)))
+    toast(`+${mission.reward} Points diklaim`)
+  }
   const visible = missions.filter((m) => m.period === period)
   const earned = missions.filter((m) => m.claimed).reduce((sum, m) => sum + m.reward, 0)
 

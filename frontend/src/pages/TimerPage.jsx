@@ -8,6 +8,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
 import Select from '@/components/ui/Select'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import { useToast } from '@/hooks/useToast'
 import { cn } from '@/lib/cn'
 
 const STORAGE_KEY = 'geezestudy.timer'
@@ -49,6 +50,7 @@ const mmss = (ms) => {
 }
 
 export default function TimerPage() {
+  const toast = useToast()
   const [s, setS] = useState(readSaved)
   const [now, setNow] = useState(() => Date.now())
   const [history, setHistory] = useState(initialHistory)
@@ -74,7 +76,8 @@ export default function TimerPage() {
     if (minutes < 1) return
     const when = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date())
     setHistory((h) => [{ id: Date.now(), task: task || 'Tanpa tugas', minutes, when: `Hari ini, ${when}` }, ...h])
-  }, [])
+    toast(`Sesi ${minutes} menit tercatat`)
+  }, [toast])
 
   const finish = useCallback(() => {
     setS((cur) => {

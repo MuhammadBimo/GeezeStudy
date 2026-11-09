@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { AnimatePresence } from 'motion/react'
 import { ListTodo, Plus, SearchX } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import EmptyState from '@/components/ui/EmptyState'
@@ -29,6 +31,7 @@ const filters = [
 const nextStatus = { todo: 'progress', progress: 'done', done: 'todo' }
 
 export default function TasksPage() {
+  const toast = useToast()
   const [tasks, setTasks] = useState(initialTasks)
   const [filter, setFilter] = useState('all')
   // editing: null (tutup) | 'new' | objek tugas
@@ -42,14 +45,18 @@ export default function TasksPage() {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: nextStatus[t.status] } : t)))
 
   const remove = (task) => {
-    if (window.confirm(`Hapus tugas "${task.title}"?`)) setTasks((prev) => prev.filter((t) => t.id !== task.id))
+    if (!window.confirm(`Hapus tugas "${task.title}"?`)) return
+    setTasks((prev) => prev.filter((t) => t.id !== task.id))
+    toast('Tugas dihapus')
   }
 
   const save = (data) => {
     if (editing === 'new') {
       setTasks((prev) => [...prev, { ...data, id: Date.now(), status: 'todo' }])
+      toast('Tugas ditambahkan')
     } else {
       setTasks((prev) => prev.map((t) => (t.id === editing.id ? { ...t, ...data } : t)))
+      toast('Perubahan disimpan')
     }
     setEditing(null)
   }
@@ -82,9 +89,11 @@ export default function TasksPage() {
         <EmptyState icon={SearchX} title="Tidak ada tugas di filter ini" description="Coba pilih status lain." />
       ) : (
         <ul className="flex flex-col gap-3">
-          {visible.map((t) => (
-            <TaskCard key={t.id} task={t} onCycle={cycle} onEdit={setEditing} onDelete={remove} />
-          ))}
+          <AnimatePresence initial={false}>
+            {visible.map((t) => (
+              <TaskCard key={t.id} task={t} onCycle={cycle} onEdit={setEditing} onDelete={remove} />
+            ))}
+          </AnimatePresence>
         </ul>
       )}
 

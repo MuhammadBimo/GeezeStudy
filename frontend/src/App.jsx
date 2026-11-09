@@ -1,8 +1,11 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { MotionConfig } from 'motion/react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { LazyMotion, MotionConfig, domAnimation } from 'motion/react'
 import AppShell from '@/components/layout/AppShell'
+import { GuestOnly, RequireAuth } from '@/components/layout/RouteGuards'
 import Skeleton from '@/components/ui/Skeleton'
+import ToastProvider from '@/components/ui/ToastProvider'
+import AuthProvider from '@/context/AuthProvider'
 
 // Setiap halaman dimuat saat dibutuhkan (route-based code splitting).
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
@@ -31,26 +34,37 @@ function PageFallback() {
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
-            <Route path="/masuk" element={<LoginPage />} />
-            <Route path="/daftar" element={<RegisterPage />} />
-            <Route path="/lupa-password" element={<ForgotPasswordPage />} />
-            <Route element={<AppShell />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="tugas" element={<TasksPage />} />
-              <Route path="kalender" element={<CalendarPage />} />
-              <Route path="timer" element={<TimerPage />} />
-              <Route path="goals" element={<GoalsPage />} />
-              <Route path="misi" element={<MissionsPage />} />
-              <Route path="progres" element={<ProgressPage />} />
-              <Route path="teman" element={<FriendsPage />} />
-              <Route path="notifikasi" element={<NotificationsPage />} />
-            </Route>
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+      <LazyMotion features={domAnimation} strict>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <AuthProvider>
+            <ToastProvider>
+              <Suspense fallback={<PageFallback />}>
+                <Routes>
+                  <Route element={<GuestOnly />}>
+                    <Route path="/masuk" element={<LoginPage />} />
+                    <Route path="/daftar" element={<RegisterPage />} />
+                    <Route path="/lupa-password" element={<ForgotPasswordPage />} />
+                  </Route>
+                  <Route element={<RequireAuth />}>
+                    <Route element={<AppShell />}>
+                      <Route index element={<DashboardPage />} />
+                      <Route path="tugas" element={<TasksPage />} />
+                      <Route path="kalender" element={<CalendarPage />} />
+                      <Route path="timer" element={<TimerPage />} />
+                      <Route path="goals" element={<GoalsPage />} />
+                      <Route path="misi" element={<MissionsPage />} />
+                      <Route path="progres" element={<ProgressPage />} />
+                      <Route path="teman" element={<FriendsPage />} />
+                      <Route path="notifikasi" element={<NotificationsPage />} />
+                    </Route>
+                  </Route>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </ToastProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </LazyMotion>
     </MotionConfig>
   )
 }

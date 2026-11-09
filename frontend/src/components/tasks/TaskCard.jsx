@@ -1,3 +1,4 @@
+import { m } from 'motion/react'
 import { Check, Paperclip, Pencil, Trash2, Loader } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { cn } from '@/lib/cn'
@@ -10,14 +11,20 @@ export default function TaskCard({ task, onCycle, onEdit, onDelete }) {
   const meta = statusMeta[task.status]
 
   return (
-    <li className="flex items-start gap-3 rounded-brutal border-2 border-ink bg-surface p-4 shadow-brutal-sm">
+    <m.li
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -24 }}
+      transition={{ duration: 0.2 }}
+      className="flex items-start gap-3 rounded-brutal border-2 border-ink bg-surface p-4 shadow-brutal-sm"
+    >
       <button
         type="button"
         onClick={() => onCycle(task.id)}
         aria-label={`Status ${meta.label}. Ubah status: ${task.title}`}
-        className={cn('mt-0.5 grid size-8 shrink-0 place-items-center rounded-md border-2 border-ink', meta.color)}
+        className={cn('mt-0.5 grid size-8 shrink-0 place-items-center rounded-md border-2 border-ink transition-all duration-150 active:scale-90 motion-reduce:transition-none', meta.color)}
       >
-        {task.status === 'done' && <Check className="size-5" strokeWidth={3} aria-hidden="true" />}
+        {task.status === 'done' && <Check className="size-5 animate-pop" strokeWidth={3} aria-hidden="true" />}
         {task.status === 'progress' && <Loader className="size-4" aria-hidden="true" />}
       </button>
 
@@ -48,6 +55,6 @@ export default function TaskCard({ task, onCycle, onEdit, onDelete }) {
           <Trash2 className="size-4" aria-hidden="true" />
         </button>
       </div>
-    </li>
+    </m.li>
   )
 }

@@ -3,17 +3,21 @@ import { Link } from 'react-router-dom'
 import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import { useToast } from '@/hooks/useToast'
 
 export default function ForgotPasswordPage() {
+  const toast = useToast()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
-  const [sent, setSent] = useState(false)
 
   const submit = (e) => {
     e.preventDefault()
-    const valid = /^\S+@\S+\.\S+$/.test(email)
-    setError(valid ? '' : 'Masukkan email yang valid.')
-    setSent(valid)
+    if (!email.trim()) {
+      setError('Isi email (boleh apa saja).')
+      return
+    }
+    setError('')
+    toast('Simulasi: tautan pemulihan dikirim')
   }
 
   return (
@@ -25,11 +29,6 @@ export default function ForgotPasswordPage() {
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <Input label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error} />
         <Button type="submit" className="w-full">Kirim tautan</Button>
-        {sent && (
-          <p role="status" className="rounded-brutal border-2 border-ink bg-yellow p-3 text-sm font-medium">
-            Formulir valid. Pengiriman email belum tersambung ke backend pada tahap ini.
-          </p>
-        )}
       </form>
     </AuthLayout>
   )

@@ -7,6 +7,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import Input from '@/components/ui/Input'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import { useToast } from '@/hooks/useToast'
 
 // DATA SEMENTARA (mock): pencarian, permintaan, dan statistik akan berasal dari API.
 const directory = [
@@ -36,6 +37,7 @@ function Avatar({ name, color }) {
 }
 
 export default function FriendsPage() {
+  const toast = useToast()
   const [friends, setFriends] = useState(initialFriends)
   const [requests, setRequests] = useState(initialRequests)
   const [sent, setSent] = useState([])
@@ -50,8 +52,12 @@ export default function FriendsPage() {
   const accept = (r) => {
     setFriends((f) => [...f, { ...r, level: 1, streak: 0, weekMinutes: 0, shareStats: true }])
     setRequests((rs) => rs.filter((x) => x.id !== r.id))
+    toast(`${r.name} sekarang temanmu`)
   }
-  const decline = (r) => setRequests((rs) => rs.filter((x) => x.id !== r.id))
+  const decline = (r) => {
+    setRequests((rs) => rs.filter((x) => x.id !== r.id))
+    toast('Permintaan ditolak')
+  }
   const unfriend = (f) => {
     if (window.confirm(`Hapus ${f.name} dari daftar teman?`)) setFriends((fs) => fs.filter((x) => x.id !== f.id))
   }
@@ -86,7 +92,7 @@ export default function FriendsPage() {
                       {sent.includes(u.id) ? (
                         <Badge color="bg-mint">Permintaan terkirim</Badge>
                       ) : (
-                        <Button size="sm" onClick={() => setSent((s) => [...s, u.id])}>
+                        <Button size="sm" onClick={() => { setSent((s) => [...s, u.id]); toast('Permintaan pertemanan terkirim') }}>
                           <UserPlus className="size-4" aria-hidden="true" /> Tambah
                         </Button>
                       )}

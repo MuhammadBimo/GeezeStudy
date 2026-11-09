@@ -13,7 +13,7 @@ export default function SegmentedControl({ options, value, onChange, label, clas
             aria-pressed={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              'rounded-full border-2 border-ink px-4 py-1.5 text-sm font-bold transition-colors motion-reduce:transition-none',
+              'rounded-full border-2 border-ink px-4 py-1.5 text-sm font-bold transition-all duration-150 active:scale-95 motion-reduce:transition-none',
               active ? 'bg-ink text-paper' : 'bg-surface hover:bg-yellow',
             )}
           >

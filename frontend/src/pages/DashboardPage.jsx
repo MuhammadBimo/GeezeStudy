@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle2, Flame, Star, Trophy } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
-import Reveal from '@/components/ui/Reveal'
+import { useAuth } from '@/hooks/useAuth'
 import HeroGreeting from '@/components/dashboard/HeroGreeting'
 import StatCard from '@/components/dashboard/StatCard'
 import TaskList from '@/components/dashboard/TaskList'
@@ -16,6 +16,7 @@ import { mockDashboard as d } from '@/lib/mockData'
 const TODAY_INDEX = (new Date().getDay() + 6) % 7
 
 export default function DashboardPage() {
+  const { user } = useAuth()
   // Toggle hanya di state lokal (data contoh); belum disimpan ke backend.
   const [tasks, setTasks] = useState(d.tasks)
   const toggleTask = (id) =>
@@ -30,16 +31,13 @@ export default function DashboardPage() {
         <Badge color="bg-yellow">Data contoh (sementara)</Badge>
       </div>
 
-      {/* Satu-satunya momen masuk di halaman ini. */}
-      <Reveal>
-        <HeroGreeting
-          name={d.user.name}
-          streak={d.streak}
-          studiedToday={d.weekStudyMinutes[TODAY_INDEX]}
-          goalMinutes={d.studyGoalMinutes}
-          tasksLeft={tasksLeft}
-        />
-      </Reveal>
+      <HeroGreeting
+        name={user.name}
+        streak={d.streak}
+        studiedToday={d.weekStudyMinutes[TODAY_INDEX]}
+        goalMinutes={d.studyGoalMinutes}
+        tasksLeft={tasksLeft}
+      />
 
       <section aria-label="Statistik" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={Star} label="Level" value={d.level} color="bg-pink-soft" />

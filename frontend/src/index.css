@@ -19,6 +19,12 @@
   --color-orange: #ff8a3d;
   --color-danger: #e5383b;
 
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
   --shadow-brutal: 4px 4px 0 0 var(--color-ink);
   --shadow-brutal-sm: 2px 2px 0 0 var(--color-ink);
   --shadow-brutal-lg: 6px 6px 0 0 var(--color-ink);
@@ -32,6 +38,18 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   }
+}
+
+/* Dialog (Modal): muncul dengan naik sedikit + latar memudar. */
+dialog[open] { animation: dialog-in 0.2s ease-out; }
+dialog[open]::backdrop { animation: backdrop-in 0.2s ease-out; }
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @layer components {

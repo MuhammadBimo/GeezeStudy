@@ -10,7 +10,7 @@ export default function HeroGreeting({ name, streak, studiedToday, goalMinutes, 
     <Card color="bg-pink" tone="primary" className="relative overflow-hidden p-6 sm:p-8">
       <div
         aria-label={`Streak ${streak} hari`}
-        className="absolute right-4 top-4 flex rotate-3 items-center gap-1 rounded-brutal border-2 border-ink bg-yellow px-3 py-1.5 font-display font-extrabold shadow-brutal-sm sm:right-6 sm:top-6"
+        className="absolute right-4 top-4 flex rotate-3 animate-pop items-center gap-1 rounded-brutal border-2 border-ink bg-yellow px-3 py-1.5 font-display font-extrabold shadow-brutal-sm sm:right-6 sm:top-6"
       >
         <Flame className="size-5" aria-hidden="true" /> {streak} hari
       </div>

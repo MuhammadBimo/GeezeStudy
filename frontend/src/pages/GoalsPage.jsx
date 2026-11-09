@@ -10,6 +10,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Select from '@/components/ui/Select'
+import { useToast } from '@/hooks/useToast'
 
 const types = [
   { value: 'daily', label: 'Harian' },
@@ -33,6 +34,7 @@ const initialGoals = [
 ]
 
 export default function GoalsPage() {
+  const toast = useToast()
   const [goals, setGoals] = useState(initialGoals)
   const [type, setType] = useState('daily')
   const [open, setOpen] = useState(false)
@@ -42,8 +44,11 @@ export default function GoalsPage() {
   const visible = goals.filter((g) => g.type === type)
   const setField = (f) => (e) => setForm((cur) => ({ ...cur, [f]: e.target.value }))
 
-  const step = (id) =>
+  const step = (id) => {
+    const goal = goals.find((g) => g.id === id)
     setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, done: Math.min(g.done + 1, g.total) } : g)))
+    toast(goal.done + 1 >= goal.total ? 'Goal tercapai!' : 'Progres bertambah')
+  }
 
   const submit = (e) => {
     e.preventDefault()
@@ -57,6 +62,7 @@ export default function GoalsPage() {
     setForm({ title: '', type: form.type, total: '', unit: 'menit' })
     setError('')
     setOpen(false)
+    toast('Goal dibuat')
   }
 
   return (

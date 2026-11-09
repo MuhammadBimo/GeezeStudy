@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Select from '@/components/ui/Select'
+import { useToast } from '@/hooks/useToast'
 import { cn } from '@/lib/cn'
 import { TODAY, addDays, formatLong, formatMonth, fromISO, isoIn, toISO, weekdayIndex } from '@/lib/date'
 
@@ -70,6 +71,7 @@ function EventRow({ event }) {
 }
 
 export default function CalendarPage() {
+  const toast = useToast()
   const [events, setEvents] = useState(initialEvents)
   const [view, setView] = useState('month')
   const [selected, setSelected] = useState(TODAY)
@@ -102,6 +104,7 @@ export default function CalendarPage() {
     setCursor(fromISO(`${form.date.slice(0, 8)}01`))
     setOpen(false)
     setError('')
+    toast('Kegiatan ditambahkan')
   }
   const setField = (f) => (e) => setForm((cur) => ({ ...cur, [f]: e.target.value }))
 

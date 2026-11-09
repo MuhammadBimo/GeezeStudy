@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Toggle from '@/components/ui/Toggle'
+import { useToast } from '@/hooks/useToast'
 import { cn } from '@/lib/cn'
 
 const categories = [
@@ -38,6 +39,7 @@ const initialItems = [
 const initialPrefs = { academic: true, productivity: true, social: true, achievement: true, system: true }
 
 export default function NotificationsPage() {
+  const toast = useToast()
   const [items, setItems] = useState(initialItems)
   const [cat, setCat] = useState('all')
   const [prefs, setPrefs] = useState(initialPrefs)
@@ -46,7 +48,10 @@ export default function NotificationsPage() {
   const visible = items.filter((i) => cat === 'all' || i.cat === cat)
   const unread = items.filter((i) => !i.read).length
   const markRead = (id) => setItems((prev) => prev.map((i) => (i.id === id ? { ...i, read: true } : i)))
-  const markAll = () => setItems((prev) => prev.map((i) => ({ ...i, read: true })))
+  const markAll = () => {
+    setItems((prev) => prev.map((i) => ({ ...i, read: true })))
+    toast('Semua notifikasi ditandai dibaca')
+  }
 
   return (
     <>
