@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+vendor/
+dist/
+*.log
+.claude/settings.local.json
+.claude/
+skills-lock.json
