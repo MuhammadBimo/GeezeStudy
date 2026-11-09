@@ -31,7 +31,7 @@ function PageFallback() {
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/masuk" element={<LoginPage />} />
