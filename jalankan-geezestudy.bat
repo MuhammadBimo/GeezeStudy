@@ -25,11 +25,11 @@ if exist "%~dp0backend\artisan" (
 set "ROOT=%~dp0GeezeStudy\"
 if exist "%ROOT%backend\artisan" (
   echo Memperbarui kode dari GitHub...
-  git -C "%ROOT%" pull --ff-only
+  git -C "%ROOT:~0,-1%" pull --ff-only
   goto :have_root
 )
-echo Mengunduh kode dari GitHub ke "%ROOT%" ...
-git clone https://github.com/MuhammadBimo/GeezeStudy.git "%ROOT%"
+echo Mengunduh kode dari GitHub ke %ROOT% ...
+git clone https://github.com/MuhammadBimo/GeezeStudy.git "%ROOT:~0,-1%"
 if errorlevel 1 goto :clone_failed
 
 :have_root
@@ -37,7 +37,7 @@ echo Folder proyek: %ROOT%
 echo.
 
 rem ---------- 3. Cek MySQL (Laragon: Start All) ----------
-netstat -an | find ":3306" | find "LISTENING" >nul
+netstat -an | findstr /C:":3306" | findstr "LISTENING" >nul
 if errorlevel 1 goto :need_mysql
 
 rem ---------- 4. Backend ----------
