@@ -9,7 +9,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $request->validate(['category' => ['nullable', 'in:deadline,schedule,mission,social,system']]);
+        $request->validate(['category' => ['nullable', 'in:deadline,schedule,mission,social,achievement,system']]);
 
         $query = $request->user()->appNotifications()->latest()
             ->when($request->query('category'), fn ($q, $c) => $q->where('category', $c));

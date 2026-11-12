@@ -5,7 +5,6 @@ import AppShell from '@/components/layout/AppShell'
 import { GuestOnly, RequireAdmin, RequireAuth } from '@/components/layout/RouteGuards'
 import Skeleton from '@/components/ui/Skeleton'
 import ToastProvider from '@/components/ui/ToastProvider'
-import AnnouncementsProvider from '@/context/AnnouncementsProvider'
 import AuthProvider from '@/context/AuthProvider'
 
 // Setiap halaman dimuat saat dibutuhkan (route-based code splitting).
@@ -54,7 +53,6 @@ export default function App() {
       <LazyMotion features={domAnimation} strict>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AuthProvider>
-            <AnnouncementsProvider>
               <ToastProvider>
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
@@ -98,7 +96,6 @@ export default function App() {
                   </Routes>
                 </Suspense>
               </ToastProvider>
-            </AnnouncementsProvider>
           </AuthProvider>
         </BrowserRouter>
       </LazyMotion>

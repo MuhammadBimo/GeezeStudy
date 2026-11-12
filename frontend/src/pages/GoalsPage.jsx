@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plus, Sparkles, Target } from 'lucide-react'
+import { Plus, Sparkles, Target, Trash2 } from 'lucide-react'
+import AsyncView from '@/components/ui/AsyncView'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -10,7 +11,9 @@ import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Select from '@/components/ui/Select'
+import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
+import { api, errorMessage, fieldErrors } from '@/lib/api'
 
 const types = [
   { value: 'daily', label: 'Harian' },
@@ -24,45 +27,61 @@ const unitOptions = [
   { value: 'lainnya', label: 'Lainnya (manual)' },
 ]
 
-// DATA SEMENTARA (mock): akan diganti dengan data dari API backend.
-const initialGoals = [
-  { id: 1, type: 'daily', title: 'Belajar 90 menit', done: 45, total: 90, unit: 'menit', auto: true },
-  { id: 2, type: 'daily', title: 'Selesaikan 2 tugas', done: 1, total: 2, unit: 'tugas', auto: true },
-  { id: 3, type: 'weekly', title: 'Belajar 10 jam', done: 270, total: 600, unit: 'menit', auto: true },
-  { id: 4, type: 'weekly', title: 'Baca 3 jurnal', done: 1, total: 3, unit: 'lainnya', auto: false },
-  { id: 5, type: 'long', title: 'Lulus Basis Data dengan nilai A', done: 6, total: 14, unit: 'lainnya', auto: false },
-]
-
-export default function GoalsPage() {
+function GoalBoard({ resource, goals }) {
   const toast = useToast()
-  const [goals, setGoals] = useState(initialGoals)
   const [type, setType] = useState('daily')
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ title: '', type: 'daily', total: '', unit: 'menit' })
-  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', period: 'daily', target: '', unit: 'menit' })
+  const [errors, setErrors] = useState({})
 
-  const visible = goals.filter((g) => g.type === type)
+  const visible = goals.filter((g) => g.period === type)
   const setField = (f) => (e) => setForm((cur) => ({ ...cur, [f]: e.target.value }))
+  const replace = (goal) => resource.mutate((d) => ({ ...d, data: d.data.map((g) => (g.id === goal.id ? goal : g)) }))
 
-  const step = (id) => {
-    const goal = goals.find((g) => g.id === id)
-    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, done: Math.min(g.done + 1, g.total) } : g)))
-    toast(goal.done + 1 >= goal.total ? 'Goal tercapai!' : 'Progres bertambah')
+  const step = async (goal) => {
+    try {
+      const { data } = await api.patch(`/goals/${goal.id}`, { progress: goal.progress + 1 })
+      replace(data)
+      toast(data.progress >= data.target ? 'Goal tercapai!' : 'Progres bertambah')
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+    }
   }
 
-  const submit = (e) => {
+  const remove = async (goal) => {
+    if (!window.confirm(`Hapus goal "${goal.title}"?`)) return
+    try {
+      await api.delete(`/goals/${goal.id}`)
+      resource.mutate((d) => ({ ...d, data: d.data.filter((g) => g.id !== goal.id) }))
+      toast('Goal dihapus')
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+    }
+  }
+
+  const submit = async (e) => {
     e.preventDefault()
-    const total = Number(form.total)
-    if (!form.title.trim() || !(total > 0)) {
-      setError('Isi judul dan target lebih dari 0.')
+    const target = Number(form.target)
+    if (!form.title.trim() || !(target > 0)) {
+      setErrors({ target: 'Isi judul dan target lebih dari 0.' })
       return
     }
-    setGoals((prev) => [...prev, { id: Date.now(), type: form.type, title: form.title.trim(), done: 0, total, unit: form.unit, auto: form.unit !== 'lainnya' }])
-    setType(form.type)
-    setForm({ title: '', type: form.type, total: '', unit: 'menit' })
-    setError('')
-    setOpen(false)
-    toast('Goal dibuat')
+    setSaving(true)
+    try {
+      const { data } = await api.post('/goals', { ...form, title: form.title.trim(), target })
+      resource.mutate((d) => ({ ...d, data: [...d.data, data] }))
+      setType(form.period)
+      setForm({ title: '', period: form.period, target: '', unit: 'menit' })
+      setErrors({})
+      setOpen(false)
+      toast('Goal dibuat')
+    } catch (error) {
+      const fields = fieldErrors(error)
+      setErrors({ target: fields.target ?? fields.title ?? errorMessage(error) })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -73,9 +92,8 @@ export default function GoalsPage() {
         action={<Button onClick={() => setOpen(true)}><Plus className="size-4" aria-hidden="true" /> Buat goal</Button>}
       />
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-5">
         <SegmentedControl label="Jenis goal" options={types} value={type} onChange={setType} />
-        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
       </div>
 
       {visible.length === 0 ? (
@@ -83,20 +101,30 @@ export default function GoalsPage() {
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
           {visible.map((g) => {
-            const complete = g.done >= g.total
+            const complete = g.progress >= g.target
             return (
-              <Card as="li" key={g.id} color={complete ? 'bg-moss' : typeColor[g.type]} className="flex flex-col gap-3 p-5">
+              <Card as="li" key={g.id} color={complete ? 'bg-moss' : typeColor[g.period]} className="flex flex-col gap-3 p-5">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-lg font-semibold leading-snug">{g.title}</h2>
-                  {g.auto && <Badge color="bg-surface"><Sparkles className="size-3" aria-hidden="true" /> Otomatis</Badge>}
+                  <div className="flex shrink-0 items-center gap-1">
+                    {g.auto && <Badge color="bg-surface"><Sparkles className="size-3" aria-hidden="true" /> Otomatis</Badge>}
+                    <button
+                      type="button"
+                      onClick={() => remove(g)}
+                      aria-label={`Hapus goal ${g.title}`}
+                      className="grid size-8 place-items-center rounded-md hover:bg-danger/10 hover:text-danger"
+                    >
+                      <Trash2 className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
-                <ProgressBar value={g.done} max={g.total} color="bg-ink" label={g.title} />
+                <ProgressBar value={g.progress} max={g.target} label={g.title} />
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold">{g.done} / {g.total} {g.unit === 'lainnya' ? '' : g.unit}</p>
+                  <p className="text-sm font-semibold">{g.progress} / {g.target} {g.unit === 'lainnya' ? '' : g.unit}</p>
                   {complete ? (
                     <Badge color="bg-surface">Tercapai</Badge>
                   ) : (
-                    !g.auto && <Button size="sm" variant="neutral" onClick={() => step(g.id)}>+1 progres</Button>
+                    !g.auto && <Button size="sm" variant="neutral" onClick={() => step(g)}>+1 progres</Button>
                   )}
                 </div>
               </Card>
@@ -109,16 +137,21 @@ export default function GoalsPage() {
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
           <Input label="Nama goal" value={form.title} onChange={setField('title')} maxLength={100} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Select label="Jenis" options={types} value={form.type} onChange={setField('type')} />
+            <Select label="Jenis" options={types} value={form.period} onChange={setField('period')} />
             <Select label="Satuan" options={unitOptions} value={form.unit} onChange={setField('unit')} />
           </div>
-          <Input label="Target" type="number" min={1} value={form.total} onChange={setField('total')} error={error} hint="Goal dengan satuan menit atau tugas diperbarui otomatis." />
+          <Input label="Target" type="number" min={1} value={form.target} onChange={setField('target')} error={errors.target} hint="Goal dengan satuan menit atau tugas diperbarui otomatis dari aktivitasmu." />
           <div className="flex justify-end gap-3">
             <Button variant="neutral" onClick={() => setOpen(false)}>Batal</Button>
-            <Button type="submit">Simpan goal</Button>
+            <Button type="submit" loading={saving}>Simpan goal</Button>
           </div>
         </form>
       </Modal>
     </>
   )
+}
+
+export default function GoalsPage() {
+  const resource = useResource('/goals')
+  return <AsyncView resource={resource}>{(page) => <GoalBoard resource={resource} goals={page.data} />}</AsyncView>
 }

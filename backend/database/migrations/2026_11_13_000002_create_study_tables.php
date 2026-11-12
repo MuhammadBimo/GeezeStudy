@@ -28,11 +28,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('title');
-            $table->string('type', 16)->default('activity');
+            $table->string('type', 16)->default('personal');
             $table->timestamp('starts_at');
             $table->timestamp('ends_at')->nullable();
             $table->string('repeat', 8)->default('none');
-            $table->boolean('reminder')->default(false);
+            $table->unsignedSmallInteger('reminder_minutes')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'starts_at']);
@@ -55,7 +55,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('title');
-            $table->string('unit', 24)->default('langkah');
+            $table->string('period', 8)->default('daily'); // daily | weekly | long
+            $table->string('unit', 24)->default('lainnya');
             $table->unsignedInteger('target');
             $table->unsignedInteger('progress')->default(0);
             $table->date('deadline')->nullable();

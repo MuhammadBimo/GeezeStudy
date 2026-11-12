@@ -7,7 +7,7 @@ import { TODAY, formatShort } from '@/lib/date'
 import { priorityColor, statusMeta } from '@/lib/taskMeta'
 
 export default function TaskCard({ task, onCycle, onOpen, onEdit, onDelete }) {
-  const overdue = task.status !== 'done' && task.due < TODAY
+  const overdue = task.status !== 'done' && task.due !== '' && task.due < TODAY
   const meta = statusMeta[task.status]
 
   return (
@@ -43,8 +43,7 @@ export default function TaskCard({ task, onCycle, onOpen, onEdit, onDelete }) {
           <Badge color={priorityColor[task.priority]}>{task.priority}</Badge>
           <Badge color={meta.color}>{meta.label}</Badge>
           <span className={cn('text-sm font-semibold', overdue && 'text-danger')}>
-            {overdue ? 'Terlambat · ' : 'Deadline '}
-            {formatShort(task.due)}
+            {task.due === '' ? 'Tanpa deadline' : `${overdue ? 'Terlambat · ' : 'Deadline '}${formatShort(task.due)}`}
           </span>
           {task.attachment && (
             <span className="inline-flex items-center gap-1 text-sm text-ink/80">

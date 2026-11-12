@@ -7,52 +7,57 @@ Gamifikasi hanya memakai lima komponen: **Points, Level, Streak, Missions, Achie
 
 ## Status
 
-Frontend selesai sebagai **demo** (data contoh, belum tersambung ke server).
-Backend Laravel (API lengkap + tes) sudah ada dan berjalan sendiri; **menyambungkan frontend ke API adalah langkah berikutnya**.
+Frontend dan backend sudah tersambung dan berfungsi penuh (login nyata, data tersimpan di MySQL).
+Yang tersisa tinggal hosting (lihat bagian Hosting).
 
-## Menjalankan backend
+## Menjalankan semuanya (lokal)
 
-Syarat: PHP 8.3, Composer, MySQL (Laragon). Database `geezestudy`, atur di `backend/.env`.
+Syarat: Node.js 22+, PHP 8.3, Composer, dan MySQL (Laragon) yang sudah menyala.
+Database `geezestudy` diatur di `backend/.env`.
+
+Cara termudah di Windows: klik dua kali `jalankan-geezestudy.bat`. Skrip itu menyiapkan database, menyalakan backend
+(http://localhost:8010) di jendela terpisah, dan frontend (http://localhost:5173).
+
+Manual, dua terminal:
 
 ```bash
+# Terminal 1 - backend
 cd backend
 composer install
-cp .env.example .env && php artisan key:generate   # lewati bila .env sudah ada
 php artisan migrate --seed
-php artisan serve --port=8010
-php artisan test
-```
+composer serve            # php server + OPcache, jauh lebih cepat daripada php artisan serve
 
-Akun contoh (hanya di `APP_ENV=local`): ``admin@`, `sd@`, `smp@`, `sma@`, `mahasiswa@` + `geezestudy.test`, password `password123`.
-
-Autentikasi memakai Sanctum cookie (SPA): panggil `GET /sanctum/csrf-cookie`, lalu `POST /api/login`.
-Fitur: auth + verifikasi email + reset password, tugas, kalender, sesi belajar, goals, misi, progres/achievements,
-teman, notifikasi, dan Panel Admin (`/api/admin/*`). Points, level, dan streak dihitung **hanya di server**
-(satu sumber hanya memberi Points sekali, sesi divalidasi durasi/tumpang tindih/batas harian).
-
-## Menjalankan frontend
-
-Syarat: Node.js 22 atau lebih baru.
-
-```bash
+# Terminal 2 - frontend
 cd frontend
 npm install
 npm run dev
 ```
 
-Buka http://localhost:5173. Di Windows, klik dua kali `jalankan-geezestudy.bat` di folder root.
+Buka http://localhost:5173. Di halaman Masuk (mode dev) ada tombol akun uji. Semua password: `password123`.
 
-Perintah lain: `npm run lint`, `npm run build`.
+| Peran | Email |
+|---|---|
+| Admin | admin@geezestudy.test |
+| SD | sd@geezestudy.test |
+| SMP | smp@geezestudy.test |
+| SMA | sma@geezestudy.test |
+| Mahasiswa | mahasiswa@geezestudy.test |
 
-## Mencoba demo
+Akun ini hanya dibuat saat `APP_ENV=local`. Tes backend: `cd backend && php artisan test`.
 
-Di halaman **Masuk**, isi apa saja, atau pakai tombol cepat:
+Pengingat deadline/jadwal dibuat oleh `php artisan reminders:send` (dijadwalkan tiap 15 menit lewat scheduler Laravel).
 
-- **Coba tanpa akun**: masuk sebagai Student.
-- **Coba sebagai Admin**: membuka Panel Admin (pengguna, misi, Points & Level, achievements, pengumuman, log).
-- **Daftar** dengan email untuk melihat alur verifikasi email dan onboarding.
+## Hosting (checklist)
 
-Profil demo hanya disimpan di browser (localStorage). Tombol **Keluar** menghapusnya.
+- Frontend: `npm run build` di `frontend`, set `VITE_API_URL` ke alamat API produksi (HTTPS) sebelum build. Base path lewat `VITE_BASE`.
+- Backend: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`, `FRONTEND_URL`, kredensial MySQL, `MAIL_*` (SMTP sungguhan agar email verifikasi/reset terkirim), `php artisan migrate --force` lalu `php artisan db:seed --class=GamificationSeeder --force` (tanpa akun contoh), `php artisan config:cache route:cache`.
+- Buat akun Admin pertama lewat `php artisan tinker` (set `role` = `admin`).
+- Cookie Sanctum SPA: frontend dan API harus satu situs (mis. `app.contoh.id` dan `api.contoh.id`), lalu isi `SESSION_DOMAIN=.contoh.id`, `SANCTUM_STATEFUL_DOMAINS=app.contoh.id`, `SESSION_SECURE_COOKIE=true`, dan `FRONTEND_URL` + CORS ke alamat frontend.
+- Cron: `* * * * * php artisan schedule:run` agar pengingat berjalan.
+
+## Catatan batasan
+
+Unggah lampiran tugas belum ada (hanya nama berkas), dan sinkronisasi Google Calendar belum tersambung (pilihannya tersimpan).
 
 ## Fitur yang sudah ada di UI
 
@@ -84,5 +89,5 @@ backend/          Laravel API (app/Services = aturan Points, misi, achievements,
 
 ## Deploy
 
-GitHub Pages lewat `.github/workflows/deploy.yml` (frontend saja, base path `/GeezeStudy/`).
+Workflow `.github/workflows/deploy.yml` hanya mem-build frontend untuk GitHub Pages; tanpa backend publik, login tidak akan berfungsi di sana.
 Aktifkan di Settings, Pages, Source: GitHub Actions.

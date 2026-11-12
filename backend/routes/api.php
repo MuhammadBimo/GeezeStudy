@@ -61,6 +61,7 @@ Route::middleware(['auth:sanctum', 'active', 'verified', 'role:admin'])->prefix(
     Route::get('/overview', Admin\OverviewController::class);
     Route::get('/users', [Admin\UserController::class, 'index']);
     Route::patch('/users/{user}', [Admin\UserController::class, 'update']);
+    Route::post('/users/{user}/reset-password', [Admin\UserController::class, 'sendReset'])->middleware('throttle:10,1');
     Route::apiResource('missions', Admin\MissionController::class)->except('show');
     Route::apiResource('achievements', Admin\AchievementController::class)->except('show');
     Route::apiResource('announcements', Admin\AnnouncementController::class)->only(['index', 'store', 'destroy']);

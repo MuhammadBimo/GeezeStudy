@@ -55,9 +55,13 @@ export default function AppShell() {
   const items = inAdmin ? adminNavItems : navItems
   const isAdmin = user.role === 'admin'
 
-  const handleLogout = () => {
-    logout()
-    toast('Kamu sudah keluar')
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast('Kamu sudah keluar')
+    } catch {
+      toast('Gagal keluar. Coba lagi.', 'error')
+    }
   }
 
   return (
@@ -105,7 +109,7 @@ export default function AppShell() {
             </span>
             <div className="min-w-0">
               <p className="truncate font-semibold leading-tight">{user.name}</p>
-              <p className="truncate text-sm text-ink/80">{isAdmin ? 'Admin (demo)' : user.institution || 'Mode demo'}</p>
+              <p className="truncate text-sm text-ink/80">{isAdmin ? 'Admin' : user.institution || 'Student'}</p>
             </div>
           </div>
           <button

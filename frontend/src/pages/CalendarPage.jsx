@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Repeat, Bell } from 'lucide-react'
-import Badge from '@/components/ui/Badge'
+import { ChevronLeft, ChevronRight, Plus, Repeat, Bell, Trash2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import EmptyState from '@/components/ui/EmptyState'
@@ -9,9 +8,12 @@ import Modal from '@/components/ui/Modal'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Select from '@/components/ui/Select'
+import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
+import { api, errorMessage } from '@/lib/api'
+import { eventFromApi, eventToApi } from '@/lib/mappers'
 import { cn } from '@/lib/cn'
-import { TODAY, addDays, formatLong, formatMonth, fromISO, isoIn, toISO, weekdayIndex } from '@/lib/date'
+import { TODAY, addDays, formatLong, formatMonth, fromISO, toISO, weekdayIndex } from '@/lib/date'
 
 const typeMeta = {
   Kuliah: 'bg-mist',
@@ -41,22 +43,23 @@ const views = [
 ]
 const dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 
-// DATA SEMENTARA (mock): akan diganti dengan data dari API backend.
-const initialEvents = [
-  { id: 1, title: 'Kuliah Pemrograman Web', type: 'Kuliah', date: isoIn(0), time: '13:00', repeat: 'weekly', reminder: '10' },
-  { id: 2, title: 'Presentasi Kelompok', type: 'Presentasi', date: isoIn(0), time: '15:30', repeat: 'none', reminder: '60' },
-  { id: 3, title: 'Deadline Laporan Basis Data', type: 'Deadline', date: isoIn(1), time: '23:59', repeat: 'none', reminder: '1440' },
-  { id: 4, title: 'Ujian Basis Data', type: 'Ujian', date: isoIn(3), time: '08:00', repeat: 'none', reminder: '1440' },
-  { id: 5, title: 'Rapat Organisasi', type: 'Rapat', date: isoIn(5), time: '16:00', repeat: 'none', reminder: 'none' },
-  { id: 6, title: 'Olahraga sore', type: 'Pribadi', date: isoIn(2), time: '17:00', repeat: 'weekly', reminder: 'none' },
-]
+// Apakah kegiatan (termasuk yang berulang) jatuh pada tanggal tertentu.
+const occursOn = (event, iso) => {
+  if (event.date === iso) return true
+  if (event.repeat === 'none' || iso < event.date) return false
+  const start = fromISO(event.date)
+  const day = fromISO(iso)
+  if (event.repeat === 'daily') return true
+  if (event.repeat === 'weekly') return start.getDay() === day.getDay()
+  return start.getDate() === day.getDate()
+}
 
 const sameMonth = (iso, cursor) => {
   const d = fromISO(iso)
   return d.getMonth() === cursor.getMonth() && d.getFullYear() === cursor.getFullYear()
 }
 
-function EventRow({ event }) {
+function EventRow({ event, onDelete }) {
   return (
     <li className="flex items-center gap-3 rounded-panel border border-line bg-surface p-3">
       <span className={cn('size-3 shrink-0 rounded-full border border-line', typeMeta[event.type])} aria-hidden="true" />
@@ -66,21 +69,37 @@ function EventRow({ event }) {
       </div>
       {event.repeat !== 'none' && <Repeat className="size-4 shrink-0" aria-label="Berulang" />}
       {event.reminder !== 'none' && <Bell className="size-4 shrink-0" aria-label="Ada pengingat" />}
+      <button
+        type="button"
+        onClick={() => onDelete(event)}
+        aria-label={`Hapus kegiatan ${event.title}`}
+        className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-danger/10 hover:text-danger"
+      >
+        <Trash2 className="size-4" aria-hidden="true" />
+      </button>
     </li>
   )
 }
 
 export default function CalendarPage() {
   const toast = useToast()
-  const [events, setEvents] = useState(initialEvents)
   const [view, setView] = useState('month')
   const [selected, setSelected] = useState(TODAY)
   const [cursor, setCursor] = useState(() => fromISO(`${TODAY.slice(0, 8)}01`))
+  const [saving, setSaving] = useState(false)
+
+  // Ambil kegiatan satu bulan sebelum sampai satu bulan sesudah bulan yang tampil.
+  const range = {
+    from: new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1).toISOString(),
+    to: new Date(cursor.getFullYear(), cursor.getMonth() + 2, 1).toISOString(),
+  }
+  const resource = useResource('/calendar-events', range)
+  const events = (resource.data?.data ?? []).map(eventFromApi)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ title: '', type: 'Kuliah', date: TODAY, time: '08:00', repeat: 'none', reminder: 'none' })
   const [error, setError] = useState('')
 
-  const eventsOn = (iso) => events.filter((e) => e.date === iso).toSorted((a, b) => a.time.localeCompare(b.time))
+  const eventsOn = (iso) => events.filter((e) => occursOn(e, iso)).toSorted((a, b) => a.time.localeCompare(b.time))
 
   // Sel kalender bulanan: mulai dari hari Senin pertama yang menutupi tanggal 1.
   const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1)
@@ -91,20 +110,43 @@ export default function CalendarPage() {
   const weekDays = Array.from({ length: 7 }, (_, i) => toISO(addDays(i, weekStart)))
 
   const shiftMonth = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1))
-  const shiftSelected = (n) => setSelected((s) => toISO(addDays(n, fromISO(s))))
+  const shiftSelected = (n) => {
+    const next = toISO(addDays(n, fromISO(selected)))
+    setSelected(next)
+    setCursor(fromISO(`${next.slice(0, 8)}01`))
+  }
 
-  const submit = (e) => {
+  const remove = async (event) => {
+    if (!window.confirm(`Hapus kegiatan "${event.title}"?`)) return
+    try {
+      await api.delete(`/calendar-events/${event.id}`)
+      resource.reload()
+      toast('Kegiatan dihapus')
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+    }
+  }
+
+  const submit = async (e) => {
     e.preventDefault()
     if (!form.title.trim() || !form.date) {
       setError('Judul dan tanggal wajib diisi.')
       return
     }
-    setEvents((prev) => [...prev, { ...form, title: form.title.trim(), id: Date.now() }])
-    setSelected(form.date)
-    setCursor(fromISO(`${form.date.slice(0, 8)}01`))
-    setOpen(false)
-    setError('')
-    toast('Kegiatan ditambahkan')
+    setSaving(true)
+    try {
+      await api.post('/calendar-events', eventToApi({ ...form, title: form.title.trim() }))
+      setSelected(form.date)
+      setCursor(fromISO(`${form.date.slice(0, 8)}01`))
+      setOpen(false)
+      setError('')
+      resource.reload()
+      toast('Kegiatan ditambahkan')
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSaving(false)
+    }
   }
   const setField = (f) => (e) => setForm((cur) => ({ ...cur, [f]: e.target.value }))
 
@@ -124,7 +166,11 @@ export default function CalendarPage() {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <SegmentedControl label="Tampilan kalender" options={views} value={view} onChange={setView} />
-        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
+        {resource.error && (
+          <p role="alert" className="text-sm font-semibold text-danger">
+            Kegiatan belum bisa dimuat. <button type="button" className="underline underline-offset-4" onClick={resource.reload}>Coba lagi</button>
+          </p>
+        )}
       </div>
 
       {view === 'month' && (
@@ -174,7 +220,7 @@ export default function CalendarPage() {
             {selectedEvents.length === 0 ? (
               <EmptyState title="Tidak ada kegiatan" description="Hari ini masih kosong." />
             ) : (
-              <ul className="flex flex-col gap-2">{selectedEvents.map((e) => <EventRow key={e.id} event={e} />)}</ul>
+              <ul className="flex flex-col gap-2">{selectedEvents.map((e) => <EventRow key={e.id} event={e} onDelete={remove} />)}</ul>
             )}
           </Card>
         </div>
@@ -196,7 +242,7 @@ export default function CalendarPage() {
                 {eventsOn(iso).length === 0 ? (
                   <p className="text-sm text-ink/80">Kosong</p>
                 ) : (
-                  <ul className="flex flex-col gap-2">{eventsOn(iso).map((e) => <EventRow key={e.id} event={e} />)}</ul>
+                  <ul className="flex flex-col gap-2">{eventsOn(iso).map((e) => <EventRow key={e.id} event={e} onDelete={remove} />)}</ul>
                 )}
               </Card>
             ))}
@@ -216,7 +262,7 @@ export default function CalendarPage() {
           {selectedEvents.length === 0 ? (
             <EmptyState title="Tidak ada kegiatan" description="Tambahkan jadwal untuk hari ini." />
           ) : (
-            <ul className="flex flex-col gap-2">{selectedEvents.map((e) => <EventRow key={e.id} event={e} />)}</ul>
+            <ul className="flex flex-col gap-2">{selectedEvents.map((e) => <EventRow key={e.id} event={e} onDelete={remove} />)}</ul>
           )}
         </Card>
       )}
@@ -233,7 +279,7 @@ export default function CalendarPage() {
           <Select label="Pengingat" options={reminderOptions} value={form.reminder} onChange={setField('reminder')} />
           <div className="flex justify-end gap-3">
             <Button variant="neutral" onClick={() => setOpen(false)}>Batal</Button>
-            <Button type="submit">Simpan kegiatan</Button>
+            <Button type="submit" loading={saving}>Simpan kegiatan</Button>
           </div>
         </form>
       </Modal>

@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { Megaphone, X } from 'lucide-react'
 import Card from '@/components/ui/Card'
-import { useAnnouncements } from '@/hooks/useAnnouncements'
 
-// Pengumuman dari Admin. Menutup hanya menyembunyikan di sesi ini.
-export default function AnnouncementBanner() {
-  const { items } = useAnnouncements()
+// Pengumuman dari Admin. Menutup hanya menyembunyikan di tampilan ini.
+export default function AnnouncementBanner({ items }) {
   const [dismissed, setDismissed] = useState([])
   const visible = items.filter((a) => !dismissed.includes(a.id))
 

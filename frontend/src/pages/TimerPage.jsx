@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw, Square } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -8,8 +8,11 @@ import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
 import Select from '@/components/ui/Select'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import { useAuth } from '@/hooks/useAuth'
+import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
-import { cn } from '@/lib/cn'
+import { api, errorMessage } from '@/lib/api'
+import { dayTime } from '@/lib/mappers'
 
 const STORAGE_KEY = 'geezestudy.timer'
 
@@ -20,20 +23,10 @@ const presets = [
   { value: 'custom', label: 'Kustom', focus: 30, rest: 5 },
 ]
 
-// DATA SEMENTARA (mock): daftar tugas dan riwayat akan berasal dari API.
-const taskOptions = [
-  { value: '', label: 'Tanpa tugas' },
-  { value: 'Laporan Praktikum Basis Data', label: 'Laporan Praktikum Basis Data' },
-  { value: 'Rangkuman Bab 5', label: 'Rangkuman Bab 5' },
-  { value: 'Latihan Soal Kalkulus', label: 'Latihan Soal Kalkulus' },
-]
-
-const initialHistory = [
-  { id: 1, task: 'Rangkuman Bab 5', minutes: 25, when: 'Kemarin, 19:30' },
-  { id: 2, task: 'Latihan Soal Kalkulus', minutes: 50, when: 'Kemarin, 15:10' },
-]
-
-const idleState = { presetId: 'pomodoro', customMin: 30, phase: 'focus', status: 'idle', endsAt: 0, remainingMs: 0, task: '' }
+const idleState = {
+  presetId: 'pomodoro', customMin: 30, phase: 'focus', status: 'idle',
+  endsAt: 0, remainingMs: 0, taskId: '', startedAt: 0,
+}
 
 const readSaved = () => {
   try {
@@ -49,14 +42,22 @@ const mmss = (ms) => {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
 
+const focusMinutesOf = (s) => (s.presetId === 'custom' ? s.customMin : presets.find((p) => p.value === s.presetId).focus)
+
 export default function TimerPage() {
   const toast = useToast()
+  const { setUser } = useAuth()
+  const tasks = useResource('/tasks')
+  const sessions = useResource('/study-sessions')
   const [s, setS] = useState(readSaved)
   const [now, setNow] = useState(() => Date.now())
-  const [history, setHistory] = useState(initialHistory)
+
+  // Salinan terbaru state untuk dibaca di dalam interval tanpa efek samping di updater setState.
+  const sRef = useRef(s)
+  const finishing = useRef(false)
 
   const preset = presets.find((p) => p.value === s.presetId)
-  const focusMin = s.presetId === 'custom' ? s.customMin : preset.focus
+  const focusMin = focusMinutesOf(s)
   const restMin = preset.rest
   const phaseMin = s.phase === 'focus' ? focusMin : restMin
   const phaseMs = phaseMin * 60_000
@@ -65,6 +66,7 @@ export default function TimerPage() {
 
   // Simpan agar sesi pulih setelah halaman dimuat ulang atau browser ditutup.
   useEffect(() => {
+    sRef.current = s
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
     } catch {
@@ -72,30 +74,49 @@ export default function TimerPage() {
     }
   }, [s])
 
-  const record = useCallback((minutes, task) => {
+  // Kirim sesi fokus ke server. Points dihitung dan divalidasi di sana, bukan di sini.
+  const record = useCallback(async (minutes, snapshot, endedAt) => {
     if (minutes < 1) return
-    const when = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date())
-    setHistory((h) => [{ id: Date.now(), task: task || 'Tanpa tugas', minutes, when: `Hari ini, ${when}` }, ...h])
-    toast(`Sesi ${minutes} menit tercatat`)
-  }, [toast])
+    try {
+      const { data } = await api.post('/study-sessions', {
+        task_id: snapshot.taskId ? Number(snapshot.taskId) : null,
+        focus_minutes: minutes,
+        started_at: new Date(snapshot.startedAt || endedAt - minutes * 60_000).toISOString(),
+        ended_at: new Date(endedAt).toISOString(),
+      })
+      setUser(data.user)
+      sessions.reload()
+      const earned = data.session.points_awarded
+      toast(earned > 0 ? `Sesi ${minutes} menit tercatat. +${earned} Points` : `Sesi ${minutes} menit tercatat`)
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- sessions.reload stabil
+  }, [setUser, toast, sessions.reload])
 
   const finish = useCallback(() => {
-    setS((cur) => {
-      if (cur.phase === 'focus') {
-        record(cur.presetId === 'custom' ? cur.customMin : presets.find((p) => p.value === cur.presetId).focus, cur.task)
-        const rest = presets.find((p) => p.value === cur.presetId).rest
-        return { ...cur, phase: rest > 0 ? 'rest' : 'focus', status: 'idle', endsAt: 0, remainingMs: 0 }
-      }
-      return { ...cur, phase: 'focus', status: 'idle', endsAt: 0, remainingMs: 0 }
+    if (finishing.current) return
+    finishing.current = true
+    const cur = sRef.current
+    if (cur.phase === 'focus') {
+      // Waktu selesai dicatat sebagai akhir timer, bukan "sekarang", agar tab yang tertidur tidak menambah klaim.
+      record(focusMinutesOf(cur), cur, cur.endsAt)
+    }
+    const rest = presets.find((p) => p.value === cur.presetId).rest
+    setS({
+      ...cur,
+      phase: cur.phase === 'focus' && rest > 0 ? 'rest' : 'focus',
+      status: 'idle', endsAt: 0, remainingMs: 0, startedAt: 0,
     })
   }, [record])
 
   useEffect(() => {
     if (s.status !== 'running') return undefined
+    finishing.current = false
     const id = setInterval(() => {
       const t = Date.now()
       setNow(t)
-      if (s.endsAt - t <= 0) finish()
+      if (sRef.current.endsAt - t <= 0) finish()
     }, 250)
     return () => clearInterval(id)
   }, [s.status, s.endsAt, finish])
@@ -103,7 +124,7 @@ export default function TimerPage() {
   const start = () => {
     const t = Date.now()
     setNow(t)
-    setS((cur) => ({ ...cur, status: 'running', endsAt: t + phaseMs, remainingMs: 0 }))
+    setS((cur) => ({ ...cur, status: 'running', endsAt: t + phaseMs, remainingMs: 0, startedAt: t }))
   }
   const pause = () => setS((cur) => ({ ...cur, status: 'paused', remainingMs: Math.max(cur.endsAt - Date.now(), 0) }))
   const resume = () => {
@@ -112,12 +133,18 @@ export default function TimerPage() {
     setS((cur) => ({ ...cur, status: 'running', endsAt: t + cur.remainingMs }))
   }
   const stop = () => {
-    if (s.phase === 'focus') record(Math.floor((phaseMs - Math.max(remaining, 0)) / 60_000), s.task)
-    setS((cur) => ({ ...cur, phase: 'focus', status: 'idle', endsAt: 0, remainingMs: 0 }))
+    if (s.phase === 'focus') record(Math.floor((phaseMs - Math.max(remaining, 0)) / 60_000), s, Date.now())
+    setS((cur) => ({ ...cur, phase: 'focus', status: 'idle', endsAt: 0, remainingMs: 0, startedAt: 0 }))
   }
 
   const idle = s.status === 'idle'
   const elapsedPct = phaseMs ? phaseMs - Math.max(remaining, 0) : 0
+
+  const taskOptions = [
+    { value: '', label: 'Tanpa tugas' },
+    ...(tasks.data?.data ?? []).filter((t) => t.status !== 'completed').map((t) => ({ value: String(t.id), label: t.title })),
+  ]
+  const history = sessions.data?.data ?? []
 
   return (
     <>
@@ -175,7 +202,7 @@ export default function TimerPage() {
           </div>
 
           <p className="max-w-md text-center text-sm text-surface/80">
-            Points hanya diberikan setelah sesi divalidasi oleh server. Tampilan ini belum tersambung ke backend.
+            Points diberikan setelah sesi fokus dicatat dan divalidasi server. Berhenti sebelum 1 menit tidak dicatat.
           </p>
         </Card>
 
@@ -208,25 +235,29 @@ export default function TimerPage() {
             <Select
               label="Tugas yang dikerjakan"
               options={taskOptions}
-              value={s.task}
+              value={s.taskId}
               disabled={!idle}
-              onChange={(e) => setS((c) => ({ ...c, task: e.target.value }))}
+              onChange={(e) => setS((c) => ({ ...c, taskId: e.target.value }))}
             />
           </Card>
 
           <Card color="bg-sand-deep" className="p-5">
             <h2 className="mb-3 text-xl font-semibold">Riwayat belajar</h2>
-            <ul className="flex flex-col gap-2">
-              {history.slice(0, 5).map((h) => (
-                <li key={h.id} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface px-3 py-2">
-                  <div className={cn('min-w-0')}>
-                    <p className="truncate text-sm font-semibold">{h.task}</p>
-                    <p className="text-xs text-ink/80">{h.when}</p>
-                  </div>
-                  <Badge color="bg-moss">{h.minutes} mnt</Badge>
-                </li>
-              ))}
-            </ul>
+            {history.length === 0 ? (
+              <p className="text-sm font-medium">Belum ada sesi. Mulai sesi fokus pertamamu.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {history.slice(0, 5).map((h) => (
+                  <li key={h.id} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface px-3 py-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{h.task?.title ?? 'Tanpa tugas'}</p>
+                      <p className="text-xs text-ink/80">{dayTime(h.started_at)}</p>
+                    </div>
+                    <Badge color="bg-moss">{h.focus_minutes} mnt</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { priorityColor, statusMeta } from '@/lib/taskMeta'
 import { TODAY, formatLong } from '@/lib/date'
 
 export default function TaskDetail({ task, onEdit, onClose }) {
-  const overdue = task.status !== 'done' && task.due < TODAY
+  const overdue = task.status !== 'done' && task.due !== '' && task.due < TODAY
   const meta = statusMeta[task.status]
 
   return (
@@ -23,7 +23,7 @@ export default function TaskDetail({ task, onEdit, onClose }) {
         </div>
         <div>
           <dt className="font-semibold text-ink/80">Deadline</dt>
-          <dd className="font-medium">{formatLong(task.due)}</dd>
+          <dd className="font-medium">{task.due ? formatLong(task.due) : 'Tanpa deadline'}</dd>
         </div>
       </dl>
 

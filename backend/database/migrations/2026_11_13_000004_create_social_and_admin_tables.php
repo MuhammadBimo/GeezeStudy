@@ -22,12 +22,14 @@ return new class extends Migration
         Schema::create('app_notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('category', 16); // deadline | schedule | mission | social | system
+            $table->string('category', 16); // deadline | schedule | mission | social | achievement | system
             $table->string('title');
             $table->text('body')->nullable();
+            $table->string('dedupe_key', 80)->nullable();
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
+            $table->unique(['user_id', 'dedupe_key']);
             $table->index(['user_id', 'read_at']);
         });
 

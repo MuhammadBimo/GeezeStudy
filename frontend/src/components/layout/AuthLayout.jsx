@@ -1,4 +1,4 @@
-import { Flame, GraduationCap, Info, ListChecks, Timer } from 'lucide-react'
+import { Flame, GraduationCap, ListChecks, Timer } from 'lucide-react'
 import Ornament from '@/components/ui/Ornament'
 
 const points = [
@@ -45,11 +45,6 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
           </div>
           <h1 className="text-4xl font-medium">{title}</h1>
           {subtitle && <p className="mt-2 text-ink/80">{subtitle}</p>}
-
-          <p className="mt-5 flex items-start gap-2 rounded-panel bg-canvas p-3 text-sm text-ink/80 shadow-inset">
-            <Info className="mt-0.5 size-4 shrink-0 text-forest" aria-hidden="true" />
-            Mode demo: isi apa saja, data tidak disimpan ke server.
-          </p>
 
           <div className="mt-6">{children}</div>
           {footer && <p className="mt-6 text-center text-sm">{footer}</p>}

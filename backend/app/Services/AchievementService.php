@@ -47,7 +47,7 @@ class AchievementService
                     );
                 }
                 $user->appNotifications()->create([
-                    'category' => 'system',
+                    'category' => 'achievement',
                     'title' => "Achievement terbuka: {$achievement->title}",
                     'body' => $achievement->description,
                 ]);

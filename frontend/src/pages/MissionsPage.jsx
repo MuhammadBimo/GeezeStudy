@@ -1,47 +1,54 @@
 import { useState } from 'react'
 import { Check, Gift } from 'lucide-react'
+import AsyncView from '@/components/ui/AsyncView'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
 import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import { useAuth } from '@/hooks/useAuth'
+import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
+import { api, errorMessage } from '@/lib/api'
 
 const periods = [
   { value: 'daily', label: 'Harian' },
   { value: 'weekly', label: 'Mingguan' },
 ]
 
-// DATA SEMENTARA (mock): misi dan klaim Points akan divalidasi oleh backend.
-const initialMissions = [
-  { id: 1, period: 'daily', title: 'Selesaikan 2 tugas', done: 1, total: 2, reward: 20, claimed: false },
-  { id: 2, period: 'daily', title: 'Belajar 25 menit', done: 25, total: 25, reward: 15, claimed: false },
-  { id: 3, period: 'daily', title: 'Capai target belajar harian', done: 45, total: 90, reward: 30, claimed: false },
-  { id: 4, period: 'weekly', title: 'Belajar 5 hari berbeda', done: 4, total: 5, reward: 60, claimed: false },
-  { id: 5, period: 'weekly', title: 'Selesaikan 8 tugas', done: 5, total: 8, reward: 80, claimed: false },
-  { id: 6, period: 'weekly', title: 'Selesaikan 3 sesi 50 menit', done: 3, total: 3, reward: 70, claimed: false },
-]
-
-export default function MissionsPage() {
+function MissionBoard({ resource, missions }) {
   const toast = useToast()
-  const [missions, setMissions] = useState(initialMissions)
+  const { setUser } = useAuth()
   const [period, setPeriod] = useState('daily')
+  const [claiming, setClaiming] = useState(null)
 
-  const claim = (id) => {
-    const mission = missions.find((x) => x.id === id)
-    setMissions((prev) => prev.map((x) => (x.id === id ? { ...x, claimed: true } : x)))
-    toast(`+${mission.reward} Points diklaim`)
+  // Klaim divalidasi server: progres dihitung ulang dan tiap misi hanya bisa diklaim sekali per periode.
+  const claim = async (mission) => {
+    setClaiming(mission.id)
+    try {
+      const { data } = await api.post(`/missions/${mission.id}/claim`)
+      setUser(data.user)
+      toast(`+${data.reward_points} Points diklaim`)
+      resource.reload()
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+      resource.reload()
+    } finally {
+      setClaiming(null)
+    }
   }
-  const visible = missions.filter((m) => m.period === period)
-  const earned = missions.filter((m) => m.claimed).reduce((sum, m) => sum + m.reward, 0)
+
+  const visible = missions.filter((m) => m.type === period)
+  const claimedPoints = missions.filter((m) => m.claimed).reduce((sum, m) => sum + m.reward_points, 0)
 
   return (
     <>
       <PageHeader
         title="Misi"
         subtitle="Tantangan produktivitas. Selesaikan, lalu klaim Points-nya."
-        action={<Badge color="bg-sand-deep" className="px-3 py-1 text-sm">+{earned} Points sesi ini</Badge>}
+        action={<Badge color="bg-sand-deep" className="px-3 py-1 text-sm">+{claimedPoints} Points sudah diklaim</Badge>}
       />
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -51,30 +58,36 @@ export default function MissionsPage() {
         </p>
       </div>
 
-      <ul className="grid gap-4 md:grid-cols-2">
-        {visible.map((m) => {
-          const complete = m.done >= m.total
-          return (
-            <Card as="li" key={m.id} color={m.claimed ? 'bg-moss' : complete ? 'bg-sand-deep' : 'bg-surface'} className="flex flex-col gap-3 p-5">
+      {visible.length === 0 ? (
+        <EmptyState title="Belum ada misi" description="Misi baru akan muncul di sini." />
+      ) : (
+        <ul className="grid gap-4 md:grid-cols-2">
+          {visible.map((m) => (
+            <Card as="li" key={m.id} color={m.claimed ? 'bg-moss' : m.claimable ? 'bg-sand-deep' : 'bg-surface'} className="flex flex-col gap-3 p-5">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="text-lg font-semibold leading-snug">{m.title}</h2>
-                <Badge color="bg-sage">+{m.reward} pts</Badge>
+                <Badge color="bg-forest-tint">+{m.reward_points} pts</Badge>
               </div>
-              <ProgressBar value={m.done} max={m.total} color="bg-moss" label={m.title} />
+              <ProgressBar value={m.progress} max={m.target} label={m.title} />
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold">{m.done} / {m.total}</p>
+                <p className="text-sm font-semibold">{m.progress} / {m.target}</p>
                 {m.claimed ? (
                   <Badge color="bg-surface"><Check className="size-3" strokeWidth={3} aria-hidden="true" /> Diklaim</Badge>
-                ) : complete ? (
-                  <Button size="sm" onClick={() => claim(m.id)}><Gift className="size-4" aria-hidden="true" /> Klaim</Button>
+                ) : m.claimable ? (
+                  <Button size="sm" onClick={() => claim(m)} loading={claiming === m.id}><Gift className="size-4" aria-hidden="true" /> Klaim</Button>
                 ) : (
                   <span className="text-sm text-ink/80">Belum selesai</span>
                 )}
               </div>
             </Card>
-          )
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
     </>
   )
+}
+
+export default function MissionsPage() {
+  const resource = useResource('/missions')
+  return <AsyncView resource={resource}>{(page) => <MissionBoard resource={resource} missions={page.data} />}</AsyncView>
 }

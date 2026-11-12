@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Friendship;
+use App\Models\StudySession;
 use App\Models\User;
+use App\Services\StreakService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -19,7 +21,10 @@ class FriendController extends Controller
             ->where(fn ($q) => $q->where('requester_id', $me->id)->orWhere('addressee_id', $me->id))
             ->get();
 
-        $friends = $rows->where('status', 'accepted')->map(function (Friendship $f) use ($me) {
+        $weekMinutes = StudySession::where('started_at', '>=', now()->startOfWeek())
+            ->selectRaw('user_id, sum(focus_minutes) as minutes')->groupBy('user_id')->pluck('minutes', 'user_id');
+
+        $friends = $rows->where('status', 'accepted')->map(function (Friendship $f) use ($me, $weekMinutes) {
             $other = $f->requester_id === $me->id ? $f->addressee : $f->requester;
 
             // Statistik hanya tampil bila teman mengizinkan (privasi).
@@ -28,7 +33,12 @@ class FriendController extends Controller
                 'name' => $other->name,
                 'institution' => $other->institution,
                 'stats' => $other->privacy_show_progress
-                    ? ['level' => $other->level, 'points' => $other->points, 'streak' => $other->current_streak]
+                    ? [
+                        'level' => $other->level,
+                        'points' => $other->points,
+                        'streak' => app(StreakService::class)->effective($other),
+                        'week_minutes' => (int) ($weekMinutes[$other->id] ?? 0),
+                    ]
                     : null,
             ];
         })->values();

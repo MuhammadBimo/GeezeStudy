@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import { useAuth } from '@/hooks/useAuth'
+import { api, errorMessage } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
 import { cn } from '@/lib/cn'
 import { educationLevels } from '@/lib/profile'
@@ -14,18 +15,30 @@ const goalPresets = [30, 60, 90, 120]
 const STEPS = ['Jenjang', 'Institusi', 'Target']
 
 export default function OnboardingPage() {
-  const { user, updateProfile } = useAuth()
+  const { user, setUser } = useAuth()
   const toast = useToast()
   const [step, setStep] = useState(0)
-  const [level, setLevel] = useState(user.level)
-  const [institution, setInstitution] = useState(user.institution)
-  const [goal, setGoal] = useState(user.dailyGoal)
+  const [level, setLevel] = useState(user.education_level ?? 'college')
+  const [saving, setSaving] = useState(false)
+  const [institution, setInstitution] = useState(user.institution ?? '')
+  const [goal, setGoal] = useState(user.daily_goal_minutes)
 
   const last = step === STEPS.length - 1
 
-  const finish = () => {
-    updateProfile({ level, institution: institution.trim(), dailyGoal: goal, onboarded: true })
-    toast('Siap! Selamat belajar.')
+  const finish = async () => {
+    setSaving(true)
+    try {
+      const { data } = await api.post('/onboarding', {
+        education_level: level,
+        institution: institution.trim() || null,
+        daily_goal_minutes: goal,
+      })
+      setUser(data)
+      toast('Siap! Selamat belajar.')
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+      setSaving(false)
+    }
   }
 
   return (
@@ -120,7 +133,7 @@ export default function OnboardingPage() {
             <ArrowLeft className="size-4" aria-hidden="true" /> Kembali
           </Button>
           {last ? (
-            <Button onClick={finish}>Mulai belajar <ArrowRight className="size-4" aria-hidden="true" /></Button>
+            <Button onClick={finish} loading={saving}>Mulai belajar <ArrowRight className="size-4" aria-hidden="true" /></Button>
           ) : (
             <Button onClick={() => setStep((s) => s + 1)}>Lanjut <ArrowRight className="size-4" aria-hidden="true" /></Button>
           )}

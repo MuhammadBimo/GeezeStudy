@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { ListTodo, Plus, SearchX } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
-import Badge from '@/components/ui/Badge'
+import { useResource } from '@/hooks/useResource'
+import AsyncView from '@/components/ui/AsyncView'
 import Button from '@/components/ui/Button'
 import EmptyState from '@/components/ui/EmptyState'
 import Modal from '@/components/ui/Modal'
@@ -11,16 +12,8 @@ import SegmentedControl from '@/components/ui/SegmentedControl'
 import TaskCard from '@/components/tasks/TaskCard'
 import TaskDetail from '@/components/tasks/TaskDetail'
 import TaskForm from '@/components/tasks/TaskForm'
-import { isoIn } from '@/lib/date'
-
-// DATA SEMENTARA (mock): akan diganti dengan data dari API backend.
-const initialTasks = [
-  { id: 1, title: 'Laporan Praktikum Basis Data', course: 'Basis Data', due: isoIn(0), priority: 'Tinggi', status: 'progress', description: 'Bab normalisasi dan ERD.', attachment: '' },
-  { id: 2, title: 'Rangkuman Bab 5', course: 'Jaringan Komputer', due: isoIn(1), priority: 'Sedang', status: 'todo', description: '', attachment: '' },
-  { id: 3, title: 'Latihan Soal Kalkulus', course: 'Kalkulus', due: isoIn(3), priority: 'Rendah', status: 'todo', description: '', attachment: '' },
-  { id: 4, title: 'Makalah Etika Profesi', course: 'Etika Profesi', due: isoIn(-2), priority: 'Tinggi', status: 'todo', description: 'Minimal 5 halaman.', attachment: '' },
-  { id: 5, title: 'Baca jurnal UI/UX', course: 'Interaksi Manusia', due: isoIn(-1), priority: 'Rendah', status: 'done', description: '', attachment: 'jurnal.pdf' },
-]
+import { api, errorMessage } from '@/lib/api'
+import { statusToApi, taskFromApi, taskToApi } from '@/lib/mappers'
 
 const filters = [
   { value: 'all', label: 'Semua' },
@@ -31,9 +24,9 @@ const filters = [
 
 const nextStatus = { todo: 'progress', progress: 'done', done: 'todo' }
 
-export default function TasksPage() {
+function TaskBoard({ resource, tasks }) {
   const toast = useToast()
-  const [tasks, setTasks] = useState(initialTasks)
+  const { mutate } = resource
   const [filter, setFilter] = useState('all')
   // editing: null (tutup) | 'new' | objek tugas
   const [editing, setEditing] = useState(null)
@@ -43,26 +36,49 @@ export default function TasksPage() {
 
   const visible = tasks
     .filter((t) => filter === 'all' || t.status === filter)
-    .toSorted((a, b) => a.due.localeCompare(b.due))
+    .toSorted((a, b) => (a.due || '9999').localeCompare(b.due || '9999'))
 
-  const cycle = (id) =>
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: nextStatus[t.status] } : t)))
+  const replace = (apiTask) =>
+    mutate((data) => ({ ...data, data: data.data.map((t) => (t.id === apiTask.id ? apiTask : t)) }))
 
-  const remove = (task) => {
-    if (!window.confirm(`Hapus tugas "${task.title}"?`)) return
-    setTasks((prev) => prev.filter((t) => t.id !== task.id))
-    toast('Tugas dihapus')
+  const cycle = async (id) => {
+    const task = tasks.find((t) => t.id === id)
+    try {
+      const { data } = await api.patch(`/tasks/${id}`, { status: statusToApi(nextStatus[task.status]) })
+      replace(data)
+      if (data.status === 'completed') toast('Tugas selesai. Points ditambahkan!')
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+    }
   }
 
-  const save = (data) => {
-    if (editing === 'new') {
-      setTasks((prev) => [...prev, { ...data, id: Date.now(), status: 'todo' }])
-      toast('Tugas ditambahkan')
-    } else {
-      setTasks((prev) => prev.map((t) => (t.id === editing.id ? { ...t, ...data } : t)))
-      toast('Perubahan disimpan')
+  const remove = async (task) => {
+    if (!window.confirm(`Hapus tugas "${task.title}"?`)) return
+    try {
+      await api.delete(`/tasks/${task.id}`)
+      mutate((data) => ({ ...data, data: data.data.filter((t) => t.id !== task.id) }))
+      toast('Tugas dihapus')
+    } catch (error) {
+      toast(errorMessage(error), 'error')
     }
-    setEditing(null)
+  }
+
+  // Mengembalikan galat ke form agar pesannya tampil di kolom yang tepat.
+  const save = async (form) => {
+    try {
+      if (editing === 'new') {
+        const { data } = await api.post('/tasks', taskToApi(form))
+        mutate((d) => ({ ...d, data: [...d.data, data] }))
+        toast('Tugas ditambahkan')
+      } else {
+        const { data } = await api.patch(`/tasks/${editing.id}`, taskToApi(form))
+        replace(data)
+        toast('Perubahan disimpan')
+      }
+      setEditing(null)
+    } catch (error) {
+      toast(errorMessage(error), 'error')
+    }
   }
 
   return (
@@ -77,9 +93,8 @@ export default function TasksPage() {
         }
       />
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-5">
         <SegmentedControl label="Filter status" options={filters} value={filter} onChange={setFilter} />
-        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
       </div>
 
       {tasks.length === 0 ? (
@@ -122,5 +137,14 @@ export default function TasksPage() {
         )}
       </Modal>
     </>
+  )
+}
+
+export default function TasksPage() {
+  const resource = useResource('/tasks')
+  return (
+    <AsyncView resource={resource}>
+      {(page) => <TaskBoard resource={resource} tasks={page.data.map(taskFromApi)} />}
+    </AsyncView>
   )
 }

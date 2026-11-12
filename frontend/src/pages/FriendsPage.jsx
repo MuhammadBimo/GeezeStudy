@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { EyeOff, Flame, Search, UserCheck, UserMinus, UserPlus, X } from 'lucide-react'
+import { EyeOff, Flame, UserCheck, UserMinus, UserPlus, X } from 'lucide-react'
+import AsyncView from '@/components/ui/AsyncView'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -8,59 +9,71 @@ import Input from '@/components/ui/Input'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import { useAuth } from '@/hooks/useAuth'
+import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
-
-// DATA SEMENTARA (mock): pencarian, permintaan, dan statistik akan berasal dari API.
-const directory = [
-  { id: 10, username: 'nadia.k', name: 'Nadia Kusuma' },
-  { id: 11, username: 'rafi_dev', name: 'Rafi Pratama' },
-  { id: 12, username: 'salsa.belajar', name: 'Salsa Maharani' },
-]
-const initialFriends = [
-  { id: 1, username: 'dimas.s', name: 'Dimas Saputra', level: 6, streak: 12, weekMinutes: 420, shareStats: true },
-  { id: 2, username: 'ayu_putri', name: 'Ayu Putri', level: 3, streak: 2, weekMinutes: 130, shareStats: false },
-]
-const initialRequests = [{ id: 20, username: 'bagas.w', name: 'Bagas Wicaksono' }]
+import { api, errorMessage, fieldErrors } from '@/lib/api'
 
 const privacyOptions = [
-  { value: 'friends', label: 'Teman bisa melihat' },
-  { value: 'private', label: 'Hanya saya' },
+  { value: 'show', label: 'Teman bisa melihat' },
+  { value: 'hide', label: 'Hanya saya' },
 ]
-
-const initial = (name) => name.charAt(0).toUpperCase()
 
 function Avatar({ name, color }) {
   return (
     <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full border border-line font-display text-lg font-medium ${color}`}>
-      {initial(name)}
+      {name.charAt(0).toUpperCase()}
     </span>
   )
 }
 
-export default function FriendsPage() {
+function FriendsBoard({ resource, data }) {
   const toast = useToast()
-  const [friends, setFriends] = useState(initialFriends)
-  const [requests, setRequests] = useState(initialRequests)
-  const [sent, setSent] = useState([])
-  const [query, setQuery] = useState('')
   const { user, updateProfile } = useAuth()
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
+  const [sending, setSending] = useState(false)
 
-  const q = query.trim().toLowerCase()
-  const results = q
-    ? directory.filter((u) => u.username.toLowerCase().includes(q) && !friends.some((f) => f.id === u.id))
-    : []
+  const run = async (action, success) => {
+    try {
+      await action()
+      if (success) toast(success)
+      resource.reload()
+    } catch (err) {
+      toast(errorMessage(err), 'error')
+    }
+  }
 
-  const accept = (r) => {
-    setFriends((f) => [...f, { ...r, level: 1, streak: 0, weekMinutes: 0, shareStats: true }])
-    setRequests((rs) => rs.filter((x) => x.id !== r.id))
-    toast(`${r.name} sekarang temanmu`)
+  const invite = async (e) => {
+    e.preventDefault()
+    if (!email.trim()) {
+      setError('Isi email temanmu.')
+      return
+    }
+    setSending(true)
+    try {
+      await api.post('/friends', { email: email.trim() })
+      setEmail('')
+      setError('')
+      toast('Permintaan pertemanan terkirim')
+      resource.reload()
+    } catch (err) {
+      setError(fieldErrors(err).email ?? errorMessage(err))
+    } finally {
+      setSending(false)
+    }
   }
-  const decline = (r) => {
-    setRequests((rs) => rs.filter((x) => x.id !== r.id))
-    toast('Permintaan ditolak')
+
+  const changePrivacy = async (value) => {
+    try {
+      await updateProfile({ privacy_show_progress: value === 'show' })
+      toast('Privasi diperbarui')
+    } catch (err) {
+      toast(errorMessage(err), 'error')
+    }
   }
+
   const unfriend = (f) => {
-    if (window.confirm(`Hapus ${f.name} dari daftar teman?`)) setFriends((fs) => fs.filter((x) => x.id !== f.id))
+    if (window.confirm(`Hapus ${f.name} dari daftar teman?`)) run(() => api.delete(`/friends/${f.friendship_id}`), 'Teman dihapus')
   }
 
   return (
@@ -68,60 +81,50 @@ export default function FriendsPage() {
       <PageHeader
         title="Teman"
         subtitle="Belajar lebih semangat bersama teman. Tidak ada chat, hanya statistik yang dibagikan."
-        action={<Badge color="bg-sand-deep">Data contoh (sementara)</Badge>}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card className="p-5">
             <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
-              <Search className="size-5" aria-hidden="true" /> Cari teman
+              <UserPlus className="size-5" aria-hidden="true" /> Tambah teman
             </h2>
-            <Input label="Username" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="contoh: nadia.k" />
-            {q && (
-              <ul className="mt-4 flex flex-col gap-2" aria-live="polite">
-                {results.length === 0 ? (
-                  <li><EmptyState title="Username tidak ditemukan" description="Periksa ejaannya, lalu coba lagi." /></li>
-                ) : (
-                  results.map((u) => (
-                    <li key={u.id} className="flex items-center gap-3 rounded-panel border border-line p-3">
-                      <Avatar name={u.name} color="bg-mist" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold">{u.name}</p>
-                        <p className="text-sm text-ink/80">@{u.username}</p>
-                      </div>
-                      {sent.includes(u.id) ? (
-                        <Badge color="bg-moss">Permintaan terkirim</Badge>
-                      ) : (
-                        <Button size="sm" onClick={() => { setSent((s) => [...s, u.id]); toast('Permintaan pertemanan terkirim') }}>
-                          <UserPlus className="size-4" aria-hidden="true" /> Tambah
-                        </Button>
-                      )}
-                    </li>
-                  ))
-                )}
+            <form onSubmit={invite} noValidate className="flex flex-wrap items-start gap-3">
+              <Input className="min-w-60 flex-1" label="Email teman" type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} error={error} hint="Temanmu harus sudah punya akun GeezeStudy." />
+              <Button type="submit" className="mt-6" loading={sending}>Kirim permintaan</Button>
+            </form>
+            {data.outgoing.length > 0 && (
+              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Permintaan terkirim">
+                {data.outgoing.map((o) => (
+                  <li key={o.friendship_id} className="flex items-center gap-1">
+                    <Badge color="bg-moss">Menunggu: {o.name}</Badge>
+                    <button type="button" onClick={() => run(() => api.delete(`/friends/${o.friendship_id}`), 'Permintaan dibatalkan')} aria-label={`Batalkan permintaan ke ${o.name}`} className="grid size-6 place-items-center rounded-full hover:bg-danger/10 hover:text-danger">
+                      <X className="size-3.5" aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
               </ul>
             )}
           </Card>
 
           <Card tone="primary" className="p-5">
-            <h2 className="mb-3 text-xl font-semibold">Teman ({friends.length})</h2>
-            {friends.length === 0 ? (
-              <EmptyState icon={UserPlus} title="Belum ada teman" description="Cari username temanmu untuk mulai." />
+            <h2 className="mb-3 text-xl font-semibold">Teman ({data.friends.length})</h2>
+            {data.friends.length === 0 ? (
+              <EmptyState icon={UserPlus} title="Belum ada teman" description="Kirim permintaan lewat email temanmu untuk mulai." />
             ) : (
               <ul className="flex flex-col gap-3">
-                {friends.map((f) => (
-                  <li key={f.id} className="flex flex-wrap items-center gap-3 rounded-panel border border-line p-3">
+                {data.friends.map((f) => (
+                  <li key={f.friendship_id} className="flex flex-wrap items-center gap-3 rounded-panel border border-line p-3">
                     <Avatar name={f.name} color="bg-sage" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{f.name}</p>
-                      <p className="text-sm text-ink/80">@{f.username}</p>
+                      {f.institution && <p className="truncate text-sm text-ink/80">{f.institution}</p>}
                     </div>
-                    {f.shareStats ? (
+                    {f.stats ? (
                       <div className="flex flex-wrap gap-2">
-                        <Badge color="bg-stone">Level {f.level}</Badge>
-                        <Badge color="bg-clay"><Flame className="size-3" aria-hidden="true" /> {f.streak} hari</Badge>
-                        <Badge color="bg-moss">{Math.round(f.weekMinutes / 60 * 10) / 10} jam/minggu</Badge>
+                        <Badge color="bg-stone">Level {f.stats.level}</Badge>
+                        <Badge color="bg-clay"><Flame className="size-3" aria-hidden="true" /> {f.stats.streak} hari</Badge>
+                        <Badge color="bg-moss">{Math.round((f.stats.week_minutes / 60) * 10) / 10} jam/minggu</Badge>
                       </div>
                     ) : (
                       <Badge color="bg-surface"><EyeOff className="size-3" aria-hidden="true" /> Statistik disembunyikan</Badge>
@@ -139,17 +142,20 @@ export default function FriendsPage() {
         <div className="flex flex-col gap-6">
           <Card color="bg-sand-deep" className="p-5">
             <h2 className="mb-3 text-xl font-semibold">Permintaan masuk</h2>
-            {requests.length === 0 ? (
+            {data.incoming.length === 0 ? (
               <p className="text-sm font-medium">Tidak ada permintaan baru.</p>
             ) : (
               <ul className="flex flex-col gap-3">
-                {requests.map((r) => (
-                  <li key={r.id} className="rounded-panel border border-line bg-surface p-3">
-                    <p className="font-semibold">{r.name}</p>
-                    <p className="mb-2 text-sm text-ink/80">@{r.username}</p>
+                {data.incoming.map((r) => (
+                  <li key={r.friendship_id} className="rounded-panel border border-line bg-surface p-3">
+                    <p className="mb-2 font-semibold">{r.name}</p>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => accept(r)}><UserCheck className="size-4" aria-hidden="true" /> Terima</Button>
-                      <Button size="sm" variant="neutral" onClick={() => decline(r)}><X className="size-4" aria-hidden="true" /> Tolak</Button>
+                      <Button size="sm" onClick={() => run(() => api.post(`/friends/${r.friendship_id}/accept`), `${r.name} sekarang temanmu`)}>
+                        <UserCheck className="size-4" aria-hidden="true" /> Terima
+                      </Button>
+                      <Button size="sm" variant="neutral" onClick={() => run(() => api.delete(`/friends/${r.friendship_id}`), 'Permintaan ditolak')}>
+                        <X className="size-4" aria-hidden="true" /> Tolak
+                      </Button>
                     </div>
                   </li>
                 ))}
@@ -160,10 +166,15 @@ export default function FriendsPage() {
           <Card className="p-5">
             <h2 className="mb-1 text-xl font-semibold">Privasi statistik</h2>
             <p className="mb-3 text-sm text-ink/80">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
-            <SegmentedControl label="Privasi statistik" options={privacyOptions} value={user.privacy} onChange={(v) => updateProfile({ privacy: v })} />
+            <SegmentedControl label="Privasi statistik" options={privacyOptions} value={user.privacy_show_progress ? 'show' : 'hide'} onChange={changePrivacy} />
           </Card>
         </div>
       </div>
     </>
   )
+}
+
+export default function FriendsPage() {
+  const resource = useResource('/friends')
+  return <AsyncView resource={resource}>{(data) => <FriendsBoard resource={resource} data={data} />}</AsyncView>
 }

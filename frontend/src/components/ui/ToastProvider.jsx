@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { AnimatePresence, m } from 'motion/react'
-import { CheckCircle2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import { ToastContext } from '@/context/toast-context'
 
 const DURATION_MS = 2800
@@ -9,9 +9,10 @@ export default function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const nextId = useRef(0)
 
-  const push = useCallback((message) => {
+  // kind: 'success' (bawaan) atau 'error'. Galat memakai role=alert agar langsung dibacakan.
+  const push = useCallback((message, kind = 'success') => {
     const id = nextId.current++
-    setToasts((t) => [...t.slice(-2), { id, message }])
+    setToasts((t) => [...t.slice(-2), { id, message, kind }])
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), DURATION_MS)
   }, [])
 
@@ -31,9 +32,10 @@ export default function ToastProvider({ children }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.97 }}
               transition={{ duration: 0.2 }}
-              className="pointer-events-auto flex items-center gap-2 rounded-panel border border-line bg-forest px-4 py-2.5 font-medium text-surface shadow-soft-lg"
+              role={t.kind === 'error' ? 'alert' : undefined}
+              className={`pointer-events-auto flex items-center gap-2 rounded-panel border border-line px-4 py-2.5 font-medium text-surface shadow-soft-lg ${t.kind === 'error' ? 'bg-danger' : 'bg-forest'}`}
             >
-              <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
+              {t.kind === 'error' ? <AlertCircle className="size-5 shrink-0" aria-hidden="true" /> : <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />}
               {t.message}
             </m.div>
           ))}

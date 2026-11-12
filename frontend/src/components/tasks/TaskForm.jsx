@@ -36,7 +36,7 @@ export default function TaskForm({ initial, onSubmit, onCancel }) {
       <Input
         label="Lampiran (opsional)"
         type="file"
-        hint="Hanya nama file yang dicatat pada tampilan contoh ini."
+        hint="Hanya nama file yang dicatat. Unggah berkas belum tersedia."
         onChange={(e) => setForm((f) => ({ ...f, attachment: e.target.files?.[0]?.name ?? '' }))}
       />
       <div className="flex justify-end gap-3">

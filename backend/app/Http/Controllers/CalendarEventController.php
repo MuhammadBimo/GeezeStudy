@@ -15,8 +15,11 @@ class CalendarEventController extends Controller
         $range = $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date', 'after_or_equal:from']]);
 
         $events = $request->user()->calendarEvents()
-            ->when($range['from'] ?? null, fn ($q, $v) => $q->where('starts_at', '>=', $v))
-            ->when($range['to'] ?? null, fn ($q, $v) => $q->where('starts_at', '<=', $v))
+            // Kegiatan berulang tetap dikirim selama sudah mulai sebelum akhir rentang; klien memperluasnya per tanggal.
+            ->when($range['to'] ?? null, fn ($q, $to) => $q->where('starts_at', '<=', $to))
+            ->when($range['from'] ?? null, fn ($q, $from) => $q->where(
+                fn ($w) => $w->where('starts_at', '>=', $from)->orWhere('repeat', '!=', 'none'),
+            ))
             ->orderBy('starts_at')
             ->limit(500)
             ->get();
@@ -56,7 +59,7 @@ class CalendarEventController extends Controller
             'starts_at' => [$presence, 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'repeat' => ['sometimes', Rule::in(CalendarEvent::REPEATS)],
-            'reminder' => ['sometimes', 'boolean'],
+            'reminder_minutes' => ['sometimes', 'nullable', Rule::in([10, 60, 1440])],
         ]);
     }
 }

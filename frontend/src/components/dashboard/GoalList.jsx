@@ -1,5 +1,6 @@
 import { Target } from 'lucide-react'
 import Card from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
 import ProgressBar from '@/components/ui/ProgressBar'
 
 export default function GoalList({ goals }) {
@@ -8,6 +9,7 @@ export default function GoalList({ goals }) {
       <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
         <Target className="size-5" aria-hidden="true" /> Progres Goals
       </h2>
+      {goals.length === 0 && <EmptyState icon={Target} title="Belum ada goal aktif" description="Buat goal di halaman Goals." />}
       <ul className="flex flex-col gap-4">
         {goals.map((g) => (
           <li key={g.id}>

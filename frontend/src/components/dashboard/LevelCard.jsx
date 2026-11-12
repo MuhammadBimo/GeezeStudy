@@ -5,13 +5,16 @@ import ProgressBar from '@/components/ui/ProgressBar'
 const days = ['S', 'S', 'R', 'K', 'J', 'S', 'M']
 const todayIndex = (new Date().getDay() + 6) % 7
 
-export default function LevelCard({ level, points, nextLevelAt, streak, weekActive }) {
+export default function LevelCard({ level, points, floor = 0, nextLevelAt, streak, weekActive }) {
+  const maxed = nextLevelAt === null || nextLevelAt === undefined
   return (
     <Card className="flex flex-col gap-5 p-5">
       <div>
         <h2 className="text-xl font-semibold">Level {level}</h2>
-        <p className="mb-2 text-sm font-medium">{points} / {nextLevelAt} Points menuju Level {level + 1}</p>
-        <ProgressBar value={points} max={nextLevelAt} color="bg-forest" label="Progres menuju level berikutnya" />
+        <p className="mb-2 text-sm font-medium">
+          {maxed ? `${points} Points. Kamu di level tertinggi.` : `${points} / ${nextLevelAt} Points menuju Level ${level + 1}`}
+        </p>
+        <ProgressBar value={maxed ? 1 : points - floor} max={maxed ? 1 : nextLevelAt - floor} color="bg-forest" label="Progres menuju level berikutnya" />
       </div>
 
       <div>
