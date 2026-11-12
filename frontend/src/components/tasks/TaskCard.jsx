@@ -6,7 +6,7 @@ import { TODAY, formatShort } from '@/lib/date'
 
 import { priorityColor, statusMeta } from '@/lib/taskMeta'
 
-export default function TaskCard({ task, onCycle, onEdit, onDelete }) {
+export default function TaskCard({ task, onCycle, onOpen, onEdit, onDelete }) {
   const overdue = task.status !== 'done' && task.due < TODAY
   const meta = statusMeta[task.status]
 
@@ -29,7 +29,14 @@ export default function TaskCard({ task, onCycle, onEdit, onDelete }) {
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className={cn('font-bold leading-snug', task.status === 'done' && 'line-through opacity-60')}>{task.title}</p>
+        <button
+          type="button"
+          onClick={() => onOpen(task)}
+          aria-label={`Lihat detail: ${task.title}`}
+          className={cn('text-left font-bold leading-snug underline-offset-4 hover:underline', task.status === 'done' && 'line-through opacity-60')}
+        >
+          {task.title}
+        </button>
         <p className="text-sm text-ink/70">{task.course || 'Tanpa mata kuliah'}</p>
         {task.description && <p className="mt-1 line-clamp-2 text-sm">{task.description}</p>}
         <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -137,8 +137,8 @@ export default function CalendarPage() {
                 <Button size="sm" variant="neutral" aria-label="Bulan berikutnya" onClick={() => shiftMonth(1)}><ChevronRight className="size-4" /></Button>
               </div>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold sm:gap-1.5" role="grid" aria-label={formatMonth(cursor)}>
-              {dayNames.map((d) => <div key={d} className="pb-1" role="columnheader">{d}</div>)}
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold sm:gap-1.5" role="group" aria-label={formatMonth(cursor)}>
+              {dayNames.map((d) => <div key={d} className="pb-1" aria-hidden="true">{d}</div>)}
               {cells.map((iso) => {
                 const evs = eventsOn(iso)
                 const inMonth = sameMonth(iso, cursor)
@@ -147,14 +147,13 @@ export default function CalendarPage() {
                   <button
                     key={iso}
                     type="button"
-                    role="gridcell"
-                    aria-selected={isSel}
+                    aria-pressed={isSel}
                     aria-label={`${formatLong(iso)}, ${evs.length} kegiatan`}
                     onClick={() => setSelected(iso)}
                     className={cn(
                       'flex aspect-square flex-col items-center justify-start gap-0.5 rounded-md border-2 p-1 text-sm font-bold sm:p-1.5',
                       isSel ? 'border-ink bg-pink shadow-brutal-sm' : 'border-transparent hover:border-ink hover:bg-yellow',
-                      !inMonth && 'opacity-40',
+                      !inMonth && 'text-ink/65',
                       iso === TODAY && !isSel && 'border-ink',
                     )}
                   >

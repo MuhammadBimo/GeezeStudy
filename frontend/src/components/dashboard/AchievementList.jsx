@@ -13,7 +13,7 @@ export default function AchievementList({ items }) {
         {items.map((a) => {
           const Icon = a.unlocked ? icons[a.icon] ?? Award : Lock
           return (
-            <li key={a.id} className={`flex items-center gap-3 ${a.unlocked ? '' : 'opacity-60'}`}>
+            <li key={a.id} className="flex items-center gap-3">
               <span
                 className={`grid size-11 shrink-0 place-items-center rounded-full border-2 border-ink ${
                   a.unlocked ? 'bg-orange shadow-brutal-sm' : 'bg-surface'

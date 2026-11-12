@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { nameFromEmail } from '@/lib/profile'
+import { makeProfile, nameFromEmail } from '@/lib/profile'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -27,7 +28,7 @@ export default function LoginPage() {
     if (!form.password) next.password = 'Isi password (boleh apa saja).'
     setErrors(next)
     if (Object.keys(next).length === 0) {
-      enter({ name: nameFromEmail(form.email), email: form.email.trim(), institution: '' })
+      enter(makeProfile({ name: nameFromEmail(form.email), email: form.email.trim() }))
     }
   }
 
@@ -42,13 +43,15 @@ export default function LoginPage() {
         <Input label="Password" type="password" autoComplete="current-password" value={form.password} onChange={set('password')} error={errors.password} />
         <Link to="/lupa-password" className="self-end text-sm font-bold underline underline-offset-4">Lupa password?</Link>
         <Button type="submit" className="w-full">Masuk</Button>
-        <Button
-          variant="neutral"
-          className="w-full"
-          onClick={() => enter({ name: 'Tamu', email: '', institution: '' })}
-        >
-          Coba tanpa akun
-        </Button>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="neutral" onClick={() => enter(makeProfile({ name: 'Tamu' }))}>
+            Coba tanpa akun
+          </Button>
+          <Button variant="secondary" onClick={() => enter(makeProfile({ name: 'Admin Demo', role: 'admin' }))}>
+            <ShieldCheck className="size-4" aria-hidden="true" /> Coba sebagai Admin
+          </Button>
+        </div>
       </form>
     </AuthLayout>
   )

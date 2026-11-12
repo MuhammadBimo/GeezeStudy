@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import TaskCard from '@/components/tasks/TaskCard'
+import TaskDetail from '@/components/tasks/TaskDetail'
 import TaskForm from '@/components/tasks/TaskForm'
 import { isoIn } from '@/lib/date'
 
@@ -36,6 +37,9 @@ export default function TasksPage() {
   const [filter, setFilter] = useState('all')
   // editing: null (tutup) | 'new' | objek tugas
   const [editing, setEditing] = useState(null)
+  // viewing: null | objek tugas yang detailnya sedang dibuka
+  const [viewing, setViewing] = useState(null)
+  const viewed = viewing ? tasks.find((t) => t.id === viewing.id) : null
 
   const visible = tasks
     .filter((t) => filter === 'all' || t.status === filter)
@@ -91,11 +95,21 @@ export default function TasksPage() {
         <ul className="flex flex-col gap-3">
           <AnimatePresence initial={false}>
             {visible.map((t) => (
-              <TaskCard key={t.id} task={t} onCycle={cycle} onEdit={setEditing} onDelete={remove} />
+              <TaskCard key={t.id} task={t} onCycle={cycle} onOpen={setViewing} onEdit={setEditing} onDelete={remove} />
             ))}
           </AnimatePresence>
         </ul>
       )}
+
+      <Modal open={viewed !== null && viewed !== undefined} onClose={() => setViewing(null)} title={viewed?.title ?? 'Detail tugas'}>
+        {viewed && (
+          <TaskDetail
+            task={viewed}
+            onClose={() => setViewing(null)}
+            onEdit={(t) => { setViewing(null); setEditing(t) }}
+          />
+        )}
+      </Modal>
 
       <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing === 'new' ? 'Tambah tugas' : 'Ubah tugas'}>
         {editing !== null && (

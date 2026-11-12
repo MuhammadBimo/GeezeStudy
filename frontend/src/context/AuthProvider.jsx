@@ -13,27 +13,36 @@ const readSaved = () => {
   }
 }
 
+const save = (profile) => {
+  try {
+    if (profile) localStorage.setItem(KEY, JSON.stringify(profile))
+    else localStorage.removeItem(KEY)
+  } catch {
+    /* penyimpanan tidak tersedia: sesi hanya berlaku selama tab terbuka */
+  }
+}
+
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(readSaved)
 
   const login = useCallback((profile) => {
     setUser(profile)
-    try {
-      localStorage.setItem(KEY, JSON.stringify(profile))
-    } catch {
-      /* penyimpanan tidak tersedia: sesi hanya berlaku selama tab terbuka */
-    }
+    save(profile)
+  }, [])
+
+  const updateProfile = useCallback((patch) => {
+    setUser((cur) => {
+      const next = { ...cur, ...patch }
+      save(next)
+      return next
+    })
   }, [])
 
   const logout = useCallback(() => {
     setUser(null)
-    try {
-      localStorage.removeItem(KEY)
-    } catch {
-      /* abaikan */
-    }
+    save(null)
   }, [])
 
-  const value = useMemo(() => ({ user, login, logout }), [user, login, logout])
+  const value = useMemo(() => ({ user, login, updateProfile, logout }), [user, login, updateProfile, logout])
   return <AuthContext value={value}>{children}</AuthContext>
 }

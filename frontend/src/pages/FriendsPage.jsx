@@ -7,6 +7,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import Input from '@/components/ui/Input'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
 // DATA SEMENTARA (mock): pencarian, permintaan, dan statistik akan berasal dari API.
@@ -42,7 +43,7 @@ export default function FriendsPage() {
   const [requests, setRequests] = useState(initialRequests)
   const [sent, setSent] = useState([])
   const [query, setQuery] = useState('')
-  const [privacy, setPrivacy] = useState('friends')
+  const { user, updateProfile } = useAuth()
 
   const q = query.trim().toLowerCase()
   const results = q
@@ -159,7 +160,7 @@ export default function FriendsPage() {
           <Card className="p-5">
             <h2 className="mb-1 text-xl font-extrabold">Privasi statistik</h2>
             <p className="mb-3 text-sm text-ink/70">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
-            <SegmentedControl label="Privasi statistik" options={privacyOptions} value={privacy} onChange={setPrivacy} />
+            <SegmentedControl label="Privasi statistik" options={privacyOptions} value={user.privacy} onChange={(v) => updateProfile({ privacy: v })} />
           </Card>
         </div>
       </div>

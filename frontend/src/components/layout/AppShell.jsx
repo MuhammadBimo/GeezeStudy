@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import Skeleton from '@/components/ui/Skeleton'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { m } from 'motion/react'
-import { GraduationCap, LogOut } from 'lucide-react'
-import { navItems } from '@/lib/navigation'
+import { ArrowLeft, GraduationCap, LogOut, ShieldCheck } from 'lucide-react'
+import Skeleton from '@/components/ui/Skeleton'
+import { adminNavItems, navItems } from '@/lib/navigation'
+import { cn } from '@/lib/cn'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
@@ -11,7 +12,7 @@ function SidebarLink({ to, label, icon: Icon, color }) {
   return (
     <NavLink
       to={to}
-      end={to === '/'}
+      end={to === '/' || to === '/admin'}
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-brutal border-2 px-3 py-2 font-bold transition-all duration-150 active:scale-[0.97] motion-reduce:transition-none ${
           isActive
@@ -30,7 +31,7 @@ function BottomLink({ to, label, icon: Icon, color }) {
   return (
     <NavLink
       to={to}
-      end={to === '/'}
+      end={to === '/' || to === '/admin'}
       className={({ isActive }) =>
         `flex min-w-18 shrink-0 flex-col items-center gap-0.5 rounded-brutal border-2 px-2 py-1 text-[11px] font-bold transition-all duration-150 active:scale-90 motion-reduce:transition-none ${
           isActive ? `border-ink ${color}` : 'border-transparent'
@@ -48,6 +49,10 @@ export default function AppShell() {
   const { user, logout } = useAuth()
   const toast = useToast()
 
+  const inAdmin = pathname.startsWith('/admin')
+  const items = inAdmin ? adminNavItems : navItems
+  const isAdmin = user.role === 'admin'
+
   const handleLogout = () => {
     logout()
     toast('Kamu sudah keluar')
@@ -62,16 +67,35 @@ export default function AppShell() {
         Lewati ke konten
       </a>
 
-      <aside className="hidden border-r-2 border-ink bg-pink-soft p-5 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-6">
+      <aside
+        className={cn(
+          'hidden border-r-2 border-ink p-5 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-6 lg:overflow-y-auto',
+          inAdmin ? 'bg-sky' : 'bg-pink-soft',
+        )}
+      >
         <div className="flex items-center gap-2">
           <span className="grid size-10 place-items-center rounded-brutal border-2 border-ink bg-pink shadow-brutal-sm">
             <GraduationCap className="size-6" aria-hidden="true" />
           </span>
-          <span className="font-display text-2xl font-extrabold">GeezeStudy</span>
+          <div className="leading-tight">
+            <span className="block font-display text-2xl font-extrabold">GeezeStudy</span>
+            {inAdmin && <span className="text-sm font-bold">Panel Admin</span>}
+          </div>
         </div>
-        <nav aria-label="Menu utama" className="flex flex-col gap-1.5">
-          {navItems.map((item) => <SidebarLink key={item.to} {...item} />)}
+
+        <nav aria-label={inAdmin ? 'Menu admin' : 'Menu utama'} className="flex flex-col gap-1.5">
+          {items.map((item) => <SidebarLink key={item.to} {...item} />)}
         </nav>
+
+        {isAdmin && (
+          <Link
+            to={inAdmin ? '/' : '/admin'}
+            className="flex items-center gap-2 rounded-brutal border-2 border-ink bg-yellow px-3 py-2 font-bold shadow-brutal-sm transition-all hover:-translate-y-0.5 active:scale-[0.97] motion-reduce:transition-none"
+          >
+            {inAdmin ? <ArrowLeft className="size-4" aria-hidden="true" /> : <ShieldCheck className="size-4" aria-hidden="true" />}
+            {inAdmin ? 'Kembali ke aplikasi' : 'Panel Admin'}
+          </Link>
+        )}
 
         <div className="mt-auto flex flex-col gap-3 border-t-2 border-ink pt-4">
           <div className="flex items-center gap-3">
@@ -80,7 +104,7 @@ export default function AppShell() {
             </span>
             <div className="min-w-0">
               <p className="truncate font-bold leading-tight">{user.name}</p>
-              <p className="truncate text-sm text-ink/70">{user.institution || 'Mode demo'}</p>
+              <p className="truncate text-sm text-ink/70">{isAdmin ? 'Admin (demo)' : user.institution || 'Mode demo'}</p>
             </div>
           </div>
           <button
@@ -94,19 +118,30 @@ export default function AppShell() {
       </aside>
 
       <div className="min-w-0">
-        <div className="flex items-center justify-between gap-2 border-b-2 border-ink bg-pink-soft px-4 py-3 lg:hidden">
+        <div className={cn('flex items-center justify-between gap-2 border-b-2 border-ink px-4 py-3 lg:hidden', inAdmin ? 'bg-sky' : 'bg-pink-soft')}>
           <div className="flex items-center gap-2">
             <GraduationCap className="size-6" aria-hidden="true" />
-            <span className="font-display text-xl font-extrabold">GeezeStudy</span>
+            <span className="font-display text-xl font-extrabold">{inAdmin ? 'Panel Admin' : 'GeezeStudy'}</span>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            aria-label={`Keluar dari akun ${user.name}`}
-            className="flex items-center gap-1.5 rounded-brutal border-2 border-ink bg-surface px-3 py-1 text-sm font-bold transition-transform active:scale-95"
-          >
-            <LogOut className="size-4" aria-hidden="true" /> Keluar
-          </button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to={inAdmin ? '/' : '/admin'}
+                aria-label={inAdmin ? 'Kembali ke aplikasi' : 'Buka Panel Admin'}
+                className="grid size-9 place-items-center rounded-brutal border-2 border-ink bg-yellow transition-transform active:scale-95"
+              >
+                {inAdmin ? <ArrowLeft className="size-4" aria-hidden="true" /> : <ShieldCheck className="size-4" aria-hidden="true" />}
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label={`Keluar dari akun ${user.name}`}
+              className="flex items-center gap-1.5 rounded-brutal border-2 border-ink bg-surface px-3 py-1 text-sm font-bold transition-transform active:scale-95"
+            >
+              <LogOut className="size-4" aria-hidden="true" /> Keluar
+            </button>
+          </div>
         </div>
 
         <main id="konten" className="mx-auto max-w-5xl p-4 pb-28 sm:p-6 lg:p-8 lg:pb-8">
@@ -132,10 +167,10 @@ export default function AppShell() {
       </div>
 
       <nav
-        aria-label="Menu utama mobile"
+        aria-label={inAdmin ? 'Menu admin mobile' : 'Menu utama mobile'}
         className="fixed inset-x-0 bottom-0 z-40 flex gap-1 overflow-x-auto border-t-2 border-ink bg-surface p-2 lg:hidden"
       >
-        {navItems.map((item) => <BottomLink key={item.to} {...item} />)}
+        {items.map((item) => <BottomLink key={item.to} {...item} />)}
       </nav>
     </div>
   )

@@ -34,7 +34,7 @@ export default function StudySummary({ minutes }) {
       </ul>
       <ul className="mt-2 grid grid-cols-7 gap-2 sm:gap-3" aria-hidden="true">
         {days.map((d, i) => (
-          <li key={d} className={`text-center text-xs font-bold ${i === todayIndex ? 'text-pink' : ''}`}>{d}</li>
+          <li key={d} className={`text-center text-xs font-bold ${i === todayIndex ? 'underline decoration-pink decoration-2 underline-offset-4' : ''}`}>{d}</li>
         ))}
       </ul>
     </Card>

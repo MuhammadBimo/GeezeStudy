@@ -9,6 +9,7 @@ export default function ForgotPasswordPage() {
   const toast = useToast()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
+  const [sent, setSent] = useState(false)
 
   const submit = (e) => {
     e.preventDefault()
@@ -17,6 +18,7 @@ export default function ForgotPasswordPage() {
       return
     }
     setError('')
+    setSent(true)
     toast('Simulasi: tautan pemulihan dikirim')
   }
 
@@ -30,6 +32,13 @@ export default function ForgotPasswordPage() {
         <Input label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error} />
         <Button type="submit" className="w-full">Kirim tautan</Button>
       </form>
+
+      {sent && (
+        <p role="status" className="mt-4 rounded-brutal border-2 border-ink bg-mint p-3 text-sm font-medium">
+          Tidak ada email yang benar-benar dikirim di mode demo.{' '}
+          <Link to="/reset-password" className="font-bold underline underline-offset-4">Buka halaman atur ulang password</Link>
+        </p>
+      )}
     </AuthLayout>
   )
 }

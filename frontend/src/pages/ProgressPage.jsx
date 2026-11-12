@@ -98,7 +98,7 @@ export default function ProgressPage() {
         {data.achievements.map((a) => {
           const Icon = a.unlocked ? a.icon : Lock
           return (
-            <Card as="li" key={a.id} color={a.unlocked ? 'bg-surface' : 'bg-ink/5'} className={`flex items-center gap-4 p-4 ${a.unlocked ? '' : 'opacity-70'}`}>
+            <Card as="li" key={a.id} color={a.unlocked ? 'bg-surface' : 'bg-ink/5'} className="flex items-center gap-4 p-4">
               <span className={`grid size-14 shrink-0 place-items-center rounded-full border-2 border-ink ${a.unlocked ? a.color : 'bg-surface'}`}>
                 <Icon className="size-6" aria-hidden="true" />
               </span>
