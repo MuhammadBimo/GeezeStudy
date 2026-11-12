@@ -7,8 +7,28 @@ Gamifikasi hanya memakai lima komponen: **Points, Level, Streak, Missions, Achie
 
 ## Status
 
-Tahap UI (frontend) selesai sebagai **demo**. Semua data adalah contoh dan tidak disimpan ke server.
-Backend Laravel baru berisi fondasi (Sanctum, CORS, MySQL) dan belum dipakai oleh frontend.
+Frontend selesai sebagai **demo** (data contoh, belum tersambung ke server).
+Backend Laravel (API lengkap + tes) sudah ada dan berjalan sendiri; **menyambungkan frontend ke API adalah langkah berikutnya**.
+
+## Menjalankan backend
+
+Syarat: PHP 8.3, Composer, MySQL (Laragon). Database `geezestudy`, atur di `backend/.env`.
+
+```bash
+cd backend
+composer install
+cp .env.example .env && php artisan key:generate   # lewati bila .env sudah ada
+php artisan migrate --seed
+php artisan serve --port=8010
+php artisan test
+```
+
+Akun contoh (hanya di `APP_ENV=local`): `admin@geezestudy.test` dan `siswa@geezestudy.test`, password `password123`.
+
+Autentikasi memakai Sanctum cookie (SPA): panggil `GET /sanctum/csrf-cookie`, lalu `POST /api/login`.
+Fitur: auth + verifikasi email + reset password, tugas, kalender, sesi belajar, goals, misi, progres/achievements,
+teman, notifikasi, dan Panel Admin (`/api/admin/*`). Points, level, dan streak dihitung **hanya di server**
+(satu sumber hanya memberi Points sekali, sesi divalidasi durasi/tumpang tindih/batas harian).
 
 ## Menjalankan frontend
 
@@ -47,7 +67,7 @@ Admin: ringkasan, kelola pengguna, misi, aturan Points dan ambang Level, achieve
 ## Teknologi
 
 - Frontend: React 19, Vite, Tailwind CSS v4, React Router, Motion, Lucide.
-- Backend: Laravel 13, Sanctum, MySQL (fondasi saja).
+- Backend: Laravel 13, Sanctum, MySQL.
 - Desain: Colorful Neobrutalism. Mendukung `prefers-reduced-motion`, navigasi keyboard, dan responsif.
 
 ## Struktur
@@ -59,7 +79,7 @@ frontend/src
 ├── context/      auth demo, pengumuman
 ├── hooks/        useAuth, useToast, useAnnouncements
 └── lib/          navigasi, tanggal, data contoh
-backend/          Laravel (fondasi)
+backend/          Laravel API (app/Services = aturan Points, misi, achievements, streak)
 ```
 
 ## Deploy

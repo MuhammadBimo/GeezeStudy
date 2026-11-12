@@ -3,23 +3,26 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(GamificationSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Akun contoh hanya untuk pengembangan lokal. Jangan dibuat di produksi.
+        if (app()->environment('local')) {
+            foreach ([
+                ['admin@geezestudy.test', 'Admin GeezeStudy', User::ROLE_ADMIN],
+                ['siswa@geezestudy.test', 'Siswa Contoh', User::ROLE_STUDENT],
+            ] as [$email, $name, $role]) {
+                $user = User::firstOrCreate(
+                    ['email' => $email],
+                    ['name' => $name, 'password' => 'password123', 'email_verified_at' => now()],
+                );
+                $user->forceFill(['role' => $role, 'email_verified_at' => $user->email_verified_at ?? now(), 'onboarded_at' => now()])->save();
+            }
+        }
     }
 }
