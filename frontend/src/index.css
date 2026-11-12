@@ -1,57 +1,93 @@
-@import '@fontsource-variable/bricolage-grotesque';
-@import '@fontsource-variable/dm-sans';
+@import '@fontsource-variable/fraunces';
+@import '@fontsource-variable/instrument-sans';
 @import 'tailwindcss';
 
-/* GeezeStudy design tokens — Colorful Neobrutalism */
+/*
+ * GeezeStudy design system — "Forest & Sand"
+ * Primary: Forest Green #1F3D2B · Secondary: Sand Beige #E8DCC4.
+ * Neumorphism halus: bayangan gelap + highlight terang di atas kanvas sand.
+ */
 @theme {
-  --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
-  --font-sans: 'DM Sans Variable', system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', Georgia, serif;
+  --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
 
-  --color-ink: #1a1423;
-  --color-paper: #fff8ef;
-  --color-surface: #ffffff;
-  --color-pink: #ff4d94;
-  --color-pink-soft: #ffd1e3;
-  --color-yellow: #ffd23f;
-  --color-mint: #3ddc97;
-  --color-sky: #4cc9f0;
-  --color-violet: #9b72ff;
-  --color-orange: #ff8a3d;
-  --color-danger: #e5383b;
+  /* Netral */
+  --color-canvas: #e8dcc4;
+  --color-surface: #f4ecd9;
+  --color-ink: #1b2b21;
+  --color-line: rgb(31 61 43 / 0.16);
 
-  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  /* Hijau (identitas) */
+  --color-forest: #1f3d2b;
+  --color-forest-deep: #142a1d;
+  --color-forest-mid: #2f5a41;
+  --color-forest-tint: #dbe3cf;
+  --color-sage: #a9bfa0;
+  --color-moss: #c3d4b4;
+
+  /* Pasir & bumi (pendukung) */
+  --color-sand-deep: #dccba3;
+  --color-clay: #e3c39d;
+  --color-mist: #cddad2;
+  --color-stone: #d6cdb8;
+
+  /* Status: hanya untuk informasi */
+  --color-success: #2f6b3f;
+  --color-warning: #8a5d0a;
+  --color-danger: #a1342a;
+
+  --radius-panel: 0.875rem;
+  --radius-pill: 999px;
+
+  --shadow-soft: 5px 5px 12px rgb(122 98 52 / 0.26), -5px -5px 12px rgb(255 252 242 / 0.8);
+  --shadow-soft-sm: 3px 3px 7px rgb(122 98 52 / 0.24), -3px -3px 7px rgb(255 252 242 / 0.75);
+  --shadow-soft-lg: 9px 9px 20px rgb(122 98 52 / 0.28), -9px -9px 20px rgb(255 252 242 / 0.85);
+  --shadow-inset: inset 3px 3px 7px rgb(122 98 52 / 0.24), inset -3px -3px 7px rgb(255 252 242 / 0.75);
+  --shadow-press: inset 2px 2px 5px rgb(0 0 0 / 0.35);
+
+  --animate-pop: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   @keyframes pop {
-    0% { transform: scale(0.5); opacity: 0; }
+    0% { transform: scale(0.6); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
-
-  --shadow-brutal: 4px 4px 0 0 var(--color-ink);
-  --shadow-brutal-sm: 2px 2px 0 0 var(--color-ink);
-  --shadow-brutal-lg: 6px 6px 0 0 var(--color-ink);
-  --radius-brutal: 0.75rem;
 }
 
 @layer base {
-  html { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
-  :focus-visible { outline: 3px solid var(--color-violet); outline-offset: 2px; }
+  html { font-family: var(--font-sans); background: var(--color-canvas); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
+  body { min-height: 100dvh; background: var(--color-canvas); }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; font-variation-settings: 'opsz' 72; }
+  h1 { line-height: 1.1; }
+  :focus-visible { outline: 2px solid var(--color-forest); outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: var(--color-forest); color: var(--color-surface); }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   }
 }
 
-/* Dialog (Modal): muncul dengan naik sedikit + latar memudar. */
-dialog[open] { animation: dialog-in 0.2s ease-out; }
-dialog[open]::backdrop { animation: backdrop-in 0.2s ease-out; }
-@keyframes dialog-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.97); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes backdrop-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Grain sangat halus di seluruh halaman: memberi tekstur kertas, tidak mengganggu teks. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .15 0 0 0 0 .05 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-@layer components {
-  .brutal-card { background: var(--color-surface); border: 2px solid var(--color-ink); border-radius: var(--radius-brutal); box-shadow: var(--shadow-brutal); }
+/* Dialog (Modal): naik sedikit + latar memudar. */
+dialog { background: transparent; }
+dialog[open] { animation: dialog-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+dialog[open]::backdrop { background: rgb(20 42 29 / 0.45); backdrop-filter: blur(3px); animation: backdrop-in 0.2s ease-out; }
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Pola titik halus untuk panel dekoratif (dipakai sangat selektif). */
+.dot-pattern {
+  background-image: radial-gradient(rgb(255 255 255 / 0.14) 1px, transparent 1px);
+  background-size: 16px 16px;
 }

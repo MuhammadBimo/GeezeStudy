@@ -62,13 +62,13 @@ export default function AdminMissionsPage() {
         {missions.map((m) => (
           <Card as="li" key={m.id} color={m.active ? 'bg-surface' : 'bg-ink/5'} className="flex flex-col gap-3 p-5">
             <div className="flex items-start justify-between gap-2">
-              <h2 className="text-lg font-extrabold leading-snug">{m.title}</h2>
+              <h2 className="text-lg font-semibold leading-snug">{m.title}</h2>
               <Toggle label={`Aktifkan misi ${m.title}`} checked={m.active} onChange={(v) => toggle(m, v)} />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge color={m.period === 'daily' ? 'bg-pink-soft' : 'bg-yellow'}>{m.period === 'daily' ? 'Harian' : 'Mingguan'}</Badge>
-              <Badge color="bg-sky">{metricOptions.find((o) => o.value === m.metric)?.label}: {m.target}</Badge>
-              <Badge color="bg-mint">+{m.reward} pts</Badge>
+              <Badge color={m.period === 'daily' ? 'bg-forest-tint' : 'bg-sand-deep'}>{m.period === 'daily' ? 'Harian' : 'Mingguan'}</Badge>
+              <Badge color="bg-mist">{metricOptions.find((o) => o.value === m.metric)?.label}: {m.target}</Badge>
+              <Badge color="bg-moss">+{m.reward} pts</Badge>
             </div>
             <Button size="sm" variant="neutral" className="self-start" onClick={() => open(m)}>
               <Pencil className="size-4" aria-hidden="true" /> Ubah

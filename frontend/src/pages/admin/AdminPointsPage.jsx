@@ -51,17 +51,17 @@ export default function AdminPointsPage() {
       <PageHeader
         title="Points & Level"
         subtitle="Points hanya dari aktivitas produktif yang divalidasi. Level tidak turun saat tidak aktif."
-        action={<Badge color="bg-yellow">Data contoh (sementara)</Badge>}
+        action={<Badge color="bg-sand-deep">Data contoh (sementara)</Badge>}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card tone="primary" className="p-5">
-          <h2 className="mb-4 text-xl font-extrabold">Aturan Points</h2>
+          <h2 className="mb-4 text-xl font-semibold">Aturan Points</h2>
           <ul className="flex flex-col gap-3">
             {rules.map((r) => (
-              <li key={r.id} className="rounded-brutal border-2 border-ink p-3">
-                <p className="font-bold">{r.activity}</p>
-                <p className="mb-2 text-xs text-ink/70">{r.unit}</p>
+              <li key={r.id} className="rounded-panel border border-line p-3">
+                <p className="font-semibold">{r.activity}</p>
+                <p className="mb-2 text-xs text-ink/80">{r.unit}</p>
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                   <label className="flex items-center gap-2 font-medium">
                     Points <NumberField label={`Points untuk ${r.activity}`} value={r.points} onChange={setRule(r.id, 'points')} />
@@ -76,12 +76,12 @@ export default function AdminPointsPage() {
           <Button className="mt-4" onClick={saveRules}>Simpan aturan</Button>
         </Card>
 
-        <Card color="bg-violet" className="p-5">
-          <h2 className="mb-4 text-xl font-extrabold">Ambang Level</h2>
+        <Card color="bg-stone" className="p-5">
+          <h2 className="mb-4 text-xl font-semibold">Ambang Level</h2>
           <ul className="flex flex-col gap-2">
             {levels.map((l) => (
-              <li key={l.level} className="flex items-center justify-between gap-3 rounded-brutal border-2 border-ink bg-surface p-3">
-                <span className="font-display text-lg font-extrabold">Level {l.level}</span>
+              <li key={l.level} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface p-3">
+                <span className="font-display text-lg font-medium">Level {l.level}</span>
                 <label className="flex items-center gap-2 text-sm font-medium">
                   mulai dari
                   <NumberField label={`Points minimum Level ${l.level}`} value={l.min} onChange={setLevel(l.level)} />
@@ -89,7 +89,7 @@ export default function AdminPointsPage() {
               </li>
             ))}
           </ul>
-          {levelError && <p role="alert" className="mt-3 rounded-brutal border-2 border-ink bg-surface p-2 text-sm font-bold text-danger">{levelError}</p>}
+          {levelError && <p role="alert" className="mt-3 rounded-panel border border-line bg-surface p-2 text-sm font-semibold text-danger">{levelError}</p>}
           <Button className="mt-4" variant="secondary" onClick={saveLevels}>Simpan ambang</Button>
         </Card>
       </div>

@@ -4,8 +4,8 @@ import EmptyState from '@/components/ui/EmptyState'
 
 export default function AgendaList({ items }) {
   return (
-    <Card color="bg-sky" className="p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-xl font-extrabold">
+    <Card className="p-5">
+      <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
         <CalendarClock className="size-5" aria-hidden="true" /> Agenda terdekat
       </h2>
       {items.length === 0 ? (
@@ -13,9 +13,9 @@ export default function AgendaList({ items }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((a) => (
-            <li key={a.id} className="rounded-brutal border-2 border-ink bg-surface p-3">
-              <p className="text-xs font-bold text-ink/60">{a.type}</p>
-              <p className="font-display text-lg font-extrabold leading-tight">{a.time}</p>
+            <li key={a.id} className="rounded-panel border border-line bg-surface p-3">
+              <p className="text-xs font-semibold text-ink/80">{a.type}</p>
+              <p className="font-display text-lg font-medium leading-tight">{a.time}</p>
               <p className="text-sm font-medium">{a.title}</p>
             </li>
           ))}

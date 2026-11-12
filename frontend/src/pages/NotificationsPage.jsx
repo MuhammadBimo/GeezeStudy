@@ -20,10 +20,10 @@ const categories = [
   { value: 'system', label: 'Sistem' },
 ]
 const catMeta = {
-  academic: { label: 'Akademik', color: 'bg-sky' },
-  productivity: { label: 'Produktivitas', color: 'bg-mint' },
-  social: { label: 'Sosial', color: 'bg-pink' },
-  achievement: { label: 'Achievements', color: 'bg-yellow' },
+  academic: { label: 'Akademik', color: 'bg-mist' },
+  productivity: { label: 'Produktivitas', color: 'bg-moss' },
+  social: { label: 'Sosial', color: 'bg-sage' },
+  achievement: { label: 'Achievements', color: 'bg-sand-deep' },
   system: { label: 'Sistem', color: 'bg-surface' },
 }
 
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
         <div className="lg:col-span-2">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <SegmentedControl label="Kategori notifikasi" options={categories} value={cat} onChange={setCat} />
-            <Badge color="bg-yellow">Data contoh (sementara)</Badge>
+            <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
           </div>
 
           {visible.length === 0 ? (
@@ -82,17 +82,17 @@ export default function NotificationsPage() {
                     type="button"
                     onClick={() => markRead(n.id)}
                     className={cn(
-                      'flex w-full items-start gap-3 rounded-brutal border-2 border-ink p-4 text-left shadow-brutal-sm transition-transform hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0',
-                      n.read ? 'bg-surface' : 'bg-pink-soft',
+                      'flex w-full items-start gap-3 rounded-panel border border-line p-4 text-left shadow-soft-sm transition-transform hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+                      n.read ? 'bg-surface' : 'bg-forest-tint',
                     )}
                   >
-                    <span className={cn('mt-1.5 size-3 shrink-0 rounded-full border-2 border-ink', n.read ? 'bg-surface' : 'bg-pink')} aria-hidden="true" />
+                    <span className={cn('mt-1.5 size-3 shrink-0 rounded-full border border-line', n.read ? 'bg-surface' : 'bg-sage')} aria-hidden="true" />
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className={cn('font-bold', !n.read && 'font-extrabold')}>{n.title}</span>
+                        <span className={cn('font-semibold', !n.read && 'font-semibold')}>{n.title}</span>
                         {!n.read && <span className="sr-only">(belum dibaca)</span>}
                       </span>
-                      <span className="block text-sm text-ink/70">{n.body}</span>
+                      <span className="block text-sm text-ink/80">{n.body}</span>
                       <span className="mt-2 flex items-center gap-2 text-xs">
                         <Badge color={catMeta[n.cat].color}>{catMeta[n.cat].label}</Badge>
                         {n.when}
@@ -105,21 +105,21 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        <Card color="bg-sky" className="h-fit p-5">
-          <h2 className="mb-4 text-xl font-extrabold">Preferensi</h2>
+        <Card color="bg-mist" className="h-fit p-5">
+          <h2 className="mb-4 text-xl font-semibold">Preferensi</h2>
           <ul className="flex flex-col gap-3">
             {Object.entries(catMeta).map(([key, meta]) => (
               <li key={key} className="flex items-center justify-between gap-3">
-                <span className="font-bold">{meta.label}</span>
+                <span className="font-semibold">{meta.label}</span>
                 <Toggle label={`Notifikasi ${meta.label}`} checked={prefs[key]} onChange={(v) => setPrefs((p) => ({ ...p, [key]: v }))} />
               </li>
             ))}
           </ul>
 
-          <div className="mt-5 border-t-2 border-ink pt-4">
+          <div className="mt-5 border-t border-line pt-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-lg font-extrabold">Jam tenang</h3>
+                <h3 className="font-display text-lg font-medium">Jam tenang</h3>
                 <p className="text-sm">Notifikasi dibisukan pada jam ini.</p>
               </div>
               <Toggle label="Jam tenang" checked={quiet.on} onChange={(v) => setQuiet((q) => ({ ...q, on: v }))} />

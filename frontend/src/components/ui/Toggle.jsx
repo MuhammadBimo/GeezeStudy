@@ -9,14 +9,14 @@ export default function Toggle({ checked, onChange, label }) {
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={cn(
-        'relative h-7 w-12 shrink-0 rounded-full border-2 border-ink transition-colors motion-reduce:transition-none',
-        checked ? 'bg-mint' : 'bg-surface',
+        'relative h-7 w-12 cursor-pointer shrink-0 rounded-full border border-line transition-colors motion-reduce:transition-none',
+        checked ? 'bg-forest' : 'bg-canvas shadow-inset',
       )}
     >
       <span
         className={cn(
-          'absolute top-0.5 size-5 rounded-full border-2 border-ink bg-ink transition-all motion-reduce:transition-none',
-          checked ? 'left-[1.375rem]' : 'left-0.5',
+          'absolute top-1 size-5 rounded-full bg-surface shadow-soft-sm transition-all motion-reduce:transition-none',
+          checked ? 'left-[1.625rem]' : 'left-1',
         )}
       />
     </button>

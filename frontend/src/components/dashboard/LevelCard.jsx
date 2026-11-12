@@ -7,15 +7,15 @@ const todayIndex = (new Date().getDay() + 6) % 7
 
 export default function LevelCard({ level, points, nextLevelAt, streak, weekActive }) {
   return (
-    <Card color="bg-violet" className="flex flex-col gap-5 p-5">
+    <Card className="flex flex-col gap-5 p-5">
       <div>
-        <h2 className="text-xl font-extrabold">Level {level}</h2>
+        <h2 className="text-xl font-semibold">Level {level}</h2>
         <p className="mb-2 text-sm font-medium">{points} / {nextLevelAt} Points menuju Level {level + 1}</p>
-        <ProgressBar value={points} max={nextLevelAt} color="bg-yellow" label="Progres menuju level berikutnya" />
+        <ProgressBar value={points} max={nextLevelAt} color="bg-forest" label="Progres menuju level berikutnya" />
       </div>
 
       <div>
-        <h3 className="mb-2 flex items-center gap-1.5 font-display text-lg font-extrabold">
+        <h3 className="mb-2 flex items-center gap-1.5 font-display text-lg font-medium">
           <Flame className="size-5" aria-hidden="true" /> Streak {streak} hari
         </h3>
         <ul className="flex justify-between gap-1">
@@ -23,9 +23,9 @@ export default function LevelCard({ level, points, nextLevelAt, streak, weekActi
             <li
               key={i}
               aria-label={`${active ? 'Aktif' : 'Tidak aktif'}`}
-              className={`grid size-9 place-items-center rounded-full border-2 border-ink text-xs font-bold ${
-                active ? 'bg-orange' : 'bg-surface'
-              } ${i === todayIndex ? 'ring-2 ring-ink ring-offset-2 ring-offset-violet' : ''}`}
+              className={`grid size-9 place-items-center rounded-full border border-line text-xs font-semibold ${
+                active ? 'bg-clay' : 'bg-surface'
+              } ${i === todayIndex ? 'ring-2 ring-ink ring-offset-2' : ''}`}
             >
               {days[i]}
             </li>

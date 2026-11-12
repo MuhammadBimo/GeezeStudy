@@ -79,7 +79,7 @@ export default function TasksPage() {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <SegmentedControl label="Filter status" options={filters} value={filter} onChange={setFilter} />
-        <Badge color="bg-yellow">Data contoh (sementara)</Badge>
+        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
       </div>
 
       {tasks.length === 0 ? (

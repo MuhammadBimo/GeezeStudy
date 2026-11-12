@@ -31,7 +31,7 @@ export default function ToastProvider({ children }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.97 }}
               transition={{ duration: 0.2 }}
-              className="pointer-events-auto flex items-center gap-2 rounded-brutal border-2 border-ink bg-mint px-4 py-2.5 font-bold shadow-brutal"
+              className="pointer-events-auto flex items-center gap-2 rounded-panel border border-line bg-forest px-4 py-2.5 font-medium text-surface shadow-soft-lg"
             >
               <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
               {t.message}

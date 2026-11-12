@@ -31,7 +31,7 @@ const initial = (name) => name.charAt(0).toUpperCase()
 
 function Avatar({ name, color }) {
   return (
-    <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-lg font-extrabold ${color}`}>
+    <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full border border-line font-display text-lg font-medium ${color}`}>
       {initial(name)}
     </span>
   )
@@ -68,13 +68,13 @@ export default function FriendsPage() {
       <PageHeader
         title="Teman"
         subtitle="Belajar lebih semangat bersama teman. Tidak ada chat, hanya statistik yang dibagikan."
-        action={<Badge color="bg-yellow">Data contoh (sementara)</Badge>}
+        action={<Badge color="bg-sand-deep">Data contoh (sementara)</Badge>}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card className="p-5">
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-extrabold">
+            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
               <Search className="size-5" aria-hidden="true" /> Cari teman
             </h2>
             <Input label="Username" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="contoh: nadia.k" />
@@ -84,14 +84,14 @@ export default function FriendsPage() {
                   <li><EmptyState title="Username tidak ditemukan" description="Periksa ejaannya, lalu coba lagi." /></li>
                 ) : (
                   results.map((u) => (
-                    <li key={u.id} className="flex items-center gap-3 rounded-brutal border-2 border-ink p-3">
-                      <Avatar name={u.name} color="bg-sky" />
+                    <li key={u.id} className="flex items-center gap-3 rounded-panel border border-line p-3">
+                      <Avatar name={u.name} color="bg-mist" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-bold">{u.name}</p>
-                        <p className="text-sm text-ink/70">@{u.username}</p>
+                        <p className="truncate font-semibold">{u.name}</p>
+                        <p className="text-sm text-ink/80">@{u.username}</p>
                       </div>
                       {sent.includes(u.id) ? (
-                        <Badge color="bg-mint">Permintaan terkirim</Badge>
+                        <Badge color="bg-moss">Permintaan terkirim</Badge>
                       ) : (
                         <Button size="sm" onClick={() => { setSent((s) => [...s, u.id]); toast('Permintaan pertemanan terkirim') }}>
                           <UserPlus className="size-4" aria-hidden="true" /> Tambah
@@ -105,28 +105,28 @@ export default function FriendsPage() {
           </Card>
 
           <Card tone="primary" className="p-5">
-            <h2 className="mb-3 text-xl font-extrabold">Teman ({friends.length})</h2>
+            <h2 className="mb-3 text-xl font-semibold">Teman ({friends.length})</h2>
             {friends.length === 0 ? (
               <EmptyState icon={UserPlus} title="Belum ada teman" description="Cari username temanmu untuk mulai." />
             ) : (
               <ul className="flex flex-col gap-3">
                 {friends.map((f) => (
-                  <li key={f.id} className="flex flex-wrap items-center gap-3 rounded-brutal border-2 border-ink p-3">
-                    <Avatar name={f.name} color="bg-pink" />
+                  <li key={f.id} className="flex flex-wrap items-center gap-3 rounded-panel border border-line p-3">
+                    <Avatar name={f.name} color="bg-sage" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-bold">{f.name}</p>
-                      <p className="text-sm text-ink/70">@{f.username}</p>
+                      <p className="truncate font-semibold">{f.name}</p>
+                      <p className="text-sm text-ink/80">@{f.username}</p>
                     </div>
                     {f.shareStats ? (
                       <div className="flex flex-wrap gap-2">
-                        <Badge color="bg-violet">Level {f.level}</Badge>
-                        <Badge color="bg-orange"><Flame className="size-3" aria-hidden="true" /> {f.streak} hari</Badge>
-                        <Badge color="bg-mint">{Math.round(f.weekMinutes / 60 * 10) / 10} jam/minggu</Badge>
+                        <Badge color="bg-stone">Level {f.level}</Badge>
+                        <Badge color="bg-clay"><Flame className="size-3" aria-hidden="true" /> {f.streak} hari</Badge>
+                        <Badge color="bg-moss">{Math.round(f.weekMinutes / 60 * 10) / 10} jam/minggu</Badge>
                       </div>
                     ) : (
                       <Badge color="bg-surface"><EyeOff className="size-3" aria-hidden="true" /> Statistik disembunyikan</Badge>
                     )}
-                    <button type="button" onClick={() => unfriend(f)} aria-label={`Hapus ${f.name} dari teman`} className="grid size-9 place-items-center rounded-md border-2 border-transparent hover:border-ink hover:bg-pink">
+                    <button type="button" onClick={() => unfriend(f)} aria-label={`Hapus ${f.name} dari teman`} className="grid size-9 place-items-center rounded-md border border-transparent hover:bg-danger/10 hover:text-danger">
                       <UserMinus className="size-4" aria-hidden="true" />
                     </button>
                   </li>
@@ -137,16 +137,16 @@ export default function FriendsPage() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card color="bg-yellow" className="p-5">
-            <h2 className="mb-3 text-xl font-extrabold">Permintaan masuk</h2>
+          <Card color="bg-sand-deep" className="p-5">
+            <h2 className="mb-3 text-xl font-semibold">Permintaan masuk</h2>
             {requests.length === 0 ? (
               <p className="text-sm font-medium">Tidak ada permintaan baru.</p>
             ) : (
               <ul className="flex flex-col gap-3">
                 {requests.map((r) => (
-                  <li key={r.id} className="rounded-brutal border-2 border-ink bg-surface p-3">
-                    <p className="font-bold">{r.name}</p>
-                    <p className="mb-2 text-sm text-ink/70">@{r.username}</p>
+                  <li key={r.id} className="rounded-panel border border-line bg-surface p-3">
+                    <p className="font-semibold">{r.name}</p>
+                    <p className="mb-2 text-sm text-ink/80">@{r.username}</p>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={() => accept(r)}><UserCheck className="size-4" aria-hidden="true" /> Terima</Button>
                       <Button size="sm" variant="neutral" onClick={() => decline(r)}><X className="size-4" aria-hidden="true" /> Tolak</Button>
@@ -158,8 +158,8 @@ export default function FriendsPage() {
           </Card>
 
           <Card className="p-5">
-            <h2 className="mb-1 text-xl font-extrabold">Privasi statistik</h2>
-            <p className="mb-3 text-sm text-ink/70">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
+            <h2 className="mb-1 text-xl font-semibold">Privasi statistik</h2>
+            <p className="mb-3 text-sm text-ink/80">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
             <SegmentedControl label="Privasi statistik" options={privacyOptions} value={user.privacy} onChange={(v) => updateProfile({ privacy: v })} />
           </Card>
         </div>

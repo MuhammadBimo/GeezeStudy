@@ -60,12 +60,12 @@ export default function SettingsPage() {
       <PageHeader
         title="Pengaturan"
         subtitle="Atur profil, privasi, dan integrasimu."
-        action={<Badge color="bg-yellow">Disimpan di browser ini (demo)</Badge>}
+        action={<Badge color="bg-sand-deep">Disimpan di browser ini (demo)</Badge>}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card tone="primary" className="p-5 lg:row-span-2">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-extrabold">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
             <UserRound className="size-5" aria-hidden="true" /> Profil
           </h2>
           <form onSubmit={saveProfile} noValidate className="flex flex-col gap-4">
@@ -78,8 +78,8 @@ export default function SettingsPage() {
           </form>
         </Card>
 
-        <Card color="bg-yellow" className="p-5">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-extrabold">
+        <Card color="bg-sand-deep" className="p-5">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
             <Target className="size-5" aria-hidden="true" /> Target belajar harian
           </h2>
           <form onSubmit={saveGoal} noValidate className="flex items-end gap-3">
@@ -89,10 +89,10 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="p-5">
-          <h2 className="mb-1 flex items-center gap-2 text-xl font-extrabold">
+          <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold">
             <ShieldCheck className="size-5" aria-hidden="true" /> Privasi statistik
           </h2>
-          <p className="mb-3 text-sm text-ink/70">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
+          <p className="mb-3 text-sm text-ink/80">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
           <SegmentedControl
             label="Privasi statistik"
             options={privacyOptions}
@@ -101,15 +101,15 @@ export default function SettingsPage() {
           />
         </Card>
 
-        <Card color="bg-sky" className="p-5">
-          <h2 className="mb-1 flex items-center gap-2 text-xl font-extrabold">
+        <Card color="bg-mist" className="p-5">
+          <h2 className="mb-1 flex items-center gap-2 text-xl font-semibold">
             <CalendarSync className="size-5" aria-hidden="true" /> Google Calendar
           </h2>
           <p className="mb-4 text-sm">Sinkronisasi satu arah: kegiatan dari GeezeStudy dikirim ke Google Calendar-mu. Perubahan di Google Calendar tidak masuk ke sini.</p>
-          <div className="flex items-center justify-between gap-3 rounded-brutal border-2 border-ink bg-surface p-3">
+          <div className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface p-3">
             <div>
-              <p className="font-bold">Sinkronkan kegiatan</p>
-              <p className="text-sm text-ink/70">{user.calendarSync ? 'Aktif (simulasi)' : 'Belum aktif'}</p>
+              <p className="font-semibold">Sinkronkan kegiatan</p>
+              <p className="text-sm text-ink/80">{user.calendarSync ? 'Aktif (simulasi)' : 'Belum aktif'}</p>
             </div>
             <Toggle
               label="Sinkronkan kegiatan ke Google Calendar"
@@ -120,8 +120,8 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="p-5 lg:col-span-2">
-          <h2 className="mb-1 text-xl font-extrabold">Akun</h2>
-          <p className="mb-3 text-sm text-ink/70">Keluar menghapus profil demo dari browser ini.</p>
+          <h2 className="mb-1 text-xl font-semibold">Akun</h2>
+          <p className="mb-3 text-sm text-ink/80">Keluar menghapus profil demo dari browser ini.</p>
           <Button variant="neutral" onClick={() => { logout(); toast('Kamu sudah keluar') }}>
             <LogOut className="size-4" aria-hidden="true" /> Keluar
           </Button>

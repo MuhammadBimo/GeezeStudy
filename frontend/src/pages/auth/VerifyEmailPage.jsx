@@ -30,16 +30,16 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-pink-soft p-5">
+    <main className="grid min-h-dvh place-items-center bg-forest-tint p-5">
       <Card tone="primary" className="w-full max-w-md p-6 text-center sm:p-8">
-        <span className="mx-auto mb-4 grid size-16 place-items-center rounded-full border-2 border-ink bg-mint shadow-brutal-sm">
+        <span className="mx-auto mb-4 grid size-16 place-items-center rounded-full border border-line bg-moss shadow-soft-sm">
           <MailCheck className="size-8" aria-hidden="true" />
         </span>
-        <h1 className="text-3xl font-extrabold">Cek emailmu</h1>
+        <h1 className="text-3xl font-semibold">Cek emailmu</h1>
         <p className="mt-2 text-ink/80">
           Kami mengirim tautan verifikasi ke <strong className="break-all">{user.email}</strong>. Klik tautan itu untuk melanjutkan.
         </p>
-        <p className="mt-2 rounded-brutal border-2 border-ink bg-yellow p-2 text-sm font-medium">
+        <p className="mt-2 rounded-panel border border-line bg-sand-deep p-2 text-sm font-medium">
           Mode demo: tidak ada email yang dikirim. Gunakan tombol di bawah untuk melanjutkan.
         </p>
 
@@ -48,7 +48,7 @@ export default function VerifyEmailPage() {
           <Button variant="neutral" onClick={resend} disabled={cooldown > 0}>
             {cooldown > 0 ? `Kirim ulang dalam ${cooldown} detik` : 'Kirim ulang email'}
           </Button>
-          <button type="button" onClick={logout} className="text-sm font-bold underline underline-offset-4">
+          <button type="button" onClick={logout} className="text-sm font-semibold underline underline-offset-4">
             Pakai akun lain
           </button>
         </div>

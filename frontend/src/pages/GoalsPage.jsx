@@ -17,7 +17,7 @@ const types = [
   { value: 'weekly', label: 'Mingguan' },
   { value: 'long', label: 'Jangka panjang' },
 ]
-const typeColor = { daily: 'bg-pink-soft', weekly: 'bg-yellow', long: 'bg-sky' }
+const typeColor = { daily: 'bg-forest-tint', weekly: 'bg-sand-deep', long: 'bg-mist' }
 const unitOptions = [
   { value: 'menit', label: 'Menit belajar' },
   { value: 'tugas', label: 'Tugas selesai' },
@@ -75,7 +75,7 @@ export default function GoalsPage() {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <SegmentedControl label="Jenis goal" options={types} value={type} onChange={setType} />
-        <Badge color="bg-yellow">Data contoh (sementara)</Badge>
+        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
       </div>
 
       {visible.length === 0 ? (
@@ -85,14 +85,14 @@ export default function GoalsPage() {
           {visible.map((g) => {
             const complete = g.done >= g.total
             return (
-              <Card as="li" key={g.id} color={complete ? 'bg-mint' : typeColor[g.type]} className="flex flex-col gap-3 p-5">
+              <Card as="li" key={g.id} color={complete ? 'bg-moss' : typeColor[g.type]} className="flex flex-col gap-3 p-5">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-lg font-extrabold leading-snug">{g.title}</h2>
+                  <h2 className="text-lg font-semibold leading-snug">{g.title}</h2>
                   {g.auto && <Badge color="bg-surface"><Sparkles className="size-3" aria-hidden="true" /> Otomatis</Badge>}
                 </div>
                 <ProgressBar value={g.done} max={g.total} color="bg-ink" label={g.title} />
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-bold">{g.done} / {g.total} {g.unit === 'lainnya' ? '' : g.unit}</p>
+                  <p className="text-sm font-semibold">{g.done} / {g.total} {g.unit === 'lainnya' ? '' : g.unit}</p>
                   {complete ? (
                     <Badge color="bg-surface">Tercapai</Badge>
                   ) : (

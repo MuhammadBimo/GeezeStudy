@@ -126,10 +126,10 @@ export default function TimerPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card
           tone="primary"
-          color={s.phase === 'focus' ? 'bg-mint' : 'bg-sky'}
-          className="flex flex-col items-center gap-6 p-6 sm:p-10 lg:col-span-2"
+          color={s.phase === 'focus' ? 'bg-forest' : 'bg-forest-mid'}
+          className="flex flex-col items-center gap-6 p-6 text-surface sm:p-10 lg:col-span-2"
         >
-          <Badge color="bg-surface" className="text-sm">
+          <Badge color="bg-surface text-forest" className="text-sm">
             {s.phase === 'focus' ? 'Waktu fokus' : 'Waktu istirahat'}
           </Badge>
 
@@ -137,28 +137,28 @@ export default function TimerPage() {
             role="timer"
             aria-live="off"
             aria-label={`Sisa waktu ${mmss(remaining)}`}
-            className="font-display text-[clamp(4.5rem,20vw,9.5rem)] font-extrabold leading-none tabular-nums"
+            className="font-display text-[clamp(4.5rem,20vw,9.5rem)] font-semibold leading-none tabular-nums"
           >
             {mmss(remaining)}
           </p>
 
           <div className="w-full max-w-md">
-            <ProgressBar value={elapsedPct} max={phaseMs || 1} color="bg-ink" label="Progres sesi" />
+            <ProgressBar value={elapsedPct} max={phaseMs || 1} color="bg-clay" label="Progres sesi" />
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
             {idle && (
-              <Button size="md" className="bg-pink px-8 text-lg" onClick={start} disabled={phaseMin < 1}>
+              <Button variant="secondary" size="md" className="px-8 text-lg" onClick={start} disabled={phaseMin < 1}>
                 <Play className="size-5" aria-hidden="true" /> {s.phase === 'focus' ? 'Mulai fokus' : 'Mulai istirahat'}
               </Button>
             )}
             {s.status === 'running' && (
-              <Button variant="secondary" className="px-8 text-lg" onClick={pause}>
+              <Button variant="neutral" className="px-8 text-lg" onClick={pause}>
                 <Pause className="size-5" aria-hidden="true" /> Jeda
               </Button>
             )}
             {s.status === 'paused' && (
-              <Button className="px-8 text-lg" onClick={resume}>
+              <Button variant="secondary" className="px-8 text-lg" onClick={resume}>
                 <Play className="size-5" aria-hidden="true" /> Lanjutkan
               </Button>
             )}
@@ -174,16 +174,16 @@ export default function TimerPage() {
             )}
           </div>
 
-          <p className="max-w-md text-center text-sm font-medium">
+          <p className="max-w-md text-center text-sm text-surface/80">
             Points hanya diberikan setelah sesi divalidasi oleh server. Tampilan ini belum tersambung ke backend.
           </p>
         </Card>
 
         <div className="flex flex-col gap-6">
           <Card className="flex flex-col gap-4 p-5">
-            <h2 className="text-xl font-extrabold">Pengaturan sesi</h2>
+            <h2 className="text-xl font-semibold">Pengaturan sesi</h2>
             <div>
-              <p id="durasi-label" className="mb-2 text-sm font-bold">Durasi</p>
+              <p id="durasi-label" className="mb-2 text-sm font-semibold">Durasi</p>
               {idle ? (
                 <SegmentedControl
                   label="Durasi"
@@ -192,7 +192,7 @@ export default function TimerPage() {
                   onChange={(v) => setS((c) => ({ ...c, presetId: v, phase: 'focus' }))}
                 />
               ) : (
-                <p className="text-sm text-ink/70">Berhenti dulu untuk mengganti durasi.</p>
+                <p className="text-sm text-ink/80">Berhenti dulu untuk mengganti durasi.</p>
               )}
             </div>
             {idle && s.presetId === 'custom' && (
@@ -214,16 +214,16 @@ export default function TimerPage() {
             />
           </Card>
 
-          <Card color="bg-yellow" className="p-5">
-            <h2 className="mb-3 text-xl font-extrabold">Riwayat belajar</h2>
+          <Card color="bg-sand-deep" className="p-5">
+            <h2 className="mb-3 text-xl font-semibold">Riwayat belajar</h2>
             <ul className="flex flex-col gap-2">
               {history.slice(0, 5).map((h) => (
-                <li key={h.id} className="flex items-center justify-between gap-3 rounded-brutal border-2 border-ink bg-surface px-3 py-2">
+                <li key={h.id} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface px-3 py-2">
                   <div className={cn('min-w-0')}>
-                    <p className="truncate text-sm font-bold">{h.task}</p>
-                    <p className="text-xs text-ink/70">{h.when}</p>
+                    <p className="truncate text-sm font-semibold">{h.task}</p>
+                    <p className="text-xs text-ink/80">{h.when}</p>
                   </div>
-                  <Badge color="bg-mint">{h.minutes} mnt</Badge>
+                  <Badge color="bg-moss">{h.minutes} mnt</Badge>
                 </li>
               ))}
             </ul>

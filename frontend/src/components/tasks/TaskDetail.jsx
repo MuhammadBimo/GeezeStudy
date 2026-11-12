@@ -18,22 +18,22 @@ export default function TaskDetail({ task, onEdit, onClose }) {
 
       <dl className="grid gap-3 text-sm sm:grid-cols-2">
         <div>
-          <dt className="font-bold text-ink/70">Mata kuliah / pelajaran</dt>
+          <dt className="font-semibold text-ink/80">Mata kuliah / pelajaran</dt>
           <dd className="font-medium">{task.course || 'Tanpa mata kuliah'}</dd>
         </div>
         <div>
-          <dt className="font-bold text-ink/70">Deadline</dt>
+          <dt className="font-semibold text-ink/80">Deadline</dt>
           <dd className="font-medium">{formatLong(task.due)}</dd>
         </div>
       </dl>
 
       <div>
-        <h3 className="text-sm font-bold text-ink/70">Deskripsi</h3>
+        <h3 className="text-sm font-semibold text-ink/80">Deskripsi</h3>
         <p className="mt-1 whitespace-pre-wrap">{task.description || 'Tidak ada deskripsi.'}</p>
       </div>
 
       {task.attachment && (
-        <p className="inline-flex items-center gap-2 rounded-brutal border-2 border-ink bg-surface px-3 py-2 text-sm font-medium">
+        <p className="inline-flex items-center gap-2 rounded-panel border border-line bg-surface px-3 py-2 text-sm font-medium">
           <Paperclip className="size-4" aria-hidden="true" /> {task.attachment}
         </p>
       )}

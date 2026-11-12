@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
     <AuthLayout
       title="Atur ulang password"
       subtitle="Buat password baru untuk akunmu."
-      footer={<Link to="/masuk" className="font-bold underline underline-offset-4">Kembali ke halaman masuk</Link>}
+      footer={<Link to="/masuk" className="font-semibold underline underline-offset-4">Kembali ke halaman masuk</Link>}
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <Input label="Password baru" type="password" required autoComplete="new-password" value={form.password} onChange={set('password')} error={errors.password} hint="Minimal 8 karakter." />

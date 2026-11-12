@@ -57,18 +57,18 @@ export default function AdminAchievementsPage() {
         {items.map((a) => (
           <Card as="li" key={a.id} color={a.active ? 'bg-surface' : 'bg-ink/5'} className="flex flex-col gap-3 p-5">
             <div className="flex items-start gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-ink bg-orange">
+              <span className="grid size-12 shrink-0 place-items-center rounded-full border border-line bg-clay">
                 <Award className="size-6" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-lg font-extrabold leading-tight">{a.title}</h2>
-                <p className="text-sm text-ink/70">{a.desc || 'Tanpa deskripsi'}</p>
+                <h2 className="font-display text-lg font-medium leading-tight">{a.title}</h2>
+                <p className="text-sm text-ink/80">{a.desc || 'Tanpa deskripsi'}</p>
               </div>
               <Toggle label={`Aktifkan achievement ${a.title}`} checked={a.active} onChange={(v) => toggle(a, v)} />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge color="bg-sky">{metricOptions.find((o) => o.value === a.condition)?.label}: {a.target}</Badge>
-              <Badge color="bg-mint">Bonus +{a.bonus} pts</Badge>
+              <Badge color="bg-mist">{metricOptions.find((o) => o.value === a.condition)?.label}: {a.target}</Badge>
+              <Badge color="bg-moss">Bonus +{a.bonus} pts</Badge>
             </div>
             <Button size="sm" variant="neutral" className="self-start" onClick={() => open(a)}>
               <Pencil className="size-4" aria-hidden="true" /> Ubah

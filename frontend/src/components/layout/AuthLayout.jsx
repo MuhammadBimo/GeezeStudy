@@ -1,51 +1,53 @@
 import { Flame, GraduationCap, Info, ListChecks, Timer } from 'lucide-react'
+import Ornament from '@/components/ui/Ornament'
 
 const points = [
-  { icon: ListChecks, text: 'Catat tugas dari LMS dan atur deadline-nya.', color: 'bg-yellow' },
-  { icon: Timer, text: 'Belajar fokus dengan timer dan catat sesinya.', color: 'bg-mint' },
-  { icon: Flame, text: 'Jaga streak dan kumpulkan Points dari aktivitas nyata.', color: 'bg-orange' },
+  { icon: ListChecks, text: 'Catat tugas dari LMS dan atur deadline-nya.' },
+  { icon: Timer, text: 'Belajar fokus dengan timer, sesinya tercatat.' },
+  { icon: Flame, text: 'Jaga streak, kumpulkan Points dari aktivitas nyata.' },
 ]
 
 export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-2">
-      <aside className="hidden flex-col justify-between border-r-[3px] border-ink bg-pink p-10 lg:flex">
-        <div className="flex items-center gap-2 self-start">
-          <span className="grid size-11 place-items-center rounded-brutal border-2 border-ink bg-surface shadow-brutal-sm">
-            <GraduationCap className="size-6" aria-hidden="true" />
+    <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
+      <aside className="dot-pattern relative hidden flex-col justify-between overflow-hidden bg-forest p-12 text-surface lg:flex">
+        <Ornament className="pointer-events-none absolute -bottom-24 -right-24 size-[26rem] text-forest-mid" />
+        <div className="relative flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-panel bg-surface text-forest">
+            <GraduationCap className="size-5" aria-hidden="true" />
           </span>
-          <span className="font-display text-2xl font-extrabold">GeezeStudy</span>
+          <span className="font-display text-xl font-medium">GeezeStudy</span>
         </div>
 
-        <div>
-          <h2 className="max-w-md font-display text-5xl font-extrabold leading-[1.05]">
-            Belajar jadi lebih teratur, satu hari sekali.
+        <div className="relative">
+          <h2 className="max-w-md font-display text-5xl font-medium leading-[1.08]">
+            Belajar lebih teratur, satu hari sekali.
           </h2>
-          <ul className="mt-8 flex max-w-md flex-col gap-3">
-            {points.map(({ icon: Icon, text, color }) => (
-              <li key={text} className="flex items-center gap-3 rounded-brutal border-2 border-ink bg-surface p-3 shadow-brutal-sm">
-                <span className={`grid size-10 shrink-0 place-items-center rounded-full border-2 border-ink ${color}`}>
-                  <Icon className="size-5" aria-hidden="true" />
-                </span>
-                <span className="font-medium">{text}</span>
+          <ul className="mt-10 flex max-w-md flex-col gap-4">
+            {points.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3 text-surface/85">
+                <Icon className="size-5 shrink-0 text-sage" aria-hidden="true" />
+                {text}
               </li>
             ))}
           </ul>
         </div>
-        <p className="text-sm font-medium">Pendamping produktivitas akademik untuk pelajar dan mahasiswa.</p>
+        <p className="relative text-sm text-surface/60">Pendamping produktivitas akademik untuk pelajar dan mahasiswa.</p>
       </aside>
 
       <main className="grid place-items-center p-5 sm:p-10">
         <div className="w-full max-w-md">
-          <div className="mb-6 flex items-center gap-2 lg:hidden">
-            <GraduationCap className="size-6" aria-hidden="true" />
-            <span className="font-display text-xl font-extrabold">GeezeStudy</span>
+          <div className="mb-8 flex items-center gap-2 lg:hidden">
+            <span className="grid size-8 place-items-center rounded-lg bg-forest text-surface">
+              <GraduationCap className="size-4" aria-hidden="true" />
+            </span>
+            <span className="font-display text-xl font-medium">GeezeStudy</span>
           </div>
-          <h1 className="text-4xl font-extrabold">{title}</h1>
-          {subtitle && <p className="mt-1 text-ink/70">{subtitle}</p>}
+          <h1 className="text-4xl font-medium">{title}</h1>
+          {subtitle && <p className="mt-2 text-ink/80">{subtitle}</p>}
 
-          <p className="mt-4 flex items-start gap-2 rounded-brutal border-2 border-ink bg-yellow p-3 text-sm font-medium">
-            <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p className="mt-5 flex items-start gap-2 rounded-panel bg-canvas p-3 text-sm text-ink/80 shadow-inset">
+            <Info className="mt-0.5 size-4 shrink-0 text-forest" aria-hidden="true" />
             Mode demo: isi apa saja, data tidak disimpan ke server.
           </p>
 

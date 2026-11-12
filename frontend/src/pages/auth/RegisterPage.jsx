@@ -43,7 +43,7 @@ export default function RegisterPage() {
     <AuthLayout
       title="Buat akun"
       subtitle="Cukup isi nama, sisanya bebas."
-      footer={<>Sudah punya akun? <Link to="/masuk" className="font-bold underline underline-offset-4">Masuk</Link></>}
+      footer={<>Sudah punya akun? <Link to="/masuk" className="font-semibold underline underline-offset-4">Masuk</Link></>}
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <Input label="Nama" required autoComplete="name" value={form.name} onChange={set('name')} error={error} />

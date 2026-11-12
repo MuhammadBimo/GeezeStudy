@@ -26,12 +26,12 @@ const data = {
     { id: 3, task: 'Laporan Praktikum Basis Data', minutes: 45, when: '2 hari lalu' },
   ],
   achievements: [
-    { id: 1, title: 'Langkah Pertama', desc: 'Selesaikan tugas pertama', unlocked: true, icon: Flag, color: 'bg-mint' },
-    { id: 2, title: 'Api Menyala', desc: 'Streak 5 hari', unlocked: true, icon: Flame, color: 'bg-orange' },
-    { id: 3, title: 'Pelari Tugas', desc: 'Selesaikan 20 tugas', unlocked: true, icon: ListChecks, color: 'bg-sky' },
-    { id: 4, title: 'Fokus Penuh', desc: 'Belajar 2 jam dalam sehari', unlocked: false, icon: Timer, color: 'bg-pink' },
-    { id: 5, title: 'Seminggu Penuh', desc: 'Streak 7 hari', unlocked: false, icon: Flame, color: 'bg-yellow' },
-    { id: 6, title: 'Level 5', desc: 'Capai Level 5', unlocked: false, icon: Trophy, color: 'bg-violet' },
+    { id: 1, title: 'Langkah Pertama', desc: 'Selesaikan tugas pertama', unlocked: true, icon: Flag, color: 'bg-moss' },
+    { id: 2, title: 'Api Menyala', desc: 'Streak 5 hari', unlocked: true, icon: Flame, color: 'bg-clay' },
+    { id: 3, title: 'Pelari Tugas', desc: 'Selesaikan 20 tugas', unlocked: true, icon: ListChecks, color: 'bg-mist' },
+    { id: 4, title: 'Fokus Penuh', desc: 'Belajar 2 jam dalam sehari', unlocked: false, icon: Timer, color: 'bg-sage' },
+    { id: 5, title: 'Seminggu Penuh', desc: 'Streak 7 hari', unlocked: false, icon: Flame, color: 'bg-sand-deep' },
+    { id: 6, title: 'Level 5', desc: 'Capai Level 5', unlocked: false, icon: Trophy, color: 'bg-stone' },
   ],
 }
 
@@ -43,55 +43,55 @@ export default function ProgressPage() {
       <PageHeader
         title="Progres"
         subtitle="Perkembangan belajarmu dari waktu ke waktu."
-        action={<Badge color="bg-yellow">Data contoh (sementara)</Badge>}
+        action={<Badge color="bg-sand-deep">Data contoh (sementara)</Badge>}
       />
 
       <section aria-label="Ringkasan" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Clock} label="Total belajar" value={`${hours} jam`} hint={`${data.totalMinutes % 60} menit`} color="bg-mint" />
-        <StatCard icon={ListChecks} label="Tugas selesai" value={data.tasksDone} color="bg-sky" />
-        <StatCard icon={Flame} label="Streak" value={`${data.streak} hari`} hint={`Terbaik ${data.bestStreak} hari`} color="bg-orange" />
-        <StatCard icon={Trophy} label="Level" value={data.level} hint={`${data.points} Points`} color="bg-pink-soft" />
+        <StatCard icon={Clock} label="Total belajar" value={`${hours} jam`} hint={`${data.totalMinutes % 60} menit`} color="bg-moss" />
+        <StatCard icon={ListChecks} label="Tugas selesai" value={data.tasksDone} color="bg-mist" />
+        <StatCard icon={Flame} label="Streak" value={`${data.streak} hari`} hint={`Terbaik ${data.bestStreak} hari`} color="bg-clay" />
+        <StatCard icon={Trophy} label="Level" value={data.level} hint={`${data.points} Points`} color="bg-forest-tint" />
       </section>
 
-      <Card tone="primary" color="bg-violet" className="mt-6 p-5">
-        <h2 className="text-xl font-extrabold">Menuju Level {data.level + 1}</h2>
+      <Card tone="primary" color="bg-stone" className="mt-6 p-5">
+        <h2 className="text-xl font-semibold">Menuju Level {data.level + 1}</h2>
         <p className="mb-2 text-sm font-medium">{data.points} / {data.nextLevelAt} Points. Level tidak turun saat kamu tidak aktif.</p>
-        <ProgressBar value={data.points} max={data.nextLevelAt} color="bg-yellow" label="Progres level" />
+        <ProgressBar value={data.points} max={data.nextLevelAt} color="bg-sand-deep" label="Progres level" />
       </Card>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card className="p-5">
-          <h2 className="mb-3 text-xl font-extrabold">Riwayat Points</h2>
+          <h2 className="mb-3 text-xl font-semibold">Riwayat Points</h2>
           <ul className="flex flex-col gap-2">
             {data.pointsHistory.map((p) => (
-              <li key={p.id} className="flex items-center justify-between gap-3 rounded-brutal border-2 border-ink p-3">
+              <li key={p.id} className="flex items-center justify-between gap-3 rounded-panel border border-line p-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-bold">{p.source}</p>
-                  <p className="text-xs text-ink/70">{p.when}</p>
+                  <p className="truncate text-sm font-semibold">{p.source}</p>
+                  <p className="text-xs text-ink/80">{p.when}</p>
                 </div>
-                <Badge color="bg-yellow">+{p.points}</Badge>
+                <Badge color="bg-sand-deep">+{p.points}</Badge>
               </li>
             ))}
           </ul>
         </Card>
 
-        <Card color="bg-sky" className="p-5">
-          <h2 className="mb-3 text-xl font-extrabold">Riwayat sesi belajar</h2>
+        <Card color="bg-mist" className="p-5">
+          <h2 className="mb-3 text-xl font-semibold">Riwayat sesi belajar</h2>
           <ul className="flex flex-col gap-2">
             {data.sessions.map((s) => (
-              <li key={s.id} className="flex items-center justify-between gap-3 rounded-brutal border-2 border-ink bg-surface p-3">
+              <li key={s.id} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface p-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-bold">{s.task}</p>
-                  <p className="text-xs text-ink/70">{s.when}</p>
+                  <p className="truncate text-sm font-semibold">{s.task}</p>
+                  <p className="text-xs text-ink/80">{s.when}</p>
                 </div>
-                <Badge color="bg-mint">{s.minutes} mnt</Badge>
+                <Badge color="bg-moss">{s.minutes} mnt</Badge>
               </li>
             ))}
           </ul>
         </Card>
       </div>
 
-      <h2 className="mb-3 mt-8 flex items-center gap-2 text-2xl font-extrabold">
+      <h2 className="mb-3 mt-8 flex items-center gap-2 text-2xl font-semibold">
         <Award className="size-6" aria-hidden="true" /> Achievements
       </h2>
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -99,12 +99,12 @@ export default function ProgressPage() {
           const Icon = a.unlocked ? a.icon : Lock
           return (
             <Card as="li" key={a.id} color={a.unlocked ? 'bg-surface' : 'bg-ink/5'} className="flex items-center gap-4 p-4">
-              <span className={`grid size-14 shrink-0 place-items-center rounded-full border-2 border-ink ${a.unlocked ? a.color : 'bg-surface'}`}>
+              <span className={`grid size-14 shrink-0 place-items-center rounded-full border border-line ${a.unlocked ? a.color : 'bg-surface'}`}>
                 <Icon className="size-6" aria-hidden="true" />
               </span>
               <div>
-                <h3 className="font-display text-lg font-extrabold leading-tight">{a.title}</h3>
-                <p className="text-sm text-ink/70">{a.unlocked ? a.desc : `Terkunci. ${a.desc}`}</p>
+                <h3 className="font-display text-lg font-medium leading-tight">{a.title}</h3>
+                <p className="text-sm text-ink/80">{a.unlocked ? a.desc : `Terkunci. ${a.desc}`}</p>
               </div>
             </Card>
           )

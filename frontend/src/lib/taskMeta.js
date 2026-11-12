@@ -1,10 +1,10 @@
 export const statusMeta = {
   todo: { label: 'To Do', color: 'bg-surface' },
-  progress: { label: 'In Progress', color: 'bg-sky' },
-  done: { label: 'Completed', color: 'bg-mint' },
+  progress: { label: 'In Progress', color: 'bg-mist' },
+  done: { label: 'Completed', color: 'bg-moss' },
 }
 
-export const priorityColor = { Tinggi: 'bg-pink', Sedang: 'bg-yellow', Rendah: 'bg-mint' }
+export const priorityColor = { Tinggi: 'bg-sage', Sedang: 'bg-sand-deep', Rendah: 'bg-moss' }
 
 export const priorityOptions = [
   { value: 'Tinggi', label: 'Tinggi' },

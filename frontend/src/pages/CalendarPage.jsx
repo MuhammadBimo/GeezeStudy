@@ -14,12 +14,12 @@ import { cn } from '@/lib/cn'
 import { TODAY, addDays, formatLong, formatMonth, fromISO, isoIn, toISO, weekdayIndex } from '@/lib/date'
 
 const typeMeta = {
-  Kuliah: 'bg-sky',
-  Deadline: 'bg-yellow',
-  Ujian: 'bg-pink',
-  Presentasi: 'bg-violet',
-  Rapat: 'bg-orange',
-  Pribadi: 'bg-mint',
+  Kuliah: 'bg-mist',
+  Deadline: 'bg-sand-deep',
+  Ujian: 'bg-sage',
+  Presentasi: 'bg-stone',
+  Rapat: 'bg-clay',
+  Pribadi: 'bg-moss',
 }
 const typeOptions = Object.keys(typeMeta).map((t) => ({ value: t, label: t }))
 const repeatOptions = [
@@ -58,11 +58,11 @@ const sameMonth = (iso, cursor) => {
 
 function EventRow({ event }) {
   return (
-    <li className="flex items-center gap-3 rounded-brutal border-2 border-ink bg-surface p-3">
-      <span className={cn('size-3 shrink-0 rounded-full border-2 border-ink', typeMeta[event.type])} aria-hidden="true" />
+    <li className="flex items-center gap-3 rounded-panel border border-line bg-surface p-3">
+      <span className={cn('size-3 shrink-0 rounded-full border border-line', typeMeta[event.type])} aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-bold">{event.title}</p>
-        <p className="text-sm text-ink/70">{event.time} · {event.type}</p>
+        <p className="truncate font-semibold">{event.title}</p>
+        <p className="text-sm text-ink/80">{event.time} · {event.type}</p>
       </div>
       {event.repeat !== 'none' && <Repeat className="size-4 shrink-0" aria-label="Berulang" />}
       {event.reminder !== 'none' && <Bell className="size-4 shrink-0" aria-label="Ada pengingat" />}
@@ -124,20 +124,20 @@ export default function CalendarPage() {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <SegmentedControl label="Tampilan kalender" options={views} value={view} onChange={setView} />
-        <Badge color="bg-yellow">Data contoh (sementara)</Badge>
+        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
       </div>
 
       {view === 'month' && (
         <div className="grid gap-6 lg:grid-cols-3">
           <Card tone="primary" className="p-4 sm:p-5 lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-display text-2xl font-extrabold capitalize">{formatMonth(cursor)}</h2>
+              <h2 className="font-display text-2xl font-medium capitalize">{formatMonth(cursor)}</h2>
               <div className="flex gap-2">
                 <Button size="sm" variant="neutral" aria-label="Bulan sebelumnya" onClick={() => shiftMonth(-1)}><ChevronLeft className="size-4" /></Button>
                 <Button size="sm" variant="neutral" aria-label="Bulan berikutnya" onClick={() => shiftMonth(1)}><ChevronRight className="size-4" /></Button>
               </div>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold sm:gap-1.5" role="group" aria-label={formatMonth(cursor)}>
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold sm:gap-1.5" role="group" aria-label={formatMonth(cursor)}>
               {dayNames.map((d) => <div key={d} className="pb-1" aria-hidden="true">{d}</div>)}
               {cells.map((iso) => {
                 const evs = eventsOn(iso)
@@ -151,16 +151,16 @@ export default function CalendarPage() {
                     aria-label={`${formatLong(iso)}, ${evs.length} kegiatan`}
                     onClick={() => setSelected(iso)}
                     className={cn(
-                      'flex aspect-square flex-col items-center justify-start gap-0.5 rounded-md border-2 p-1 text-sm font-bold sm:p-1.5',
-                      isSel ? 'border-ink bg-pink shadow-brutal-sm' : 'border-transparent hover:border-ink hover:bg-yellow',
-                      !inMonth && 'text-ink/65',
-                      iso === TODAY && !isSel && 'border-ink',
+                      'flex aspect-square flex-col items-center justify-start gap-0.5 rounded-md border p-1 text-sm font-semibold sm:p-1.5',
+                      isSel ? 'border-line bg-sage shadow-soft-sm' : 'border-transparent hover:border-line hover:bg-sand-deep',
+                      !inMonth && 'text-ink/80',
+                      iso === TODAY && !isSel && 'border-line',
                     )}
                   >
                     {Number(iso.slice(8))}
                     <span className="flex flex-wrap justify-center gap-0.5">
                       {evs.slice(0, 3).map((e) => (
-                        <span key={e.id} className={cn('size-1.5 rounded-full border border-ink', typeMeta[e.type])} aria-hidden="true" />
+                        <span key={e.id} className={cn('size-1.5 rounded-full border border-line', typeMeta[e.type])} aria-hidden="true" />
                       ))}
                     </span>
                   </button>
@@ -169,8 +169,8 @@ export default function CalendarPage() {
             </div>
           </Card>
 
-          <Card color="bg-sky" className="p-5">
-            <h2 className="mb-3 text-xl font-extrabold">{formatLong(selected)}</h2>
+          <Card color="bg-mist" className="p-5">
+            <h2 className="mb-3 text-xl font-semibold">{formatLong(selected)}</h2>
             {selectedEvents.length === 0 ? (
               <EmptyState title="Tidak ada kegiatan" description="Hari ini masih kosong." />
             ) : (
@@ -183,7 +183,7 @@ export default function CalendarPage() {
       {view === 'week' && (
         <>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-extrabold">{formatLong(weekDays[0])} – {formatLong(weekDays[6])}</h2>
+            <h2 className="text-xl font-semibold">{formatLong(weekDays[0])} – {formatLong(weekDays[6])}</h2>
             <div className="flex gap-2">
               <Button size="sm" variant="neutral" aria-label="Minggu sebelumnya" onClick={() => shiftSelected(-7)}><ChevronLeft className="size-4" /></Button>
               <Button size="sm" variant="neutral" aria-label="Minggu berikutnya" onClick={() => shiftSelected(7)}><ChevronRight className="size-4" /></Button>
@@ -191,10 +191,10 @@ export default function CalendarPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {weekDays.map((iso) => (
-              <Card key={iso} color={iso === TODAY ? 'bg-pink-soft' : 'bg-surface'} className="p-3">
-                <h3 className="mb-2 font-display text-lg font-extrabold">{formatLong(iso)}</h3>
+              <Card key={iso} color={iso === TODAY ? 'bg-forest-tint' : 'bg-surface'} className="p-3">
+                <h3 className="mb-2 font-display text-lg font-medium">{formatLong(iso)}</h3>
                 {eventsOn(iso).length === 0 ? (
-                  <p className="text-sm text-ink/60">Kosong</p>
+                  <p className="text-sm text-ink/80">Kosong</p>
                 ) : (
                   <ul className="flex flex-col gap-2">{eventsOn(iso).map((e) => <EventRow key={e.id} event={e} />)}</ul>
                 )}
@@ -205,9 +205,9 @@ export default function CalendarPage() {
       )}
 
       {view === 'day' && (
-        <Card tone="primary" color="bg-sky" className="p-5">
+        <Card tone="primary" color="bg-mist" className="p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-2xl font-extrabold">{formatLong(selected)}</h2>
+            <h2 className="font-display text-2xl font-medium">{formatLong(selected)}</h2>
             <div className="flex gap-2">
               <Button size="sm" variant="neutral" aria-label="Hari sebelumnya" onClick={() => shiftSelected(-1)}><ChevronLeft className="size-4" /></Button>
               <Button size="sm" variant="neutral" aria-label="Hari berikutnya" onClick={() => shiftSelected(1)}><ChevronRight className="size-4" /></Button>

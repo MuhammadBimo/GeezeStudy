@@ -43,18 +43,18 @@ export default function AdminUsersPage() {
       label: 'Pengguna',
       render: (u) => (
         <div>
-          <p className="font-bold">{u.name}</p>
-          <p className="text-xs text-ink/70">{u.email}</p>
+          <p className="font-semibold">{u.name}</p>
+          <p className="text-xs text-ink/80">{u.email}</p>
         </div>
       ),
     },
-    { key: 'role', label: 'Role', render: (u) => <Badge color={u.role === 'Admin' ? 'bg-violet' : 'bg-sky'}>{u.role}</Badge> },
+    { key: 'role', label: 'Role', render: (u) => <Badge color={u.role === 'Admin' ? 'bg-stone' : 'bg-mist'}>{u.role}</Badge> },
     { key: 'level', label: 'Jenjang' },
     { key: 'joined', label: 'Bergabung' },
     {
       key: 'status',
       label: 'Status',
-      render: (u) => <Badge color={u.status === 'active' ? 'bg-mint' : 'bg-pink'}>{u.status === 'active' ? 'Aktif' : 'Ditangguhkan'}</Badge>,
+      render: (u) => <Badge color={u.status === 'active' ? 'bg-moss' : 'bg-danger/15 text-danger'}>{u.status === 'active' ? 'Aktif' : 'Ditangguhkan'}</Badge>,
     },
     {
       key: 'actions',
@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
       <PageHeader
         title="Pengguna"
         subtitle="Kelola akun Student dan Admin."
-        action={<Badge color="bg-yellow">Data contoh (sementara)</Badge>}
+        action={<Badge color="bg-sand-deep">Data contoh (sementara)</Badge>}
       />
 
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">

@@ -41,12 +41,12 @@ export default function MissionsPage() {
       <PageHeader
         title="Misi"
         subtitle="Tantangan produktivitas. Selesaikan, lalu klaim Points-nya."
-        action={<Badge color="bg-yellow" className="px-3 py-1 text-sm">+{earned} Points sesi ini</Badge>}
+        action={<Badge color="bg-sand-deep" className="px-3 py-1 text-sm">+{earned} Points sesi ini</Badge>}
       />
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <SegmentedControl label="Periode misi" options={periods} value={period} onChange={setPeriod} />
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-ink/80">
           {period === 'daily' ? 'Reset setiap hari pukul 00.00.' : 'Reset setiap hari Senin pukul 00.00.'}
         </p>
       </div>
@@ -55,20 +55,20 @@ export default function MissionsPage() {
         {visible.map((m) => {
           const complete = m.done >= m.total
           return (
-            <Card as="li" key={m.id} color={m.claimed ? 'bg-mint' : complete ? 'bg-yellow' : 'bg-surface'} className="flex flex-col gap-3 p-5">
+            <Card as="li" key={m.id} color={m.claimed ? 'bg-moss' : complete ? 'bg-sand-deep' : 'bg-surface'} className="flex flex-col gap-3 p-5">
               <div className="flex items-start justify-between gap-2">
-                <h2 className="text-lg font-extrabold leading-snug">{m.title}</h2>
-                <Badge color="bg-pink">+{m.reward} pts</Badge>
+                <h2 className="text-lg font-semibold leading-snug">{m.title}</h2>
+                <Badge color="bg-sage">+{m.reward} pts</Badge>
               </div>
-              <ProgressBar value={m.done} max={m.total} color="bg-mint" label={m.title} />
+              <ProgressBar value={m.done} max={m.total} color="bg-moss" label={m.title} />
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-bold">{m.done} / {m.total}</p>
+                <p className="text-sm font-semibold">{m.done} / {m.total}</p>
                 {m.claimed ? (
                   <Badge color="bg-surface"><Check className="size-3" strokeWidth={3} aria-hidden="true" /> Diklaim</Badge>
                 ) : complete ? (
                   <Button size="sm" onClick={() => claim(m.id)}><Gift className="size-4" aria-hidden="true" /> Klaim</Button>
                 ) : (
-                  <span className="text-sm text-ink/70">Belum selesai</span>
+                  <span className="text-sm text-ink/80">Belum selesai</span>
                 )}
               </div>
             </Card>

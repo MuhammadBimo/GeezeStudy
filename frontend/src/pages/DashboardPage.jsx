@@ -29,7 +29,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-end">
-        <Badge color="bg-yellow">Data contoh (sementara)</Badge>
+        <Badge color="bg-sand-deep">Data contoh (sementara)</Badge>
       </div>
 
       <AnnouncementBanner />
@@ -43,10 +43,10 @@ export default function DashboardPage() {
       />
 
       <section aria-label="Statistik" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Star} label="Level" value={d.level} color="bg-pink-soft" />
-        <StatCard icon={Trophy} label="Points" value={d.points} hint="Total sepanjang waktu" color="bg-yellow" />
-        <StatCard icon={Flame} label="Streak" value={`${d.streak} hari`} color="bg-orange" />
-        <StatCard icon={CheckCircle2} label="Tugas selesai" value={tasksDone} hint="Hari ini" color="bg-mint" />
+        <StatCard icon={Star} label="Level" value={d.level} color="bg-forest-tint" />
+        <StatCard icon={Trophy} label="Points" value={d.points} hint="Total sepanjang waktu" color="bg-sand-deep" />
+        <StatCard icon={Flame} label="Streak" value={`${d.streak} hari`} color="bg-clay" />
+        <StatCard icon={CheckCircle2} label="Tugas selesai" value={tasksDone} hint="Hari ini" color="bg-moss" />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">

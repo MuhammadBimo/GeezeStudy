@@ -36,12 +36,12 @@ export default function LoginPage() {
     <AuthLayout
       title="Masuk"
       subtitle="Lanjutkan belajarmu."
-      footer={<>Belum punya akun? <Link to="/daftar" className="font-bold underline underline-offset-4">Daftar</Link></>}
+      footer={<>Belum punya akun? <Link to="/daftar" className="font-semibold underline underline-offset-4">Daftar</Link></>}
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <Input label="Email atau nama" autoComplete="username" value={form.email} onChange={set('email')} error={errors.email} />
         <Input label="Password" type="password" autoComplete="current-password" value={form.password} onChange={set('password')} error={errors.password} />
-        <Link to="/lupa-password" className="self-end text-sm font-bold underline underline-offset-4">Lupa password?</Link>
+        <Link to="/lupa-password" className="self-end text-sm font-semibold underline underline-offset-4">Lupa password?</Link>
         <Button type="submit" className="w-full">Masuk</Button>
 
         <div className="grid grid-cols-2 gap-3">

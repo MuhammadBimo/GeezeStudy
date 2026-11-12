@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     <AuthLayout
       title="Lupa password"
       subtitle="Masukkan emailmu dan kami kirim tautan untuk mengatur ulang."
-      footer={<Link to="/masuk" className="font-bold underline underline-offset-4">Kembali ke halaman masuk</Link>}
+      footer={<Link to="/masuk" className="font-semibold underline underline-offset-4">Kembali ke halaman masuk</Link>}
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <Input label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error} />
@@ -34,9 +34,9 @@ export default function ForgotPasswordPage() {
       </form>
 
       {sent && (
-        <p role="status" className="mt-4 rounded-brutal border-2 border-ink bg-mint p-3 text-sm font-medium">
+        <p role="status" className="mt-4 rounded-panel border border-line bg-moss p-3 text-sm font-medium">
           Tidak ada email yang benar-benar dikirim di mode demo.{' '}
-          <Link to="/reset-password" className="font-bold underline underline-offset-4">Buka halaman atur ulang password</Link>
+          <Link to="/reset-password" className="font-semibold underline underline-offset-4">Buka halaman atur ulang password</Link>
         </p>
       )}
     </AuthLayout>
