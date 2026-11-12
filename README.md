@@ -23,7 +23,7 @@ php artisan serve --port=8010
 php artisan test
 ```
 
-Akun contoh (hanya di `APP_ENV=local`): `admin@geezestudy.test` dan `siswa@geezestudy.test`, password `password123`.
+Akun contoh (hanya di `APP_ENV=local`): ``admin@`, `sd@`, `smp@`, `sma@`, `mahasiswa@` + `geezestudy.test`, password `password123`.
 
 Autentikasi memakai Sanctum cookie (SPA): panggil `GET /sanctum/csrf-cookie`, lalu `POST /api/login`.
 Fitur: auth + verifikasi email + reset password, tugas, kalender, sesi belajar, goals, misi, progres/achievements,
