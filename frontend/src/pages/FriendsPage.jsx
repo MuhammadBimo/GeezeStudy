@@ -1,33 +1,22 @@
 import { useState } from 'react'
-import { EyeOff, Flame, UserCheck, UserMinus, UserPlus, X } from 'lucide-react'
+import { Check, EyeOff, Flame, Mail, UserMinus, UserPlus, X } from 'lucide-react'
 import AsyncView from '@/components/ui/AsyncView'
-import Badge from '@/components/ui/Badge'
+import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
 import EmptyState from '@/components/ui/EmptyState'
 import Input from '@/components/ui/Input'
+import Menu from '@/components/ui/Menu'
 import PageHeader from '@/components/ui/PageHeader'
-import SegmentedControl from '@/components/ui/SegmentedControl'
+import Toggle from '@/components/ui/Toggle'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 
-const privacyOptions = [
-  { value: 'show', label: 'Teman bisa melihat' },
-  { value: 'hide', label: 'Hanya saya' },
-]
-
-function Avatar({ name, color }) {
-  return (
-    <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full border border-line font-display text-lg font-medium ${color}`}>
-      {name.charAt(0).toUpperCase()}
-    </span>
-  )
-}
-
 function FriendsBoard({ resource, data }) {
   const toast = useToast()
+  const confirm = useConfirm()
   const { user, updateProfile } = useAuth()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
@@ -45,130 +34,118 @@ function FriendsBoard({ resource, data }) {
 
   const invite = async (e) => {
     e.preventDefault()
-    if (!email.trim()) {
-      setError('Isi email temanmu.')
-      return
-    }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError('Isi email temanmu dengan format yang benar.')
     setSending(true)
     try {
       await api.post('/friends', { email: email.trim() })
       setEmail('')
       setError('')
-      toast('Permintaan pertemanan terkirim')
+      toast.success('Permintaan pertemanan terkirim')
       resource.reload()
     } catch (err) {
       setError(fieldErrors(err).email ?? errorMessage(err))
     } finally {
       setSending(false)
     }
+    return undefined
   }
 
-  const changePrivacy = async (value) => {
-    try {
-      await updateProfile({ privacy_show_progress: value === 'show' })
-      toast('Privasi diperbarui')
-    } catch (err) {
-      toast(errorMessage(err), 'error')
+  const unfriend = async (f) => {
+    if (await confirm({ title: `Hapus ${f.name} dari teman?`, description: 'Kalian tidak akan saling melihat statistik lagi. Kamu bisa mengirim permintaan baru kapan saja.', confirmLabel: 'Hapus teman', tone: 'danger' })) {
+      run(() => api.delete(`/friends/${f.friendship_id}`), 'Teman dihapus')
     }
   }
 
-  const unfriend = (f) => {
-    if (window.confirm(`Hapus ${f.name} dari daftar teman?`)) run(() => api.delete(`/friends/${f.friendship_id}`), 'Teman dihapus')
-  }
+  // Urutkan teman menurut jam belajar minggu ini sebagai papan kecil (tanpa chat, hanya statistik).
+  const friends = [...data.friends].sort((a, b) => (b.stats?.week_minutes ?? -1) - (a.stats?.week_minutes ?? -1))
 
   return (
     <>
-      <PageHeader
-        title="Teman"
-        subtitle="Belajar lebih semangat bersama teman. Tidak ada chat, hanya statistik yang dibagikan."
-      />
+      <PageHeader title="Teman" subtitle="Belajar lebih semangat bersama teman. Tidak ada chat; yang dibagikan hanya statistik belajar." />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="flex flex-col gap-6 lg:col-span-2">
-          <Card className="p-5">
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold">
-              <UserPlus className="size-5" aria-hidden="true" /> Tambah teman
-            </h2>
-            <form onSubmit={invite} noValidate className="flex flex-wrap items-start gap-3">
-              <Input className="min-w-60 flex-1" label="Email teman" type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} error={error} hint="Temanmu harus sudah punya akun GeezeStudy." />
-              <Button type="submit" className="mt-6" loading={sending}>Kirim permintaan</Button>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <section aria-labelledby="friends-title">
+          <h2 id="friends-title" className="mb-3 text-base font-semibold">Teman <span className="font-normal text-muted">{friends.length}</span></h2>
+          {friends.length === 0 ? (
+            <div className="rounded-panel border border-line bg-surface"><EmptyState illustration="people" title="Belum ada teman" description="Kirim permintaan lewat email temanmu untuk mulai." /></div>
+          ) : (
+            <ol className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface shadow-xs">
+              {friends.map((f, i) => (
+                <li key={f.friendship_id} className="flex flex-wrap items-center gap-4 px-4 py-4 sm:flex-nowrap sm:px-5">
+                  <span className="w-5 text-center text-sm tabular-nums text-muted" aria-hidden="true">{f.stats ? i + 1 : '–'}</span>
+                  <Avatar name={f.name} src={f.avatar_url} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{f.name}</p>
+                    <p className="truncate text-sm text-ink-2">{f.institution || 'Pelajar GeezeStudy'}</p>
+                  </div>
+                  {f.stats ? (
+                    <dl className="flex gap-5 text-sm">
+                      <div><dt className="text-xs text-ink-2">Minggu ini</dt><dd className="font-semibold tabular-nums">{Math.round((f.stats.week_minutes / 60) * 10) / 10} jam</dd></div>
+                      <div><dt className="text-xs text-ink-2">Streak</dt><dd className="flex items-center gap-1 font-semibold tabular-nums"><Flame className="size-3.5 text-[#b5832a]" aria-hidden="true" />{f.stats.streak}</dd></div>
+                      <div><dt className="text-xs text-ink-2">Level</dt><dd className="font-semibold tabular-nums">{f.stats.level}</dd></div>
+                    </dl>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-ink-2"><EyeOff className="size-4" aria-hidden="true" /> Statistik disembunyikan</span>
+                  )}
+                  <Menu items={[{ label: 'Hapus teman', icon: UserMinus, danger: true, onSelect: () => unfriend(f) }]} label={`Aksi untuk ${f.name}`} />
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+
+        <aside className="space-y-6">
+          <section aria-labelledby="invite-title" className="rounded-panel border border-line bg-surface p-5">
+            <h2 id="invite-title" className="flex items-center gap-2 font-semibold"><UserPlus className="size-4.5 text-forest" aria-hidden="true" /> Tambah teman</h2>
+            <form onSubmit={invite} noValidate className="mt-3 space-y-3">
+              <Input label="Email teman" labelHidden type="email" icon={Mail} autoComplete="off" placeholder="email@teman.com" value={email} onChange={(e) => setEmail(e.target.value)} error={error} hint="Temanmu harus sudah punya akun." />
+              <Button type="submit" className="w-full" loading={sending}>Kirim permintaan</Button>
             </form>
             {data.outgoing.length > 0 && (
-              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Permintaan terkirim">
+              <ul className="mt-4 space-y-2 border-t border-line pt-4" aria-label="Permintaan terkirim">
                 {data.outgoing.map((o) => (
-                  <li key={o.friendship_id} className="flex items-center gap-1">
-                    <Badge color="bg-moss">Menunggu: {o.name}</Badge>
-                    <button type="button" onClick={() => run(() => api.delete(`/friends/${o.friendship_id}`), 'Permintaan dibatalkan')} aria-label={`Batalkan permintaan ke ${o.name}`} className="grid size-6 place-items-center rounded-full hover:bg-danger/10 hover:text-danger">
-                      <X className="size-3.5" aria-hidden="true" />
-                    </button>
+                  <li key={o.friendship_id} className="flex items-center gap-2.5 text-sm">
+                    <Avatar name={o.name} src={o.avatar_url} size="xs" />
+                    <span className="flex-1 truncate">{o.name} <span className="text-ink-2">· menunggu</span></span>
+                    <Button size="icon-sm" variant="ghost" aria-label={`Batalkan permintaan ke ${o.name}`} onClick={() => run(() => api.delete(`/friends/${o.friendship_id}`), 'Permintaan dibatalkan')}><X aria-hidden="true" /></Button>
                   </li>
                 ))}
               </ul>
             )}
-          </Card>
+          </section>
 
-          <Card tone="primary" className="p-5">
-            <h2 className="mb-3 text-xl font-semibold">Teman ({data.friends.length})</h2>
-            {data.friends.length === 0 ? (
-              <EmptyState icon={UserPlus} title="Belum ada teman" description="Kirim permintaan lewat email temanmu untuk mulai." />
-            ) : (
-              <ul className="flex flex-col gap-3">
-                {data.friends.map((f) => (
-                  <li key={f.friendship_id} className="flex flex-wrap items-center gap-3 rounded-panel border border-line p-3">
-                    <Avatar name={f.name} color="bg-sage" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold">{f.name}</p>
-                      {f.institution && <p className="truncate text-sm text-ink/80">{f.institution}</p>}
-                    </div>
-                    {f.stats ? (
-                      <div className="flex flex-wrap gap-2">
-                        <Badge color="bg-stone">Level {f.stats.level}</Badge>
-                        <Badge color="bg-clay"><Flame className="size-3" aria-hidden="true" /> {f.stats.streak} hari</Badge>
-                        <Badge color="bg-moss">{Math.round((f.stats.week_minutes / 60) * 10) / 10} jam/minggu</Badge>
-                      </div>
-                    ) : (
-                      <Badge color="bg-surface"><EyeOff className="size-3" aria-hidden="true" /> Statistik disembunyikan</Badge>
-                    )}
-                    <button type="button" onClick={() => unfriend(f)} aria-label={`Hapus ${f.name} dari teman`} className="grid size-9 place-items-center rounded-md border border-transparent hover:bg-danger/10 hover:text-danger">
-                      <UserMinus className="size-4" aria-hidden="true" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
-
-        <div className="flex flex-col gap-6">
-          <Card color="bg-sand-deep" className="p-5">
-            <h2 className="mb-3 text-xl font-semibold">Permintaan masuk</h2>
+          <section aria-labelledby="incoming-title" className="rounded-panel border border-sand bg-sand-soft p-5">
+            <h2 id="incoming-title" className="font-semibold">Permintaan masuk {data.incoming.length > 0 && <span className="ml-1 rounded-full bg-forest px-2 py-0.5 text-xs text-surface">{data.incoming.length}</span>}</h2>
             {data.incoming.length === 0 ? (
-              <p className="text-sm font-medium">Tidak ada permintaan baru.</p>
+              <p className="mt-2 text-sm text-ink-2">Tidak ada permintaan baru.</p>
             ) : (
-              <ul className="flex flex-col gap-3">
+              <ul className="mt-3 space-y-3">
                 {data.incoming.map((r) => (
-                  <li key={r.friendship_id} className="rounded-panel border border-line bg-surface p-3">
-                    <p className="mb-2 font-semibold">{r.name}</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => run(() => api.post(`/friends/${r.friendship_id}/accept`), `${r.name} sekarang temanmu`)}>
-                        <UserCheck className="size-4" aria-hidden="true" /> Terima
-                      </Button>
-                      <Button size="sm" variant="neutral" onClick={() => run(() => api.delete(`/friends/${r.friendship_id}`), 'Permintaan ditolak')}>
-                        <X className="size-4" aria-hidden="true" /> Tolak
-                      </Button>
-                    </div>
+                  <li key={r.friendship_id} className="flex items-center gap-3">
+                    <Avatar name={r.name} src={r.avatar_url} size="sm" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{r.name}</span>
+                    <Button size="icon-sm" aria-label={`Terima ${r.name}`} onClick={() => run(() => api.post(`/friends/${r.friendship_id}/accept`), `${r.name} sekarang temanmu`)}><Check aria-hidden="true" /></Button>
+                    <Button size="icon-sm" variant="secondary" aria-label={`Tolak ${r.name}`} onClick={() => run(() => api.delete(`/friends/${r.friendship_id}`), 'Permintaan ditolak')}><X aria-hidden="true" /></Button>
                   </li>
                 ))}
               </ul>
             )}
-          </Card>
+          </section>
 
-          <Card className="p-5">
-            <h2 className="mb-1 text-xl font-semibold">Privasi statistik</h2>
-            <p className="mb-3 text-sm text-ink/80">Atur siapa yang boleh melihat Level, Streak, dan waktu belajarmu.</p>
-            <SegmentedControl label="Privasi statistik" options={privacyOptions} value={user.privacy_show_progress ? 'show' : 'hide'} onChange={changePrivacy} />
-          </Card>
-        </div>
+          <section aria-labelledby="privacy-title" className="flex items-start justify-between gap-4 px-1">
+            <div>
+              <h2 id="privacy-title" className="text-sm font-semibold">Tampilkan statistikku</h2>
+              <p className="mt-0.5 text-sm text-ink-2">Teman bisa melihat level, streak, dan jam belajarmu.</p>
+            </div>
+            <Toggle
+              label="Tampilkan statistik ke teman"
+              checked={user.privacy_show_progress}
+              onChange={async (v) => {
+                try { await updateProfile({ privacy_show_progress: v }); toast(v ? 'Statistik terlihat oleh teman' : 'Statistik disembunyikan') } catch (err) { toast(errorMessage(err), 'error') }
+              }}
+            />
+          </section>
+        </aside>
       </div>
     </>
   )

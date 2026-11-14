@@ -5,6 +5,7 @@ import AppShell from '@/components/layout/AppShell'
 import { GuestOnly, RequireAdmin, RequireAuth } from '@/components/layout/RouteGuards'
 import Skeleton from '@/components/ui/Skeleton'
 import ToastProvider from '@/components/ui/ToastProvider'
+import ConfirmProvider from '@/components/ui/ConfirmProvider'
 import AuthProvider from '@/context/AuthProvider'
 
 // Setiap halaman dimuat saat dibutuhkan (route-based code splitting).
@@ -20,6 +21,8 @@ const ProgressPage = page(() => import('@/pages/ProgressPage'))
 const FriendsPage = page(() => import('@/pages/FriendsPage'))
 const NotificationsPage = page(() => import('@/pages/NotificationsPage'))
 const SettingsPage = page(() => import('@/pages/SettingsPage'))
+const ProfilePage = page(() => import('@/pages/ProfilePage'))
+const AchievementsPage = page(() => import('@/pages/AchievementsPage'))
 const NotFoundPage = page(() => import('@/pages/NotFoundPage'))
 
 const LoginPage = page(() => import('@/pages/auth/LoginPage'))
@@ -54,6 +57,7 @@ export default function App() {
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AuthProvider>
               <ToastProvider>
+              <ConfirmProvider>
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
                     <Route element={<GuestOnly />}>
@@ -77,6 +81,8 @@ export default function App() {
                         <Route path="teman" element={<FriendsPage />} />
                         <Route path="notifikasi" element={<NotificationsPage />} />
                         <Route path="pengaturan" element={<SettingsPage />} />
+                        <Route path="profil" element={<ProfilePage />} />
+                        <Route path="achievements" element={<AchievementsPage />} />
 
                         <Route path="admin" element={<RequireAdmin />}>
                           <Route index element={<AdminOverviewPage />} />
@@ -95,6 +101,7 @@ export default function App() {
                     <Route path="*" element={<NotFoundPage standalone />} />
                   </Routes>
                 </Suspense>
+              </ConfirmProvider>
               </ToastProvider>
           </AuthProvider>
         </BrowserRouter>

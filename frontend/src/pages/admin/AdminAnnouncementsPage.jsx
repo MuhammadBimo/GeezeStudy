@@ -8,12 +8,14 @@ import Input from '@/components/ui/Input'
 import PageHeader from '@/components/ui/PageHeader'
 import Textarea from '@/components/ui/Textarea'
 import { useResource } from '@/hooks/useResource'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 import { relativeTime } from '@/lib/mappers'
 
 function AnnouncementAdmin({ resource, items }) {
   const toast = useToast()
+  const confirm = useConfirm()
   const [form, setForm] = useState({ title: '', body: '' })
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
@@ -43,7 +45,7 @@ function AnnouncementAdmin({ resource, items }) {
   }
 
   const remove = async (a) => {
-    if (!window.confirm(`Hapus pengumuman "${a.title}"?`)) return
+    if (!(await confirm({ title: 'Hapus pengumuman?', description: `Hapus pengumuman "${a.title}"?`, confirmLabel: 'Hapus', tone: 'danger' }))) return
     try {
       await api.delete(`/admin/announcements/${a.id}`)
       toast('Pengumuman dihapus')

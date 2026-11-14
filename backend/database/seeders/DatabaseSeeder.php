@@ -27,6 +27,12 @@ class DatabaseSeeder extends Seeder
 
         foreach (self::DEMO_ACCOUNTS as [$email, $name, $role, $level, $institution, $goal]) {
             $user = User::firstOrNew(['email' => $email]);
+            // Akun yang sudah ada tidak ditimpa (kredensial dan profil dipertahankan); hanya peran dan verifikasi dipastikan.
+            if ($user->exists) {
+                $user->forceFill(['role' => $role, 'email_verified_at' => $user->email_verified_at ?? now(), 'onboarded_at' => $user->onboarded_at ?? now()])->save();
+
+                continue;
+            }
             $user->fill([
                 'name' => $name,
                 'password' => 'password123',
@@ -39,5 +45,8 @@ class DatabaseSeeder extends Seeder
 
         // Akun lama dari versi sebelumnya.
         User::where('email', 'siswa@geezestudy.test')->delete();
+
+        // Data demo per jenjang (tugas, sesi, goals, misi, achievements). Akun yang sudah terisi dilewati.
+        $this->call(DemoDataSeeder::class);
     }
 }

@@ -1,42 +1,35 @@
-import { Clock } from 'lucide-react'
-import Card from '@/components/ui/Card'
+import { cn } from '@/lib/cn'
 
 const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
-
-// Hari ini = indeks 0 (Senin) s.d. 6 (Minggu), dihitung dari tanggal sistem.
 const todayIndex = (new Date().getDay() + 6) % 7
 
-export default function StudySummary({ minutes }) {
+// Grafik batang minimal: garis target harian sebagai acuan, hari ini disorot.
+export default function StudySummary({ minutes, goal }) {
   const total = minutes.reduce((a, b) => a + b, 0)
-  const max = Math.max(...minutes, 1)
+  const max = Math.max(...minutes, goal, 1)
 
   return (
-    <Card className="p-5 lg:col-span-2">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-xl font-semibold">
-          <Clock className="size-5" aria-hidden="true" /> Waktu belajar minggu ini
-        </h2>
-        <p className="font-display text-2xl font-medium">
-          {Math.floor(total / 60)} jam {total % 60} mnt
-        </p>
+    <div>
+      <div className="mb-4 flex items-baseline gap-2">
+        <p className="font-display text-[1.75rem] leading-none tabular-nums">{Math.floor(total / 60)}<span className="font-sans text-base text-ink-2"> jam </span>{total % 60}<span className="font-sans text-base text-ink-2"> menit</span></p>
+        <p className="text-sm text-ink-2">minggu ini</p>
       </div>
-
-      <ul className="grid h-40 grid-cols-7 items-end gap-2 sm:gap-3">
-        {minutes.map((m, i) => (
-          <li key={days[i]} className="flex h-full flex-col justify-end gap-1" aria-label={`${days[i]}: ${m} menit`}>
-            <span className="text-center text-xs font-semibold">{m > 0 ? m : ''}</span>
-            <div
-              className={`w-full rounded-t-md ${i === todayIndex ? 'bg-forest' : 'bg-sage'}`}
-              style={{ height: `${Math.max((m / max) * 100, m > 0 ? 6 : 2)}%` }}
-            />
-          </li>
-        ))}
-      </ul>
-      <ul className="mt-2 grid grid-cols-7 gap-2 sm:gap-3" aria-hidden="true">
-        {days.map((d, i) => (
-          <li key={d} className={`text-center text-xs font-semibold ${i === todayIndex ? 'underline decoration-forest decoration-2 underline-offset-4' : ''}`}>{d}</li>
-        ))}
-      </ul>
-    </Card>
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-forest/30" style={{ bottom: `calc(${(goal / max) * 100}% * 0.86 + 1.5rem)` }} aria-hidden="true">
+          <span className="absolute -top-2.5 right-0 bg-surface pl-1.5 text-[0.6875rem] text-ink-2">target {goal}</span>
+        </div>
+        <ul className="grid h-40 grid-cols-7 items-end gap-2 sm:gap-3">
+          {minutes.map((m, i) => (
+            <li key={days[i]} className="flex h-full flex-col items-center justify-end gap-1.5" aria-label={`${days[i]}: ${m} menit`}>
+              <div
+                className={cn('w-full max-w-9 rounded-md transition-[height] duration-500', i === todayIndex ? 'bg-forest' : m >= goal ? 'bg-forest/55' : 'bg-sage-deep')}
+                style={{ height: `${Math.max((m / max) * 86, m > 0 ? 4 : 1.5)}%` }}
+              />
+              <span className={cn('text-[0.6875rem]', i === todayIndex ? 'font-semibold text-ink' : 'text-muted')}>{days[i]}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   )
 }

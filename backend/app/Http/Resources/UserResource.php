@@ -25,6 +25,7 @@ class UserResource extends JsonResource
             'onboarded' => $this->onboarded_at !== null,
             'education_level' => $this->education_level,
             'institution' => $this->institution,
+            'avatar_url' => $this->avatar_path ? route('avatars.show', $this->avatar_path) : null,
             'daily_goal_minutes' => $this->daily_goal_minutes,
             'privacy_show_progress' => $this->privacy_show_progress,
             'calendar_sync' => $this->calendar_sync,

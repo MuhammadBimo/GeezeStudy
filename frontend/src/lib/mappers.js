@@ -11,6 +11,7 @@ export const taskFromApi = (t) => ({
   title: t.title,
   course: t.course ?? '',
   due: t.due_at ? toISO(new Date(t.due_at)) : '',
+  dueAt: t.due_at,
   priority: PRIORITY_FROM_API[t.priority] ?? 'Sedang',
   status: STATUS_FROM_API[t.status] ?? 'todo',
   description: t.description ?? '',

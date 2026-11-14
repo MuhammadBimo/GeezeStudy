@@ -1,12 +1,21 @@
 import { useId } from 'react'
-import { fieldClass } from '@/components/ui/Input'
+import Field from '@/components/ui/Field'
+import { describedBy, fieldClass } from '@/lib/field'
+import { cn } from '@/lib/cn'
 
-export default function Textarea({ label, className, ...props }) {
+export default function Textarea({ label, error, hint, className, required, rows = 3, ...props }) {
   const id = useId()
   return (
-    <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold">{label}</label>
-      <textarea id={id} rows={3} className={fieldClass} {...props} />
-    </div>
+    <Field id={id} label={label} hint={hint} error={error} required={required} className={className}>
+      <textarea
+        id={id}
+        rows={rows}
+        required={required}
+        aria-invalid={Boolean(error)}
+        aria-describedby={describedBy(id, hint, error)}
+        className={cn(fieldClass, 'h-auto min-h-24 resize-y py-2.5 leading-relaxed')}
+        {...props}
+      />
+    </Field>
   )
 }

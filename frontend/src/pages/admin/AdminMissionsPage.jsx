@@ -11,6 +11,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import Select from '@/components/ui/Select'
 import Toggle from '@/components/ui/Toggle'
 import { useResource } from '@/hooks/useResource'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 
@@ -26,6 +27,7 @@ const blank = { title: '', type: 'daily', metric: 'tasks_completed', target: '1'
 
 function MissionAdmin({ resource, missions }) {
   const toast = useToast()
+  const confirm = useConfirm()
   const [editing, setEditing] = useState(null) // null | 'new' | misi
   const [form, setForm] = useState(blank)
   const [error, setError] = useState('')
@@ -73,7 +75,7 @@ function MissionAdmin({ resource, missions }) {
   }
 
   const remove = async (m) => {
-    if (!window.confirm(`Hapus misi "${m.title}"? Klaim yang sudah ada ikut terhapus.`)) return
+    if (!(await confirm({ title: 'Hapus misi?', description: `Hapus misi "${m.title}"? Klaim yang sudah ada ikut terhapus.`, confirmLabel: 'Hapus', tone: 'danger' }))) return
     try {
       await api.delete(`/admin/missions/${m.id}`)
       toast('Misi dihapus')
@@ -116,18 +118,16 @@ function MissionAdmin({ resource, missions }) {
         </ul>
       )}
 
-      <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing === 'new' ? 'Misi baru' : 'Ubah misi'}>
-        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+      <Modal
+        footer={<><Button variant="secondary" onClick={() => setEditing(null)}>Batal</Button><Button type="submit" form="mission-form" loading={saving}>Simpan misi</Button></>}
+        open={editing !== null} onClose={() => setEditing(null)} title={editing === 'new' ? 'Misi baru' : 'Ubah misi'}>
+        <form id="mission-form" onSubmit={submit} noValidate className="flex flex-col gap-4">
           <Input label="Judul misi" value={form.title} onChange={set('title')} error={error} maxLength={100} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Select label="Periode" options={periodOptions} value={form.type} onChange={set('type')} />
             <Select label="Diukur dari" options={metricOptions} value={form.metric} onChange={set('metric')} />
             <Input label="Target" type="number" min={1} value={form.target} onChange={set('target')} />
             <Input label="Reward (Points)" type="number" min={0} value={form.reward_points} onChange={set('reward_points')} />
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="neutral" onClick={() => setEditing(null)}>Batal</Button>
-            <Button type="submit" loading={saving}>Simpan misi</Button>
           </div>
         </form>
       </Modal>

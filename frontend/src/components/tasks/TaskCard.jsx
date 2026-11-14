@@ -1,66 +1,66 @@
 import { m } from 'motion/react'
-import { Check, Paperclip, Pencil, Trash2, Loader } from 'lucide-react'
+import { Check, CircleDot, Paperclip, Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
+import Menu, { ContextMenu } from '@/components/ui/Menu'
 import { cn } from '@/lib/cn'
-import { TODAY, formatShort } from '@/lib/date'
+import { dueInfo } from '@/lib/date'
+import { priorityMeta, statusMeta } from '@/lib/taskMeta'
 
-import { priorityColor, statusMeta } from '@/lib/taskMeta'
+const toneText = { danger: 'text-danger font-medium', warning: 'text-warning font-medium', neutral: 'text-ink-2' }
 
-export default function TaskCard({ task, onCycle, onOpen, onEdit, onDelete }) {
-  const overdue = task.status !== 'done' && task.due !== '' && task.due < TODAY
+// Satu baris tugas: tombol status, judul (buka detail), mata pelajaran, tenggat, prioritas, menu aksi.
+export default function TaskCard({ task, onCycle, onSetStatus, onOpen, onEdit, onDelete }) {
+  const done = task.status === 'done'
+  const due = dueInfo(task.dueAt, done)
   const meta = statusMeta[task.status]
 
-  return (
-    <m.li
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -24 }}
-      transition={{ duration: 0.2 }}
-      className="flex items-start gap-3 rounded-panel border border-line bg-surface p-4 shadow-soft-sm"
-    >
-      <button
-        type="button"
-        onClick={() => onCycle(task.id)}
-        aria-label={`Status ${meta.label}. Ubah status: ${task.title}`}
-        className={cn('mt-0.5 grid size-8 shrink-0 place-items-center rounded-md border border-line transition-all duration-150 active:scale-90 motion-reduce:transition-none', meta.color)}
-      >
-        {task.status === 'done' && <Check className="size-5 animate-pop" strokeWidth={3} aria-hidden="true" />}
-        {task.status === 'progress' && <Loader className="size-4" aria-hidden="true" />}
-      </button>
+  const items = [
+    { label: 'Ubah', icon: Pencil, onSelect: () => onEdit(task) },
+    done
+      ? { label: 'Buka lagi', icon: RotateCcw, onSelect: () => onSetStatus(task, 'todo') }
+      : { label: 'Tandai selesai', icon: Check, onSelect: () => onSetStatus(task, 'done') },
+    ...(task.status === 'todo' ? [{ label: 'Mulai kerjakan', icon: CircleDot, onSelect: () => onSetStatus(task, 'progress') }] : []),
+    '-',
+    { label: 'Hapus', icon: Trash2, danger: true, onSelect: () => onDelete(task) },
+  ]
 
-      <div className="min-w-0 flex-1">
+  return (
+    <m.li layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+      <ContextMenu items={items} className="group flex items-start gap-3.5 px-4 py-3.5 transition-colors hover:bg-canvas/70 sm:px-5">
         <button
           type="button"
-          onClick={() => onOpen(task)}
-          aria-label={`Lihat detail: ${task.title}`}
-          className={cn('text-left font-semibold leading-snug underline-offset-4 hover:underline', task.status === 'done' && 'line-through text-ink/80')}
-        >
-          {task.title}
-        </button>
-        <p className="text-sm text-ink/80">{task.course || 'Tanpa mata kuliah'}</p>
-        {task.description && <p className="mt-1 line-clamp-2 text-sm">{task.description}</p>}
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge color={priorityColor[task.priority]}>{task.priority}</Badge>
-          <Badge color={meta.color}>{meta.label}</Badge>
-          <span className={cn('text-sm font-semibold', overdue && 'text-danger')}>
-            {task.due === '' ? 'Tanpa deadline' : `${overdue ? 'Terlambat · ' : 'Deadline '}${formatShort(task.due)}`}
-          </span>
-          {task.attachment && (
-            <span className="inline-flex items-center gap-1 text-sm text-ink/80">
-              <Paperclip className="size-3.5" aria-hidden="true" /> {task.attachment}
-            </span>
+          onClick={() => onCycle(task)}
+          aria-label={`Status: ${meta.label}. Ubah status ${task.title}`}
+          className={cn(
+            'mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-[1.5px] transition-all active:scale-90',
+            done ? 'border-forest bg-forest text-surface' : task.status === 'progress' ? 'border-info bg-info-soft text-info' : 'border-line-strong hover:border-forest hover:bg-sage',
           )}
-        </div>
-      </div>
+        >
+          {done && <Check className="size-3.5 animate-pop" strokeWidth={3} aria-hidden="true" />}
+          {task.status === 'progress' && <span className="size-2 rounded-full bg-info" aria-hidden="true" />}
+        </button>
 
-      <div className="flex shrink-0 gap-1">
-        <button type="button" onClick={() => onEdit(task)} aria-label={`Ubah ${task.title}`} className="grid size-9 place-items-center rounded-md border border-transparent hover:border-line hover:bg-sand-deep">
-          <Pencil className="size-4" aria-hidden="true" />
-        </button>
-        <button type="button" onClick={() => onDelete(task)} aria-label={`Hapus ${task.title}`} className="grid size-9 place-items-center rounded-md border border-transparent hover:bg-danger/10 hover:text-danger">
-          <Trash2 className="size-4" aria-hidden="true" />
-        </button>
-      </div>
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => onOpen(task)}
+            className={cn('text-left font-medium leading-snug decoration-line-strong underline-offset-4 hover:underline', done && 'text-ink-2 line-through')}
+          >
+            {task.title}
+          </button>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem]">
+            <span className="text-ink-2">{task.course || 'Tanpa mata pelajaran'}</span>
+            <span className={toneText[due.tone]}>{due.text}</span>
+            {task.attachment && <span className="inline-flex items-center gap-1 text-ink-2"><Paperclip className="size-3" aria-hidden="true" />{task.attachment}</span>}
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          {task.status === 'progress' && <Badge tone="info" className="hidden sm:inline-flex">Dikerjakan</Badge>}
+          {!done && <Badge tone={priorityMeta[task.priority].tone} dot className="hidden sm:inline-flex">{task.priority}</Badge>}
+          <Menu items={items} label={`Aksi untuk ${task.title}`} />
+        </div>
+      </ContextMenu>
     </m.li>
   )
 }

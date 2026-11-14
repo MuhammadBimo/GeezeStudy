@@ -1,167 +1,132 @@
-import { Suspense } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Suspense, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { m } from 'motion/react'
-import { ArrowLeft, GraduationCap, LogOut, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Bell, GraduationCap, LayoutGrid, LogOut, Settings, ShieldCheck, UserRound } from 'lucide-react'
+import Avatar from '@/components/ui/Avatar'
+import Menu from '@/components/ui/Menu'
+import Modal from '@/components/ui/Modal'
 import Skeleton from '@/components/ui/Skeleton'
-import { adminNavItems, navItems } from '@/lib/navigation'
+import { adminMobilePrimary, adminNavGroups, mobilePrimary, navGroups } from '@/lib/navigation'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
-function SidebarLink({ to, label, icon: Icon }) {
+const isActivePath = (pathname, to) => (to === '/' || to === '/admin' ? pathname === to : pathname.startsWith(to))
+
+function Brand({ admin }) {
   return (
-    <NavLink
-      to={to}
-      end={to === '/' || to === '/admin'}
-      className={({ isActive }) =>
-        cn(
-          'group relative flex min-h-11 items-center gap-3 rounded-panel px-3 py-2 text-[0.95rem] font-medium transition-all duration-150 active:scale-[0.98] motion-reduce:transition-none',
-          isActive
-            ? 'bg-forest text-surface shadow-soft-sm'
-            : 'text-ink/80 hover:bg-surface hover:text-ink hover:shadow-soft-sm',
-        )
-      }
-    >
-      <Icon className="size-[1.15rem] transition-transform duration-150 group-hover:scale-110" aria-hidden="true" />
-      {label}
-    </NavLink>
+    <Link to={admin ? '/admin' : '/'} className="flex items-center gap-2.5 rounded-lg">
+      <span className="grid size-8 place-items-center rounded-[0.6rem] bg-forest text-sand">
+        <GraduationCap className="size-4.5" aria-hidden="true" />
+      </span>
+      <span className="font-display text-[1.15rem] font-medium tracking-tight">GeezeStudy</span>
+      {admin && <span className="rounded-md bg-sand px-1.5 py-0.5 text-[0.6875rem] font-semibold text-[#5b4a2a]">Admin</span>}
+    </Link>
   )
 }
 
-function BottomLink({ to, label, icon: Icon }) {
+function SideLink({ to, label, icon: Icon, active }) {
   return (
     <NavLink
       to={to}
       end={to === '/' || to === '/admin'}
-      className={({ isActive }) =>
-        cn(
-          'flex min-h-12 min-w-[4.5rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded-panel px-2 py-1 text-[11px] font-medium transition-all duration-150 active:scale-90 motion-reduce:transition-none',
-          isActive ? 'bg-forest text-surface shadow-soft-sm' : 'text-ink/80',
-        )
-      }
+      className={cn(
+        'group relative flex h-10 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors duration-150',
+        active ? 'font-semibold text-forest' : 'text-ink-2 hover:bg-ink/[0.04] hover:text-ink',
+      )}
     >
-      <Icon className="size-5" aria-hidden="true" />
-      {label}
+      {active && (
+        <m.span layoutId="side-active" transition={{ type: 'spring', stiffness: 500, damping: 40 }} className="absolute inset-0 rounded-lg bg-sage">
+          <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-forest" />
+        </m.span>
+      )}
+      <Icon className="relative size-[1.125rem] transition-transform duration-150 group-hover:scale-105" aria-hidden="true" />
+      <span className="relative">{label}</span>
     </NavLink>
   )
 }
 
 export default function AppShell() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const { user, logout } = useAuth()
   const toast = useToast()
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const inAdmin = pathname.startsWith('/admin')
-  const items = inAdmin ? adminNavItems : navItems
+  const groups = inAdmin ? adminNavGroups : navGroups
+  const allItems = groups.flatMap((g) => g.items)
+  const primary = (inAdmin ? adminMobilePrimary : mobilePrimary).map((to) => allItems.find((i) => i.to === to))
   const isAdmin = user.role === 'admin'
 
   const handleLogout = async () => {
     try {
       await logout()
-      toast('Kamu sudah keluar')
+      toast.info('Kamu sudah keluar')
     } catch {
       toast('Gagal keluar. Coba lagi.', 'error')
     }
   }
 
+  const accountMenu = [
+    ...(inAdmin ? [] : [{ label: 'Profil', icon: UserRound, onSelect: () => navigate('/profil') }, { label: 'Pengaturan', icon: Settings, onSelect: () => navigate('/pengaturan') }]),
+    ...(isAdmin ? [{ label: inAdmin ? 'Kembali ke aplikasi' : 'Panel Admin', icon: inAdmin ? ArrowLeft : ShieldCheck, onSelect: () => navigate(inAdmin ? '/' : '/admin') }] : []),
+    '-',
+    { label: 'Keluar', icon: LogOut, danger: true, onSelect: handleLogout },
+  ]
+
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
-      <a
-        href="#konten"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-panel focus:bg-forest focus:p-2 focus:text-surface"
-      >
+    <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_1fr]">
+      <a href="#konten" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[90] focus:rounded-lg focus:bg-forest focus:px-3 focus:py-2 focus:text-surface">
         Lewati ke konten
       </a>
 
-      <aside
-        className={cn(
-          'hidden border-r border-line bg-canvas p-5 shadow-[6px_0_14px_-8px_rgb(122_98_52/0.3)] lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-6 lg:overflow-y-auto',
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <span className="grid size-10 place-items-center rounded-panel bg-forest text-surface shadow-soft-sm">
-            <GraduationCap className="size-5" aria-hidden="true" />
-          </span>
-          <div className="leading-tight">
-            <span className="block font-display text-xl font-medium">GeezeStudy</span>
-            {inAdmin && <span className="text-xs font-medium text-forest-mid">Panel Admin</span>}
-          </div>
-        </div>
-
-        <nav aria-label={inAdmin ? 'Menu admin' : 'Menu utama'} className="flex flex-col gap-1.5">
-          {items.map((item) => <SidebarLink key={item.to} {...item} />)}
-        </nav>
-
-        {isAdmin && (
-          <Link
-            to={inAdmin ? '/' : '/admin'}
-            className="flex min-h-11 items-center gap-2 rounded-panel border border-line bg-surface px-3 py-2 text-sm font-semibold text-forest shadow-soft-sm transition-all hover:-translate-y-px active:shadow-inset motion-reduce:transition-none"
-          >
-            {inAdmin ? <ArrowLeft className="size-4" aria-hidden="true" /> : <ShieldCheck className="size-4" aria-hidden="true" />}
-            {inAdmin ? 'Kembali ke aplikasi' : 'Panel Admin'}
-          </Link>
-        )}
-
-        <div className="mt-auto flex flex-col gap-3 border-t border-line pt-4">
-          <div className="flex items-center gap-3">
-            <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-forest-tint font-display text-lg font-medium text-forest">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate font-semibold leading-tight">{user.name}</p>
-              <p className="truncate text-sm text-ink/80">{isAdmin ? 'Admin' : user.institution || 'Student'}</p>
+      {/* Sidebar desktop */}
+      <aside className="hidden border-r border-line bg-canvas lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
+        <div className="px-5 pb-4 pt-6"><Brand admin={inAdmin} /></div>
+        <nav aria-label={inAdmin ? 'Menu admin' : 'Menu utama'} className="thin-scroll flex-1 overflow-y-auto px-3 pb-4">
+          {groups.map((g) => (
+            <div key={g.label} className="mt-4 first:mt-1">
+              <p className="mb-1.5 px-3 text-xs font-medium text-muted">{g.label}</p>
+              <div className="flex flex-col gap-0.5">
+                {g.items.map((item) => <SideLink key={item.to} {...item} active={isActivePath(pathname, item.to)} />)}
+              </div>
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex items-center justify-center min-h-10 gap-2 rounded-panel border border-line bg-surface px-3 py-2 text-sm font-semibold shadow-soft-sm transition-all hover:bg-canvas active:shadow-inset motion-reduce:transition-none"
-          >
-            <LogOut className="size-4" aria-hidden="true" /> Keluar
-          </button>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3 border-t border-line px-4 py-4">
+          <Link to={inAdmin ? '/admin' : '/profil'} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg">
+            <Avatar name={user.name} src={user.avatar_url} size="sm" />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold">{user.name}</span>
+              <span className="block truncate text-xs text-ink-2">{isAdmin ? 'Admin' : user.institution || 'Student'}</span>
+            </span>
+          </Link>
+          <Menu items={accountMenu} label="Menu akun" />
         </div>
       </aside>
 
       <div className="min-w-0">
-        <div className={'flex items-center justify-between gap-2 border-b border-line bg-canvas px-4 py-3 lg:hidden'}>
-          <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-lg bg-forest text-surface"><GraduationCap className="size-4" aria-hidden="true" /></span>
-            <span className="font-display text-xl font-medium">{inAdmin ? 'Panel Admin' : 'GeezeStudy'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Link
-                to={inAdmin ? '/' : '/admin'}
-                aria-label={inAdmin ? 'Kembali ke aplikasi' : 'Buka Panel Admin'}
-                className="grid size-10 place-items-center rounded-panel border border-line bg-surface shadow-soft-sm transition-transform active:scale-95"
-              >
-                {inAdmin ? <ArrowLeft className="size-4" aria-hidden="true" /> : <ShieldCheck className="size-4" aria-hidden="true" />}
+        {/* Bar atas mobile */}
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-line bg-canvas/95 px-4 lg:hidden">
+          <Brand admin={inAdmin} />
+          <div className="flex items-center gap-1">
+            {!inAdmin && (
+              <Link to="/notifikasi" aria-label="Notifikasi" className="grid size-10 place-items-center rounded-lg text-ink-2 hover:bg-ink/5 hover:text-ink">
+                <Bell className="size-5" aria-hidden="true" />
               </Link>
             )}
-            <button
-              type="button"
-              onClick={handleLogout}
-              aria-label={`Keluar dari akun ${user.name}`}
-              className="flex items-center gap-1.5 min-h-10 rounded-panel border border-line bg-surface px-3 py-1 text-sm font-semibold shadow-soft-sm transition-transform active:scale-95"
-            >
-              <LogOut className="size-4" aria-hidden="true" /> Keluar
-            </button>
+            <Menu items={accountMenu} label="Menu akun" className="size-10"><Avatar name={user.name} src={user.avatar_url} size="xs" /></Menu>
           </div>
-        </div>
+        </header>
 
-        <main id="konten" className="mx-auto max-w-6xl p-4 pb-28 sm:p-6 lg:px-10 lg:py-9">
-          {/* Transisi singkat tiap pindah halaman: menjawab aksi pengguna (klik menu). */}
-          <m.div
-            key={pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-          >
+        <main id="konten" className="mx-auto w-full max-w-[72rem] px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+          <m.div key={pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
             <Suspense
               fallback={
                 <div role="status" aria-label="Memuat halaman" className="flex flex-col gap-4">
-                  <Skeleton className="h-12 w-64" />
-                  <Skeleton className="h-48 w-full" />
+                  <Skeleton className="h-10 w-56" />
+                  <Skeleton className="h-40 w-full rounded-panel" />
                 </div>
               }
             >
@@ -171,12 +136,53 @@ export default function AppShell() {
         </main>
       </div>
 
+      {/* Bottom navigation mobile */}
       <nav
         aria-label={inAdmin ? 'Menu admin mobile' : 'Menu utama mobile'}
-        className="fixed inset-x-0 bottom-0 z-40 flex gap-1 overflow-x-auto border-t border-line bg-canvas/95 p-2 backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-surface/97 px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1 lg:hidden"
       >
-        {items.map((item) => <BottomLink key={item.to} {...item} />)}
+        {primary.map(({ to, label, short, icon: Icon }) => {
+          const active = isActivePath(pathname, to)
+          return (
+            <NavLink key={to} to={to} end={to === '/' || to === '/admin'} className={cn('relative flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium transition-colors', active ? 'text-forest' : 'text-ink-2')}>
+              {active && <m.span layoutId="bottom-active" className="absolute top-1 h-8 w-12 rounded-full bg-sage" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+              <Icon className="relative size-5" aria-hidden="true" />
+              <span className="relative">{short ?? label}</span>
+            </NavLink>
+          )
+        })}
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          aria-haspopup="dialog"
+          className={cn('flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium', !primary.some((p) => isActivePath(pathname, p.to)) ? 'text-forest' : 'text-ink-2')}
+        >
+          <LayoutGrid className="size-5" aria-hidden="true" /> Lainnya
+        </button>
       </nav>
+
+      <Modal open={moreOpen} onClose={() => setMoreOpen(false)} title="Semua menu" size="sm">
+        <nav aria-label="Semua menu" className="flex flex-col gap-5">
+          {groups.map((g) => (
+            <div key={g.label}>
+              <p className="mb-2 text-xs font-medium text-muted">{g.label}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {g.items.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={to === '/' || to === '/admin'}
+                    onClick={() => setMoreOpen(false)}
+                    className={cn('flex h-12 items-center gap-2.5 rounded-xl border px-3 text-sm font-medium transition-colors', isActivePath(pathname, to) ? 'border-sage-deep bg-sage text-forest' : 'border-line bg-surface hover:bg-canvas')}
+                  >
+                    <Icon className="size-4.5" aria-hidden="true" /> {label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </Modal>
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\CalendarEventController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\GoalController;
@@ -19,6 +20,7 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('throt
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
+Route::get('/avatars/{filename}', [AvatarController::class, 'show'])->name('avatars.show');
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
 
@@ -28,6 +30,8 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/user', [AuthController::class, 'show']);
     Route::patch('/user', [AuthController::class, 'update']);
     Route::post('/onboarding', [AuthController::class, 'completeOnboarding']);
+    Route::post('/user/avatar', [AvatarController::class, 'store'])->middleware('throttle:10,1');
+    Route::delete('/user/avatar', [AvatarController::class, 'destroy']);
     Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->middleware('throttle:3,1');
 });
 

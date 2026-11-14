@@ -43,7 +43,10 @@ Buka http://localhost:5173. Di halaman Masuk (mode dev) ada tombol akun uji. Sem
 | SMA | sma@geezestudy.test |
 | Mahasiswa | mahasiswa@geezestudy.test |
 
-Akun ini hanya dibuat saat `APP_ENV=local`. Tes backend: `cd backend && php artisan test`.
+Akun ini hanya dibuat saat `APP_ENV=local`. Tiap akun Student berisi data demo sesuai jenjangnya (tugas, deadline, jadwal,
+riwayat sesi belajar, goals, misi, achievements, teman, notifikasi). Points, level, dan streak dihitung dari aktivitas itu.
+`php artisan db:seed` aman diulang: akun yang sudah terisi dilewati dan data buatanmu tidak disentuh.
+Tes backend: `cd backend && php artisan test`.
 
 Pengingat deadline/jadwal dibuat oleh `php artisan reminders:send` (dijadwalkan tiap 15 menit lewat scheduler Laravel).
 
@@ -59,15 +62,19 @@ Pengingat deadline/jadwal dibuat oleh `php artisan reminders:send` (dijadwalkan 
 
 Unggah lampiran tugas belum ada (hanya nama berkas), dan sinkronisasi Google Calendar belum tersambung (pilihannya tersimpan).
 
-## Fitur yang sudah ada di UI
+## Fitur yang sudah ada
 
-Student: Dashboard, Tugas (detail, tambah, ubah, hapus, status), Kalender (bulan/minggu/hari), Study Timer
-(pulih setelah dimuat ulang), Goals, Misi, Progres dan Achievements, Teman, Notifikasi (preferensi dan jam tenang),
-Pengaturan (profil, target harian, privasi, sinkron Google Calendar satu arah).
+Student: Beranda, Tugas (cari, filter, kelompok tenggat, menu aksi dan klik kanan), Kalender (bulan/minggu/hari, kegiatan rutin,
+pengingat), Study Timer, Goals (otomatis atau manual), Misi harian dan mingguan, Progres, Achievements, Profil, Teman,
+Notifikasi (preferensi dan jam tenang), Pengaturan (foto profil opsional, profil, target harian, privasi).
 
-Alur akun: masuk, daftar, lupa dan atur ulang password, verifikasi email, onboarding.
+Akun: masuk, daftar (foto profil opsional, show/hide password, indikator kekuatan password), lupa dan atur ulang password,
+verifikasi email, onboarding singkat.
 
-Admin: ringkasan, kelola pengguna, misi, aturan Points dan ambang Level, achievements, pengumuman, log.
+Admin: ringkasan, pengguna (tangguhkan, kirim tautan reset password), misi, Points dan level, achievements, pengumuman, log.
+
+Desain: Warm Ivory, Forest Green, Sand Beige. Komponen custom tanpa library tambahan: select (bisa dicari dan multi-pilih),
+date picker, time picker, menu dan context menu, tooltip, dialog konfirmasi, toast (sukses, galat, peringatan, info, loading).
 
 ## Teknologi
 

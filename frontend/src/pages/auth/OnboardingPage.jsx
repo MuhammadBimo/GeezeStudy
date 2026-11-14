@@ -1,40 +1,43 @@
 import { useState } from 'react'
 import { AnimatePresence, m } from 'motion/react'
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import { useAuth } from '@/hooks/useAuth'
-import { api, errorMessage } from '@/lib/api'
 import { useToast } from '@/hooks/useToast'
+import { api, errorMessage } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import { educationLevels } from '@/lib/profile'
+import { educationLevels, institutionField } from '@/lib/profile'
 
-const levelColors = { sd: 'bg-sand-deep', smp: 'bg-moss', sma: 'bg-mist', college: 'bg-sage' }
-const goalPresets = [30, 60, 90, 120]
-const STEPS = ['Jenjang', 'Institusi', 'Target']
+const goalPresets = [
+  { minutes: 30, note: 'Ringan' },
+  { minutes: 60, note: 'Seimbang' },
+  { minutes: 90, note: 'Serius' },
+  { minutes: 120, note: 'Intensif' },
+]
 
+// Hanya menanyakan yang belum diisi saat registrasi, supaya jenjang tidak ditanyakan dua kali.
 export default function OnboardingPage() {
   const { user, setUser } = useAuth()
   const toast = useToast()
+  const [steps] = useState(() => [...(user.education_level ? [] : ['level']), ...(user.institution ? [] : ['institution']), 'goal'])
   const [step, setStep] = useState(0)
-  const [level, setLevel] = useState(user.education_level ?? 'college')
-  const [saving, setSaving] = useState(false)
+  const [level, setLevel] = useState(user.education_level ?? 'sma')
   const [institution, setInstitution] = useState(user.institution ?? '')
-  const [goal, setGoal] = useState(user.daily_goal_minutes)
+  const [goal, setGoal] = useState(user.daily_goal_minutes ?? 60)
+  const [saving, setSaving] = useState(false)
 
-  const last = step === STEPS.length - 1
+  const current = steps[step]
+  const last = step === steps.length - 1
+  const inst = institutionField[level]
 
   const finish = async () => {
     setSaving(true)
     try {
-      const { data } = await api.post('/onboarding', {
-        education_level: level,
-        institution: institution.trim() || null,
-        daily_goal_minutes: goal,
-      })
+      const { data } = await api.post('/onboarding', { education_level: level, institution: institution.trim() || null, daily_goal_minutes: goal })
       setUser(data)
-      toast('Siap! Selamat belajar.')
+      toast('Siap. Selamat belajar!')
     } catch (error) {
       toast(errorMessage(error), 'error')
       setSaving(false)
@@ -42,103 +45,82 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-forest-tint p-5">
-      <Card tone="primary" className="w-full max-w-lg p-6 sm:p-8">
-        <ol aria-label="Langkah" className="mb-6 flex items-center gap-2">
-          {STEPS.map((label, i) => (
-            <li key={label} className="flex flex-1 items-center gap-2" aria-current={i === step ? 'step' : undefined}>
-              <span
-                className={cn(
-                  'grid size-8 shrink-0 place-items-center rounded-full border border-line text-sm font-semibold transition-colors motion-reduce:transition-none',
-                  i < step ? 'bg-moss' : i === step ? 'bg-sage' : 'bg-surface',
-                )}
-              >
-                {i < step ? <Check className="size-4" strokeWidth={3} aria-label="Selesai" /> : i + 1}
-              </span>
-              <span className={cn('hidden text-sm font-semibold sm:inline', i !== step && 'text-ink/80')}>{label}</span>
-              {i < STEPS.length - 1 && <span className="h-0.5 flex-1 bg-ink/30" aria-hidden="true" />}
+    <AuthLayout title={`Halo, ${user.name.split(' ')[0]}`} subtitle="Atur GeezeStudy sesuai kebutuhanmu. Semua bisa diubah lagi di Pengaturan.">
+      {steps.length > 1 && (
+        <ol aria-label="Langkah" className="mb-6 flex gap-1.5">
+          {steps.map((s, i) => (
+            <li key={s} aria-current={i === step ? 'step' : undefined} className={cn('h-1 flex-1 rounded-full transition-colors duration-300', i <= step ? 'bg-forest' : 'bg-ink/10')}>
+              <span className="sr-only">Langkah {i + 1} dari {steps.length}{i < step ? ', selesai' : ''}</span>
             </li>
           ))}
         </ol>
+      )}
 
-        <AnimatePresence mode="wait" initial={false}>
-          <m.div
-            key={step}
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.18 }}
-          >
-            {step === 0 && (
-              <section>
-                <h1 className="text-3xl font-semibold">Kamu sedang di jenjang apa?</h1>
-                <p className="mb-4 mt-1 text-ink/80">Supaya tampilan dan misi terasa pas untukmu.</p>
-                <div role="radiogroup" aria-label="Jenjang pendidikan" className="grid grid-cols-2 gap-3">
-                  {educationLevels.map((l) => (
-                    <button
-                      key={l.value}
-                      type="button"
-                      role="radio"
-                      aria-checked={level === l.value}
-                      onClick={() => setLevel(l.value)}
-                      className={cn(
-                        'rounded-panel border border-line p-4 text-left font-display text-xl font-medium transition-all active:scale-95 motion-reduce:transition-none',
-                        level === l.value ? `${levelColors[l.value]} shadow-soft` : 'bg-surface hover:-translate-y-0.5',
-                      )}
-                    >
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {step === 1 && (
-              <section>
-                <h1 className="text-3xl font-semibold">Dari mana asalmu?</h1>
-                <p className="mb-4 mt-1 text-ink/80">Nama sekolah atau kampus. Boleh dikosongkan.</p>
-                <Input label="Sekolah / kampus (opsional)" autoComplete="organization" value={institution} onChange={(e) => setInstitution(e.target.value)} />
-              </section>
-            )}
-
-            {step === 2 && (
-              <section>
-                <h1 className="text-3xl font-semibold">Target belajar harian</h1>
-                <p className="mb-4 mt-1 text-ink/80">Berapa menit yang ingin kamu capai tiap hari? Bisa diubah kapan saja di Pengaturan.</p>
-                <div role="radiogroup" aria-label="Target menit per hari" className="grid grid-cols-4 gap-2">
-                  {goalPresets.map((g) => (
-                    <button
-                      key={g}
-                      type="button"
-                      role="radio"
-                      aria-checked={goal === g}
-                      onClick={() => setGoal(g)}
-                      className={cn(
-                        'rounded-panel border border-line py-3 font-display text-xl font-medium transition-all active:scale-95 motion-reduce:transition-none',
-                        goal === g ? 'bg-sand-deep shadow-soft-sm' : 'bg-surface',
-                      )}
-                    >
-                      {g}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-2 text-center text-sm text-ink/80">menit per hari</p>
-              </section>
-            )}
-          </m.div>
-        </AnimatePresence>
-
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <Button variant="neutral" onClick={() => setStep((s) => s - 1)} disabled={step === 0}>
-            <ArrowLeft className="size-4" aria-hidden="true" /> Kembali
-          </Button>
-          {last ? (
-            <Button onClick={finish} loading={saving}>Mulai belajar <ArrowRight className="size-4" aria-hidden="true" /></Button>
-          ) : (
-            <Button onClick={() => setStep((s) => s + 1)}>Lanjut <ArrowRight className="size-4" aria-hidden="true" /></Button>
+      <AnimatePresence mode="wait" initial={false}>
+        <m.section key={current} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.18 }}>
+          {current === 'level' && (
+            <>
+              <h2 className="text-lg font-semibold">Kamu sedang di jenjang apa?</h2>
+              <div role="radiogroup" aria-label="Jenjang pendidikan" className="mt-4 grid grid-cols-2 gap-2.5">
+                {educationLevels.map((l) => (
+                  <button
+                    key={l.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={level === l.value}
+                    onClick={() => setLevel(l.value)}
+                    className={cn('flex h-14 items-center justify-between rounded-xl border px-4 text-left font-medium transition-all active:scale-[0.98]', level === l.value ? 'border-forest bg-sage text-forest' : 'border-line bg-surface hover:border-line-strong')}
+                  >
+                    {l.label}
+                    {level === l.value && <Check className="size-4" aria-hidden="true" />}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
-        </div>
-      </Card>
-    </main>
+
+          {current === 'institution' && (
+            <>
+              <h2 className="text-lg font-semibold">{level === 'college' ? 'Kamu kuliah di mana?' : 'Kamu sekolah di mana?'}</h2>
+              <p className="mb-4 mt-1 text-sm text-ink-2">Boleh dikosongkan.</p>
+              <Input label={inst.label} placeholder={inst.placeholder} autoComplete="organization" value={institution} onChange={(e) => setInstitution(e.target.value)} />
+            </>
+          )}
+
+          {current === 'goal' && (
+            <>
+              <h2 className="text-lg font-semibold">Berapa menit belajar setiap hari?</h2>
+              <p className="mb-4 mt-1 text-sm text-ink-2">Target ini dipakai di Beranda dan misi harian.</p>
+              <div role="radiogroup" aria-label="Target menit per hari" className="grid grid-cols-2 gap-2.5">
+                {goalPresets.map((g) => (
+                  <button
+                    key={g.minutes}
+                    type="button"
+                    role="radio"
+                    aria-checked={goal === g.minutes}
+                    onClick={() => setGoal(g.minutes)}
+                    className={cn('rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98]', goal === g.minutes ? 'border-forest bg-sage' : 'border-line bg-surface hover:border-line-strong')}
+                  >
+                    <span className="block font-display text-2xl tabular-nums">{g.minutes}<span className="ml-1 font-sans text-sm text-ink-2">menit</span></span>
+                    <span className="text-xs text-ink-2">{g.note}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </m.section>
+      </AnimatePresence>
+
+      <div className="mt-8 flex items-center justify-between gap-3">
+        <Button variant="ghost" onClick={() => setStep((s) => s - 1)} disabled={step === 0}>
+          <ArrowLeft aria-hidden="true" /> Kembali
+        </Button>
+        {last ? (
+          <Button size="lg" onClick={finish} loading={saving}>Mulai belajar <ArrowRight aria-hidden="true" /></Button>
+        ) : (
+          <Button size="lg" onClick={() => setStep((s) => s + 1)}>Lanjut <ArrowRight aria-hidden="true" /></Button>
+        )}
+      </div>
+    </AuthLayout>
   )
 }

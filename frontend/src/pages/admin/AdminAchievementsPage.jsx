@@ -11,6 +11,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import Select from '@/components/ui/Select'
 import Toggle from '@/components/ui/Toggle'
 import { useResource } from '@/hooks/useResource'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 
@@ -24,6 +25,7 @@ const blank = { title: '', description: '', metric: 'tasks_completed', threshold
 
 function AchievementAdmin({ resource, items }) {
   const toast = useToast()
+  const confirm = useConfirm()
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(blank)
   const [error, setError] = useState('')
@@ -70,7 +72,7 @@ function AchievementAdmin({ resource, items }) {
   }
 
   const remove = async (a) => {
-    if (!window.confirm(`Hapus achievement "${a.title}"? Pengguna yang sudah membukanya kehilangan badge ini.`)) return
+    if (!(await confirm({ title: 'Hapus achievement?', description: `Hapus achievement "${a.title}"? Pengguna yang sudah membukanya kehilangan badge ini.`, confirmLabel: 'Hapus', tone: 'danger' }))) return
     try {
       await api.delete(`/admin/achievements/${a.id}`)
       toast('Achievement dihapus')
@@ -119,8 +121,10 @@ function AchievementAdmin({ resource, items }) {
         </ul>
       )}
 
-      <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing === 'new' ? 'Achievement baru' : 'Ubah achievement'}>
-        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+      <Modal
+        footer={<><Button variant="secondary" onClick={() => setEditing(null)}>Batal</Button><Button type="submit" form="achievement-form" loading={saving}>Simpan achievement</Button></>}
+        open={editing !== null} onClose={() => setEditing(null)} title={editing === 'new' ? 'Achievement baru' : 'Ubah achievement'}>
+        <form id="achievement-form" onSubmit={submit} noValidate className="flex flex-col gap-4">
           <Input label="Nama" value={form.title} onChange={set('title')} error={error} maxLength={60} />
           <Input label="Deskripsi" value={form.description} onChange={set('description')} maxLength={120} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -128,10 +132,6 @@ function AchievementAdmin({ resource, items }) {
             <Input label="Target" type="number" min={1} value={form.threshold} onChange={set('threshold')} />
           </div>
           <Input label="Bonus Points" type="number" min={0} value={form.reward_points} onChange={set('reward_points')} />
-          <div className="flex justify-end gap-3">
-            <Button variant="neutral" onClick={() => setEditing(null)}>Batal</Button>
-            <Button type="submit" loading={saving}>Simpan achievement</Button>
-          </div>
         </form>
       </Modal>
     </>

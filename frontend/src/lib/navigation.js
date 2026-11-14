@@ -1,28 +1,59 @@
 import {
-  LayoutDashboard, ListChecks, CalendarDays, Timer, Target,
-  Flag, TrendingUp, Users, Bell, Settings,
-  ShieldCheck, UserCog, Trophy, Award, Megaphone, ScrollText,
+  Award, Bell, CalendarDays, Flag, Home, ListChecks, Megaphone, ScrollText, Settings,
+  ShieldCheck, Target, Timer, TrendingUp, Trophy, UserCog, UserRound, Users,
 } from 'lucide-react'
 
-export const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, color: 'bg-sage' },
-  { to: '/tugas', label: 'Tugas', icon: ListChecks, color: 'bg-sand-deep' },
-  { to: '/kalender', label: 'Kalender', icon: CalendarDays, color: 'bg-mist' },
-  { to: '/timer', label: 'Timer', icon: Timer, color: 'bg-moss' },
-  { to: '/goals', label: 'Goals', icon: Target, color: 'bg-stone' },
-  { to: '/misi', label: 'Misi', icon: Flag, color: 'bg-clay' },
-  { to: '/progres', label: 'Progres', icon: TrendingUp, color: 'bg-moss' },
-  { to: '/teman', label: 'Teman', icon: Users, color: 'bg-mist' },
-  { to: '/notifikasi', label: 'Notifikasi', icon: Bell, color: 'bg-sand-deep' },
-  { to: '/pengaturan', label: 'Pengaturan', icon: Settings, color: 'bg-forest-tint' },
+// Menu Student dikelompokkan menurut tujuan; label grup memakai huruf kalimat biasa.
+export const navGroups = [
+  {
+    label: 'Belajar',
+    items: [
+      { to: '/', label: 'Beranda', icon: Home },
+      { to: '/tugas', label: 'Tugas', icon: ListChecks },
+      { to: '/kalender', label: 'Kalender', icon: CalendarDays },
+      { to: '/timer', label: 'Study Timer', short: 'Timer', icon: Timer },
+    ],
+  },
+  {
+    label: 'Perkembangan',
+    items: [
+      { to: '/goals', label: 'Goals', icon: Target },
+      { to: '/misi', label: 'Misi', icon: Flag },
+      { to: '/progres', label: 'Progres', icon: TrendingUp },
+      { to: '/achievements', label: 'Achievements', icon: Award },
+    ],
+  },
+  {
+    label: 'Lainnya',
+    items: [
+      { to: '/teman', label: 'Teman', icon: Users },
+      { to: '/notifikasi', label: 'Notifikasi', icon: Bell },
+      { to: '/profil', label: 'Profil', icon: UserRound },
+      { to: '/pengaturan', label: 'Pengaturan', icon: Settings },
+    ],
+  },
 ]
 
-export const adminNavItems = [
-  { to: '/admin', label: 'Ringkasan', icon: ShieldCheck, color: 'bg-sand-deep' },
-  { to: '/admin/pengguna', label: 'Pengguna', icon: UserCog, color: 'bg-sage' },
-  { to: '/admin/misi', label: 'Misi', icon: Flag, color: 'bg-clay' },
-  { to: '/admin/points', label: 'Points & Level', icon: Trophy, color: 'bg-moss' },
-  { to: '/admin/achievements', label: 'Achievements', icon: Award, color: 'bg-stone' },
-  { to: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone, color: 'bg-sand-deep' },
-  { to: '/admin/log', label: 'Log', icon: ScrollText, color: 'bg-surface' },
+export const adminNavGroups = [
+  {
+    label: 'Panel Admin',
+    items: [
+      { to: '/admin', label: 'Ringkasan', icon: ShieldCheck },
+      { to: '/admin/pengguna', label: 'Pengguna', icon: UserCog },
+      { to: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
+      { to: '/admin/log', label: 'Log', icon: ScrollText },
+    ],
+  },
+  {
+    label: 'Gamifikasi',
+    items: [
+      { to: '/admin/misi', label: 'Misi', icon: Flag },
+      { to: '/admin/points', label: 'Points & Level', icon: Trophy },
+      { to: '/admin/achievements', label: 'Achievements', icon: Award },
+    ],
+  },
 ]
+
+// Empat menu yang tampil langsung di bottom navigation mobile; sisanya ada di "Lainnya".
+export const mobilePrimary = ['/', '/tugas', '/timer', '/kalender']
+export const adminMobilePrimary = ['/admin', '/admin/pengguna', '/admin/misi', '/admin/pengumuman']

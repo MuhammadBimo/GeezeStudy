@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, MailCheck, Mail } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -13,8 +14,8 @@ export default function ForgotPasswordPage() {
 
   const submit = async (e) => {
     e.preventDefault()
-    if (!email.trim()) {
-      setError('Isi email akunmu.')
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setError('Isi email akunmu dengan format yang benar.')
       return
     }
     setError('')
@@ -30,22 +31,29 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  return (
-    <AuthLayout
-      title="Lupa password"
-      subtitle="Masukkan emailmu dan kami kirim tautan untuk mengatur ulang."
-      footer={<Link to="/masuk" className="font-semibold underline underline-offset-4">Kembali ke halaman masuk</Link>}
-    >
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <Input label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={error} />
-        <Button type="submit" className="w-full" loading={loading}>Kirim tautan</Button>
-      </form>
+  const back = (
+    <Link to="/masuk" className="inline-flex items-center gap-1.5 font-semibold text-forest underline-offset-4 hover:underline">
+      <ArrowLeft className="size-4" aria-hidden="true" /> Kembali ke halaman masuk
+    </Link>
+  )
 
-      {sent && (
-        <p role="status" className="mt-4 rounded-panel border border-line bg-moss p-3 text-sm font-medium">
-          Jika email itu terdaftar, tautan untuk mengatur ulang password sudah dikirim. Cek kotak masuk dan folder spam.
-        </p>
-      )}
+  if (sent) {
+    return (
+      <AuthLayout title="Cek emailmu" subtitle={`Jika ${email.trim()} terdaftar, tautan untuk mengatur ulang password sudah dikirim.`} footer={back}>
+        <div role="status" className="flex items-start gap-3 rounded-xl border border-sage-deep bg-sage p-4 text-sm text-forest">
+          <MailCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+          <p>Tautan berlaku 60 menit. Tidak ada di kotak masuk? Cek folder spam atau <button type="button" onClick={() => setSent(false)} className="font-semibold underline underline-offset-4">kirim ulang</button>.</p>
+        </div>
+      </AuthLayout>
+    )
+  }
+
+  return (
+    <AuthLayout title="Lupa password" subtitle="Masukkan email akunmu. Kami kirim tautan untuk membuat password baru." footer={back}>
+      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+        <Input label="Email" type="email" icon={Mail} autoComplete="email" placeholder="nama@email.com" value={email} onChange={(e) => setEmail(e.target.value)} error={error} />
+        <Button type="submit" size="lg" className="w-full" loading={loading}>Kirim tautan</Button>
+      </form>
     </AuthLayout>
   )
 }

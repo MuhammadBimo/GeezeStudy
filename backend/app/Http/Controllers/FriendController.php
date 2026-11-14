@@ -32,6 +32,7 @@ class FriendController extends Controller
                 'friendship_id' => $f->id,
                 'name' => $other->name,
                 'institution' => $other->institution,
+                'avatar_url' => $this->avatar($other),
                 'stats' => $other->privacy_show_progress
                     ? [
                         'level' => $other->level,
@@ -44,11 +45,11 @@ class FriendController extends Controller
         })->values();
 
         $incoming = $rows->where('status', 'pending')->where('addressee_id', $me->id)->map(fn (Friendship $f) => [
-            'friendship_id' => $f->id, 'name' => $f->requester->name,
+            'friendship_id' => $f->id, 'name' => $f->requester->name, 'avatar_url' => $this->avatar($f->requester),
         ])->values();
 
         $outgoing = $rows->where('status', 'pending')->where('requester_id', $me->id)->map(fn (Friendship $f) => [
-            'friendship_id' => $f->id, 'name' => $f->addressee->name,
+            'friendship_id' => $f->id, 'name' => $f->addressee->name, 'avatar_url' => $this->avatar($f->addressee),
         ])->values();
 
         return response()->json(compact('friends', 'incoming', 'outgoing'));
@@ -101,5 +102,10 @@ class FriendController extends Controller
             ->delete();
 
         return response()->noContent();
+    }
+
+    private function avatar(User $user): ?string
+    {
+        return $user->avatar_path ? route('avatars.show', $user->avatar_path) : null;
     }
 }

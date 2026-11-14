@@ -80,4 +80,15 @@ class StudyFeaturesTest extends TestCase
         $this->actingAs($admin)->postJson("/api/admin/users/{$student->id}/reset-password")->assertOk();
         $this->actingAs($student)->postJson("/api/admin/users/{$admin->id}/reset-password")->assertForbidden();
     }
+
+    public function test_utc_times_from_client_are_stored_in_app_timezone(): void
+    {
+        $user = User::factory()->create();
+
+        // 23.59 WIB dikirim klien sebagai 16.59 UTC.
+        $this->actingAs($user)->postJson('/api/tasks', ['title' => 'Zona waktu', 'due_at' => '2026-11-14T16:59:00.000Z'])->assertCreated()
+            ->assertJsonPath('due_at', '2026-11-14T16:59:00.000000Z');
+
+        $this->assertSame('2026-11-14 23:59:00', $user->tasks()->first()->getRawOriginal('due_at'));
+    }
 }

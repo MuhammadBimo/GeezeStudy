@@ -1,107 +1,103 @@
-import { Award, Clock, Flame, ListChecks, Lock, Trophy } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowUpRight, Award, CheckCircle2, Clock, Flame, Trophy } from 'lucide-react'
 import AsyncView from '@/components/ui/AsyncView'
-import Badge from '@/components/ui/Badge'
-import Card from '@/components/ui/Card'
 import EmptyState from '@/components/ui/EmptyState'
 import PageHeader from '@/components/ui/PageHeader'
 import ProgressBar from '@/components/ui/ProgressBar'
-import StatCard from '@/components/dashboard/StatCard'
+import SectionHeader from '@/components/ui/SectionHeader'
+import StatCard, { StatRow } from '@/components/dashboard/StatCard'
 import { useResource } from '@/hooks/useResource'
-import { dayTime, relativeTime } from '@/lib/mappers'
+import { clockTime, dayTime, relativeTime } from '@/lib/mappers'
 
-const badgeColors = ['bg-moss', 'bg-clay', 'bg-mist', 'bg-sand-deep', 'bg-sage', 'bg-stone']
+const sourceIcon = (desc) => (desc.startsWith('Tugas') ? CheckCircle2 : desc.startsWith('Sesi') ? Clock : desc.startsWith('Achievement') ? Award : Trophy)
 
 function Progress({ data }) {
   const { user } = data
-  const hours = Math.floor(data.total_study_minutes / 60)
   const maxed = user.next_level_at === null
-  const span = maxed ? 1 : user.next_level_at - user.level_floor
+  const unlocked = data.achievements.filter((a) => a.unlocked_at).length
 
   return (
     <>
-      <PageHeader title="Progres" subtitle="Perkembangan belajarmu dari waktu ke waktu." />
+      <PageHeader title="Progres" subtitle="Perkembangan belajarmu, dihitung dari aktivitas yang benar-benar kamu lakukan." />
 
-      <section aria-label="Ringkasan" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Clock} label="Total belajar" value={`${hours} jam`} hint={`${data.total_study_minutes % 60} menit`} color="bg-moss" />
-        <StatCard icon={ListChecks} label="Tugas selesai" value={data.tasks_completed} color="bg-mist" />
-        <StatCard icon={Flame} label="Streak" value={`${user.streak} hari`} hint={`Terbaik ${user.best_streak} hari`} color="bg-clay" />
-        <StatCard icon={Trophy} label="Level" value={user.level} hint={`${user.points} Points`} color="bg-forest-tint" />
+      <StatRow label="Ringkasan">
+        <StatCard icon={Clock} label="Total belajar" value={`${Math.floor(data.total_study_minutes / 60)} jam`} hint={`${data.total_study_minutes % 60} menit`} />
+        <StatCard icon={CheckCircle2} label="Tugas selesai" value={data.tasks_completed} hint="Sepanjang waktu" />
+        <StatCard icon={Flame} label="Streak" value={`${user.streak} hari`} hint={`Terbaik ${user.best_streak} hari`} />
+        <StatCard icon={Trophy} label="Points" value={user.points.toLocaleString('id-ID')} hint={`Level ${user.level}`} />
+      </StatRow>
+
+      <section aria-labelledby="level-title" className="mt-8 rounded-panel bg-forest p-6 text-surface sm:p-7">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 id="level-title" className="text-sm font-medium text-surface/70">{maxed ? 'Level tertinggi' : `Menuju Level ${user.level + 1}`}</h2>
+            <p className="mt-1 font-display text-[2.75rem] leading-none">Level {user.level}</p>
+          </div>
+          <p className="text-sm tabular-nums text-surface/80">{maxed ? `${user.points.toLocaleString('id-ID')} Points` : `${user.points.toLocaleString('id-ID')} / ${user.next_level_at.toLocaleString('id-ID')} Points`}</p>
+        </div>
+        <ProgressBar className="mt-5" tone="light" value={maxed ? 1 : user.points - user.level_floor} max={maxed ? 1 : user.next_level_at - user.level_floor} label="Progres level" />
+        <p className="mt-3 text-sm text-surface/70">Level tidak turun saat kamu tidak aktif.</p>
       </section>
 
-      <Card tone="primary" color="bg-forest-tint" className="mt-6 p-5">
-        <h2 className="text-xl font-semibold">{maxed ? `Level ${user.level} (tertinggi)` : `Menuju Level ${user.level + 1}`}</h2>
-        <p className="mb-2 text-sm font-medium">
-          {maxed ? `${user.points} Points. ` : `${user.points} / ${user.next_level_at} Points. `}Level tidak turun saat kamu tidak aktif.
-        </p>
-        <ProgressBar value={maxed ? 1 : user.points - user.level_floor} max={span} label="Progres level" />
-      </Card>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card className="p-5">
-          <h2 className="mb-3 text-xl font-semibold">Riwayat Points</h2>
+      <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <section aria-labelledby="points-title">
+          <SectionHeader id="points-title" title="Riwayat Points" />
           {data.points_history.length === 0 ? (
-            <EmptyState title="Belum ada Points" description="Selesaikan tugas atau sesi belajar untuk mulai." />
+            <EmptyState compact illustration="trophy" title="Belum ada Points" description="Selesaikan tugas atau sesi belajar untuk mulai." />
           ) : (
-            <ul className="flex flex-col gap-2">
-              {data.points_history.map((p) => (
-                <li key={p.id} className="flex items-center justify-between gap-3 rounded-panel border border-line p-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{p.description}</p>
-                    <p className="text-xs text-ink/80">{relativeTime(p.created_at)}</p>
-                  </div>
-                  <Badge color="bg-sand-deep">+{p.points}</Badge>
-                </li>
-              ))}
-            </ul>
+            <ol className="relative space-y-0.5 before:absolute before:bottom-3 before:left-[1.0625rem] before:top-3 before:w-px before:bg-line">
+              {data.points_history.slice(0, 12).map((p) => {
+                const Icon = sourceIcon(p.description)
+                return (
+                  <li key={p.id} className="relative flex items-center gap-3 py-2">
+                    <span className="relative z-10 grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface text-forest"><Icon className="size-4" aria-hidden="true" /></span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{p.description}</p>
+                      <p className="text-xs text-ink-2">{relativeTime(p.created_at)}</p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-forest">+{p.points}</span>
+                  </li>
+                )
+              })}
+            </ol>
           )}
-        </Card>
+        </section>
 
-        <Card color="bg-mist" className="p-5">
-          <h2 className="mb-3 text-xl font-semibold">Riwayat sesi belajar</h2>
-          {data.recent_sessions.length === 0 ? (
-            <EmptyState title="Belum ada sesi" description="Mulai timer untuk mencatat sesi pertamamu." />
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {data.recent_sessions.map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface p-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{s.task?.title ?? 'Tanpa tugas'}</p>
-                    <p className="text-xs text-ink/80">{dayTime(s.started_at)}</p>
-                  </div>
-                  <Badge color="bg-moss">{s.focus_minutes} mnt</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+        <div className="space-y-8">
+          <section aria-labelledby="sessions-title">
+            <SectionHeader id="sessions-title" title="Sesi belajar terakhir" to="/timer" linkLabel="Timer" />
+            {data.recent_sessions.length === 0 ? (
+              <EmptyState compact illustration="target" title="Belum ada sesi" description="Mulai timer untuk mencatat sesi pertamamu." />
+            ) : (
+              <ul className="divide-y divide-line rounded-panel border border-line bg-surface">
+                {data.recent_sessions.slice(0, 6).map((s) => (
+                  <li key={s.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{s.task?.title ?? 'Tanpa tugas'}</p>
+                      <p className="text-xs text-ink-2">{dayTime(s.started_at)} – {clockTime(s.ended_at)}</p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums">{s.focus_minutes} mnt</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <Link to="/achievements" className="group flex items-center gap-4 rounded-panel border border-sand bg-sand-soft p-5 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-soft">
+            <span className="grid size-12 place-items-center rounded-xl bg-sand text-[#6b5326]"><Award className="size-6" aria-hidden="true" /></span>
+            <span className="flex-1">
+              <span className="block font-semibold">Achievements</span>
+              <span className="block text-sm text-ink-2">{unlocked} dari {data.achievements.length} sudah terbuka</span>
+            </span>
+            <ArrowUpRight className="size-5 text-ink-2 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
-
-      <h2 className="mb-3 mt-8 flex items-center gap-2 text-2xl font-semibold">
-        <Award className="size-6" aria-hidden="true" /> Achievements
-      </h2>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {data.achievements.map((a, i) => {
-          const unlocked = a.unlocked_at !== null
-          const Icon = unlocked ? Award : Lock
-          return (
-            <Card as="li" key={a.id} color={unlocked ? 'bg-surface' : 'bg-canvas'} className="flex items-center gap-4 p-4">
-              <span className={`grid size-14 shrink-0 place-items-center rounded-full border border-line ${unlocked ? badgeColors[i % badgeColors.length] : 'bg-surface'}`}>
-                <Icon className="size-6" aria-hidden="true" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-display text-lg font-medium leading-tight">{a.title}</h3>
-                <p className="text-sm text-ink/80">{unlocked ? a.description : `Terkunci. ${a.description}`}</p>
-                {!unlocked && <p className="mt-1 text-xs font-semibold">{a.progress} / {a.threshold}</p>}
-              </div>
-            </Card>
-          )
-        })}
-      </ul>
     </>
   )
 }
 
 export default function ProgressPage() {
   const resource = useResource('/progress')
-  return <AsyncView resource={resource} rows={4}>{(data) => <Progress data={data} />}</AsyncView>
+  return <AsyncView resource={resource}>{(data) => <Progress data={data} />}</AsyncView>
 }

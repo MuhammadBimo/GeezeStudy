@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\StoresInAppTimezone;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['title', 'course', 'description', 'priority', 'status', 'due_at', 'attachment_name'])]
 class Task extends Model
 {
+    use StoresInAppTimezone;
+
     public const STATUSES = ['todo', 'in_progress', 'completed'];
 
     public const PRIORITIES = ['high', 'medium', 'low'];

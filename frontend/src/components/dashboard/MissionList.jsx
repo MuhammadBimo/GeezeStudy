@@ -1,34 +1,28 @@
-import { Flag, Check } from 'lucide-react'
-import Card from '@/components/ui/Card'
-import Badge from '@/components/ui/Badge'
+import { Check } from 'lucide-react'
 import EmptyState from '@/components/ui/EmptyState'
 import ProgressBar from '@/components/ui/ProgressBar'
 
 export default function MissionList({ missions }) {
+  if (missions.length === 0) return <EmptyState compact illustration="target" title="Belum ada misi" description="Misi baru muncul setiap hari." />
+
   return (
-    <Card className="p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-        <Flag className="size-5" aria-hidden="true" /> Misi harian
-      </h2>
-      {missions.length === 0 && <EmptyState icon={Flag} title="Belum ada misi" description="Misi baru muncul setiap hari." />}
-      <ul className="flex flex-col gap-4">
-        {missions.map((m) => {
-          const complete = m.done >= m.total
-          return (
-            <li key={m.id}>
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold">{m.title}</p>
-                {complete ? (
-                  <Badge color="bg-moss"><Check className="size-3" strokeWidth={3} aria-hidden="true" /> Selesai</Badge>
-                ) : (
-                  <Badge color="bg-sand-deep">+{m.reward} pts</Badge>
-                )}
-              </div>
-              <ProgressBar value={m.done} max={m.total} color="bg-moss" label={m.title} />
-            </li>
-          )
-        })}
-      </ul>
-    </Card>
+    <ul className="space-y-4">
+      {missions.map((m) => {
+        const done = m.progress >= m.target
+        return (
+          <li key={m.id}>
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
+              <p className="truncate font-medium">{m.title}</p>
+              {m.claimed ? (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-success"><Check className="size-3.5" strokeWidth={3} aria-hidden="true" />Diklaim</span>
+              ) : (
+                <span className={done ? 'text-xs font-semibold text-forest' : 'text-xs tabular-nums text-ink-2'}>{done ? 'Siap diklaim' : `+${m.reward_points} pts`}</span>
+              )}
+            </div>
+            <ProgressBar size="sm" value={m.progress} max={m.target} label={m.title} />
+          </li>
+        )
+      })}
+    </ul>
   )
 }
