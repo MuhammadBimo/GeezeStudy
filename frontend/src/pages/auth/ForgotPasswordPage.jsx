@@ -4,28 +4,45 @@ import { ArrowLeft, MailCheck, Mail } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import TurnstileWidget from '@/components/ui/TurnstileWidget'
+
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY)
 import { api, errorMessage, fetchCsrfCookie } from '@/lib/api'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [captchaReset, setCaptchaReset] = useState(0)
   const [error, setError] = useState('')
+  const [captchaError, setCaptchaError] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
+    let hasError = false
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
       setError('Isi email akunmu dengan format yang benar.')
-      return
+      hasError = true
+    } else {
+      setError('')
     }
-    setError('')
+    if (TURNSTILE_ENABLED && !turnstileToken) {
+      setCaptchaError('Selesaikan verifikasi captcha terlebih dahulu.')
+      hasError = true
+    } else {
+      setCaptchaError('')
+    }
+    if (hasError) return
+
     setLoading(true)
     try {
       await fetchCsrfCookie()
-      await api.post('/forgot-password', { email: email.trim() })
+      await api.post('/forgot-password', { email: email.trim(), turnstile_token: turnstileToken })
       setSent(true)
     } catch (err) {
       setError(errorMessage(err))
+      setCaptchaReset((k) => k + 1)
     } finally {
       setLoading(false)
     }
@@ -52,6 +69,14 @@ export default function ForgotPasswordPage() {
     <AuthLayout title="Lupa password" subtitle="Masukkan email akunmu. Kami kirim tautan untuk membuat password baru." footer={back}>
       <form onSubmit={submit} noValidate className="flex flex-col gap-5">
         <Input label="Email" type="email" icon={Mail} autoComplete="email" placeholder="nama@email.com" value={email} onChange={(e) => setEmail(e.target.value)} error={error} />
+        <TurnstileWidget
+          onVerify={(token) => {
+            setTurnstileToken(token)
+            if (token) setCaptchaError('')
+          }}
+          resetKey={captchaReset}
+          error={captchaError}
+        />
         <Button type="submit" size="lg" className="w-full" loading={loading}>Kirim tautan</Button>
       </form>
     </AuthLayout>

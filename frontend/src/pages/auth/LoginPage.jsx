@@ -5,6 +5,9 @@ import AuthLayout from '@/components/layout/AuthLayout'
 import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
 import Input, { PasswordInput } from '@/components/ui/Input'
+import TurnstileWidget from '@/components/ui/TurnstileWidget'
+
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY)
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { errorMessage, fieldErrors } from '@/lib/api'
@@ -22,6 +25,8 @@ export default function LoginPage() {
   const { login, serverDown } = useAuth()
   const toast = useToast()
   const [form, setForm] = useState({ email: '', password: '', remember: true })
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [captchaReset, setCaptchaReset] = useState(0)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
@@ -33,16 +38,18 @@ export default function LoginPage() {
     if (!form.email.trim()) next.email = 'Isi email akunmu.'
     else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = 'Format email belum benar.'
     if (!form.password) next.password = 'Isi password akunmu.'
+    if (TURNSTILE_ENABLED && !turnstileToken) next.turnstile_token = 'Selesaikan verifikasi captcha terlebih dahulu.'
     setErrors(next)
     if (Object.keys(next).length > 0) return
 
     setLoading(true)
     try {
-      const user = await login({ email: form.email.trim(), password: form.password, remember: form.remember })
+      const user = await login({ email: form.email.trim(), password: form.password, remember: form.remember, turnstile_token: turnstileToken })
       toast(`Selamat datang, ${user.name}`)
     } catch (error) {
       const fields = fieldErrors(error)
       setErrors(Object.keys(fields).length ? fields : { form: errorMessage(error) })
+      setCaptchaReset((k) => k + 1)
       setLoading(false)
     }
   }
@@ -72,6 +79,14 @@ export default function LoginPage() {
             <Link to="/lupa-password" className="text-sm font-medium text-forest underline-offset-4 hover:underline">Lupa password?</Link>
           </div>
         </div>
+        <TurnstileWidget
+          onVerify={(token) => {
+            setTurnstileToken(token)
+            if (token) setErrors((cur) => ({ ...cur, turnstile_token: undefined }))
+          }}
+          resetKey={captchaReset}
+          error={errors.turnstile_token}
+        />
         <Button type="submit" size="lg" className="w-full" loading={loading}>{loading ? 'Memeriksa...' : 'Masuk'}</Button>
       </form>
 
