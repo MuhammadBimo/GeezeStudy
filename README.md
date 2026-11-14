@@ -1,9 +1,50 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="GeezeStudy: tugas, jadwal, dan target belajar di satu tempat tenang" width="100%">
+</p>
+
+<p align="center">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-1F3D2B?logo=react&logoColor=E8DCC4">
+  <img alt="Vite 8" src="https://img.shields.io/badge/Vite-8-1F3D2B?logo=vite&logoColor=E8DCC4">
+  <img alt="Tailwind v4" src="https://img.shields.io/badge/Tailwind-v4-1F3D2B?logo=tailwindcss&logoColor=E8DCC4">
+  <img alt="Laravel 13" src="https://img.shields.io/badge/Laravel-13-1F3D2B?logo=laravel&logoColor=E8DCC4">
+  <img alt="MySQL" src="https://img.shields.io/badge/MySQL-8-1F3D2B?logo=mysql&logoColor=E8DCC4">
+</p>
+
 # GeezeStudy
 
 Platform produktivitas akademik dengan gamifikasi ringan untuk pelajar SD, SMP, SMA, dan mahasiswa.
 GeezeStudy **bukan LMS**: ia mendampingi tugas, jadwal, dan kebiasaan belajar yang datang dari LMS atau sekolah.
 
 Gamifikasi hanya memakai lima komponen: **Points, Level, Streak, Missions, Achievements**.
+
+## Tampilan
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Beranda" width="100%">
+</p>
+
+| Masuk | Tugas |
+|---|---|
+| <img src="docs/screenshots/login.png" alt="Halaman masuk"> | <img src="docs/screenshots/tasks.png" alt="Tugas"> |
+| **Kalender** | **Study Timer** |
+| <img src="docs/screenshots/calendar.png" alt="Kalender"> | <img src="docs/screenshots/timer.png" alt="Study Timer"> |
+| **Progres** | **Achievements** |
+| <img src="docs/screenshots/progress.png" alt="Progres"> | <img src="docs/screenshots/achievements.png" alt="Achievements"> |
+
+<p align="center">
+  <img src="docs/screenshots/mobile.png" alt="Tampilan HP" width="300">
+</p>
+
+## Fitur utama
+
+- **Tugas**: dikelompokkan per tenggat, prioritas, pencarian, menu klik kanan, konfirmasi sebelum hapus.
+- **Kalender**: tampilan bulan, minggu, dan hari; jadwal berulang; pengingat otomatis.
+- **Study Timer**: sesi fokus yang divalidasi server (durasi, tumpang tindih, batas harian).
+- **Goals dan Misi**: target harian/mingguan dengan progres otomatis dari aktivitas nyata.
+- **Progres dan Achievements**: Points, Level, dan Streak dihitung di server.
+- **Teman, Notifikasi, Profil**: papan peringkat teman, preferensi notifikasi, foto profil opsional.
+- **Admin**: kelola pengguna, misi, achievements, pengumuman, dan log audit.
+- Responsif penuh: navigasi bawah dan modal bottom sheet di HP.
 
 ## Status
 
