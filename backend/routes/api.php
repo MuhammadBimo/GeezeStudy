@@ -10,6 +10,7 @@ use App\Http\Controllers\MissionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\StudySessionController;
+use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,9 @@ Route::middleware(['auth:sanctum', 'active', 'verified'])->group(function () {
     Route::get('/announcements', [ProgressController::class, 'announcements']);
 
     Route::apiResource('tasks', TaskController::class);
+    Route::get('/tasks/{task}/attachment', [TaskAttachmentController::class, 'show']);
+    Route::post('/tasks/{task}/attachment', [TaskAttachmentController::class, 'store'])->middleware('throttle:20,1');
+    Route::delete('/tasks/{task}/attachment', [TaskAttachmentController::class, 'destroy']);
     Route::apiResource('calendar-events', CalendarEventController::class)->except('show')->parameters(['calendar-events' => 'event']);
     Route::apiResource('goals', GoalController::class)->except('show');
     Route::get('/study-sessions', [StudySessionController::class, 'index']);

@@ -95,23 +95,39 @@ function TaskBoard({ resource, tasks }) {
     if (params.get('baru')) setParams({}, { replace: true })
   }
 
+  // Lampiran diurus setelah tugasnya tersimpan: unggah berkas baru, atau hapus lampiran lama.
+  const syncAttachment = async (taskId, form, hadAttachment) => {
+    if (form.file) {
+      const body = new FormData()
+      body.append('file', form.file)
+      return (await api.post(`/tasks/${taskId}/attachment`, body)).data
+    }
+    if (form.clearAttachment && hadAttachment) return (await api.delete(`/tasks/${taskId}/attachment`)).data
+    return null
+  }
+
   const save = async (form) => {
     setSaving(true)
+    const isNew = editing === 'new'
+    let saved = null
     try {
-      if (editing === 'new') {
-        const { data } = await api.post('/tasks', taskToApi(form))
-        resource.mutate((d) => ({ ...d, data: [...d.data, data] }))
-        toast('Tugas ditambahkan')
-      } else {
-        const { data } = await api.patch(`/tasks/${editing.id}`, taskToApi(form))
-        replace(data)
-        toast('Perubahan disimpan')
-      }
-      closeForm()
+      saved = (isNew ? await api.post('/tasks', taskToApi(form)) : await api.patch(`/tasks/${editing.id}`, taskToApi(form))).data
+      if (isNew) resource.mutate((d) => ({ ...d, data: [...d.data, saved] }))
+      else replace(saved)
     } catch (error) {
       toast(errorMessage(error), 'error')
+      setSaving(false)
+      return
+    }
+    try {
+      const withFile = await syncAttachment(saved.id, form, !isNew && Boolean(editing.attachment))
+      if (withFile) replace(withFile)
+      toast(isNew ? 'Tugas ditambahkan' : 'Perubahan disimpan')
+    } catch (error) {
+      toast.error('Tugas tersimpan, tapi lampiran gagal diunggah', { description: errorMessage(error) })
     } finally {
       setSaving(false)
+      closeForm()
     }
   }
 

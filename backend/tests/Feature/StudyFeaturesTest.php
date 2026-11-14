@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\User;
 use Database\Seeders\GamificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StudyFeaturesTest extends TestCase
@@ -90,5 +92,33 @@ class StudyFeaturesTest extends TestCase
             ->assertJsonPath('due_at', '2026-11-14T16:59:00.000000Z');
 
         $this->assertSame('2026-11-14 23:59:00', $user->tasks()->first()->getRawOriginal('due_at'));
+    }
+
+    public function test_task_attachment_upload_download_and_cleanup(): void
+    {
+        Storage::fake('local');
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $task = $owner->tasks()->create(['title' => 'Laporan']);
+
+        $this->actingAs($owner)->post("/api/tasks/{$task->id}/attachment", ['file' => UploadedFile::fake()->create('virus.exe', 10)], ['Accept' => 'application/json'])
+            ->assertUnprocessable();
+
+        $this->actingAs($owner)->post("/api/tasks/{$task->id}/attachment", ['file' => UploadedFile::fake()->create('Modul 7.pdf', 120, 'application/pdf')], ['Accept' => 'application/json'])
+            ->assertOk()->assertJsonPath('attachment_name', 'Modul 7.pdf')->assertJsonPath('has_attachment_file', true)->assertJsonMissingPath('attachment_path');
+
+        $path = $task->refresh()->attachment_path;
+        Storage::disk('local')->assertExists("task-attachments/{$path}");
+
+        $this->actingAs($owner)->get("/api/tasks/{$task->id}/attachment")->assertOk()->assertDownload('Modul 7.pdf');
+        $this->actingAs($other)->getJson("/api/tasks/{$task->id}/attachment")->assertNotFound();
+
+        $this->actingAs($owner)->deleteJson("/api/tasks/{$task->id}/attachment")->assertOk()->assertJsonPath('attachment_name', null);
+        Storage::disk('local')->assertMissing("task-attachments/{$path}");
+
+        $this->actingAs($owner)->post("/api/tasks/{$task->id}/attachment", ['file' => UploadedFile::fake()->create('b.docx', 20)], ['Accept' => 'application/json'])->assertOk();
+        $second = $task->refresh()->attachment_path;
+        $this->actingAs($owner)->deleteJson("/api/tasks/{$task->id}")->assertNoContent();
+        Storage::disk('local')->assertMissing("task-attachments/{$second}");
     }
 }

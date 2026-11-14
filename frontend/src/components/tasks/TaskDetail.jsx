@@ -1,4 +1,9 @@
-import { Paperclip } from 'lucide-react'
+import { useState } from 'react'
+import { Download, Loader2, Paperclip } from 'lucide-react'
+import FileIcon from '@/components/ui/FileIcon'
+import { useToast } from '@/hooks/useToast'
+import { api, errorMessage } from '@/lib/api'
+import { formatSize } from '@/lib/files'
 import Badge from '@/components/ui/Badge'
 import { dueInfo } from '@/lib/date'
 import { priorityMeta, statusMeta } from '@/lib/taskMeta'
@@ -6,6 +11,8 @@ import { priorityMeta, statusMeta } from '@/lib/taskMeta'
 const longFmt = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
 export default function TaskDetail({ task }) {
+  const toast = useToast()
+  const [downloading, setDownloading] = useState(false)
   const done = task.status === 'done'
   const due = dueInfo(task.dueAt, done)
 
@@ -34,10 +41,49 @@ export default function TaskDetail({ task }) {
       </div>
 
       {task.attachment && (
-        <p className="inline-flex items-center gap-2 self-start rounded-lg border border-line px-3 py-2 text-sm">
-          <Paperclip className="size-4 text-muted" aria-hidden="true" /> {task.attachment}
-        </p>
+        <AttachmentRow task={task} downloading={downloading} onDownload={async () => {
+          setDownloading(true)
+          try {
+            const { data } = await api.get(`/tasks/${task.id}/attachment`, { responseType: 'blob' })
+            const url = URL.createObjectURL(data)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = task.attachment
+            document.body.append(a)
+            a.click()
+            a.remove()
+            setTimeout(() => URL.revokeObjectURL(url), 1000)
+          } catch (error) {
+            toast(errorMessage(error, 'Lampiran tidak bisa diunduh.'), 'error')
+          } finally {
+            setDownloading(false)
+          }
+        }} />
       )}
     </div>
+  )
+}
+
+function AttachmentRow({ task, downloading, onDownload }) {
+  const body = (
+    <>
+      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-forest">
+        {task.attachmentFile ? <FileIcon name={task.attachment} className="size-5" aria-hidden="true" /> : <Paperclip className="size-5" aria-hidden="true" />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium">{task.attachment}</span>
+        <span className="block text-xs text-ink-2">{task.attachmentFile ? formatSize(task.attachmentSize) : 'Hanya nama berkas, belum diunggah'}</span>
+      </span>
+      {task.attachmentFile && (downloading
+        ? <Loader2 className="size-4.5 animate-spin text-muted" aria-hidden="true" />
+        : <Download className="size-4.5 text-forest" aria-hidden="true" />)}
+    </>
+  )
+  const cls = 'flex w-full items-center gap-3 rounded-control border border-line bg-canvas px-3 py-2.5 text-left'
+  if (!task.attachmentFile) return <div className={cls}>{body}</div>
+  return (
+    <button type="button" onClick={onDownload} disabled={downloading} aria-label={`Unduh ${task.attachment}`} className={`${cls} transition-colors hover:border-forest/40 hover:bg-sage/30 active:bg-sage/50 disabled:opacity-70`}>
+      {body}
+    </button>
   )
 }

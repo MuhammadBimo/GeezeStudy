@@ -16,6 +16,8 @@ export const taskFromApi = (t) => ({
   status: STATUS_FROM_API[t.status] ?? 'todo',
   description: t.description ?? '',
   attachment: t.attachment_name ?? '',
+  attachmentSize: t.attachment_size ?? null,
+  attachmentFile: Boolean(t.has_attachment_file),
 })
 
 export const taskToApi = (form) => ({
@@ -25,7 +27,6 @@ export const taskToApi = (form) => ({
   priority: PRIORITY_TO_API[form.priority] ?? 'medium',
   // Deadline berlaku sampai akhir hari di zona waktu perangkat.
   due_at: form.due ? new Date(`${form.due}T23:59:00`).toISOString() : null,
-  attachment_name: form.attachment || null,
 })
 
 export const statusToApi = (status) => STATUS_TO_API[status]

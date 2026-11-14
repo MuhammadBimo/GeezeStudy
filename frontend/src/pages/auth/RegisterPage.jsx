@@ -2,20 +2,18 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, Mail, UserRound } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
-import AvatarPicker from '@/components/profile/AvatarPicker'
 import Button from '@/components/ui/Button'
 import Input, { PasswordInput } from '@/components/ui/Input'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
-import { api, errorMessage, fieldErrors } from '@/lib/api'
+import { errorMessage, fieldErrors } from '@/lib/api'
 import { educationLevels, institutionField } from '@/lib/profile'
 
 export default function RegisterPage() {
-  const { register, setUser } = useAuth()
+  const { register } = useAuth()
   const toast = useToast()
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '', education_level: 'sma', institution: '' })
-  const [photo, setPhoto] = useState(null)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
@@ -43,17 +41,6 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const user = await register({ ...form, name: form.name.trim(), email: form.email.trim(), institution: form.institution.trim() || null })
-      if (photo) {
-        // Foto diunggah setelah akun dibuat; kalau gagal, akun tetap jadi dan foto bisa ditambah di Pengaturan.
-        try {
-          const body = new FormData()
-          body.append('avatar', photo)
-          const { data } = await api.post('/user/avatar', body)
-          setUser(data)
-        } catch {
-          toast.warning('Akun dibuat, tetapi foto belum tersimpan', { description: 'Tambahkan lagi dari halaman Pengaturan.' })
-        }
-      }
       toast(`Akun dibuat. Halo, ${user.name}`)
     } catch (error) {
       const fields = fieldErrors(error)
@@ -74,8 +61,6 @@ export default function RegisterPage() {
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> {errors.form}
           </p>
         )}
-
-        <AvatarPicker name={form.name} file={photo} onChange={setPhoto} />
 
         <Input label="Nama" required icon={UserRound} autoComplete="name" placeholder="Nama lengkap" value={form.name} onChange={set('name')} error={errors.name} />
         <Input label="Email" required type="email" icon={Mail} autoComplete="email" placeholder="nama@email.com" value={form.email} onChange={set('email')} error={errors.email} hint="Kami kirim tautan verifikasi ke email ini." />
