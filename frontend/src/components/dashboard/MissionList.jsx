@@ -16,7 +16,7 @@ export default function MissionList({ missions }) {
               {m.claimed ? (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-success"><Check className="size-3.5" strokeWidth={3} aria-hidden="true" />Diklaim</span>
               ) : (
-                <span className={done ? 'text-xs font-semibold text-forest' : 'text-xs tabular-nums text-ink-2'}>{done ? 'Siap diklaim' : `+${m.reward_points} pts`}</span>
+                <span className={done ? 'text-xs font-semibold text-accent' : 'text-xs tabular-nums text-ink-2'}>{done ? 'Siap diklaim' : `+${m.reward_points} pts`}</span>
               )}
             </div>
             <ProgressBar size="sm" value={m.progress} max={m.target} label={m.title} />

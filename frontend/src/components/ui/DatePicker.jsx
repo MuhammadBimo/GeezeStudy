@@ -48,8 +48,8 @@ export function CalendarGrid({ value, onSelect, min, autoFocus = false }) {
       <div className="mb-2 flex items-center justify-between">
         <p className="pl-1 text-sm font-semibold capitalize" aria-live="polite">{monthFmt.format(cursor)}</p>
         <div className="flex gap-1">
-          <button type="button" onClick={() => shift(-1)} aria-label="Bulan sebelumnya" className="grid size-8 place-items-center rounded-lg text-ink-2 hover:bg-canvas hover:text-ink"><ChevronLeft className="size-4" /></button>
-          <button type="button" onClick={() => shift(1)} aria-label="Bulan berikutnya" className="grid size-8 place-items-center rounded-lg text-ink-2 hover:bg-canvas hover:text-ink"><ChevronRight className="size-4" /></button>
+          <button type="button" onClick={() => shift(-1)} aria-label="Bulan sebelumnya" className="grid size-8 place-items-center rounded-lg text-ink-2 hover:bg-hover hover:text-ink"><ChevronLeft className="size-4" /></button>
+          <button type="button" onClick={() => shift(1)} aria-label="Bulan berikutnya" className="grid size-8 place-items-center rounded-lg text-ink-2 hover:bg-hover hover:text-ink"><ChevronRight className="size-4" /></button>
         </div>
       </div>
       <div className="grid grid-cols-7 text-center text-[0.6875rem] font-medium text-muted" aria-hidden="true">
@@ -74,10 +74,10 @@ export function CalendarGrid({ value, onSelect, min, autoFocus = false }) {
               className={cn(
                 'relative grid h-9 place-items-center rounded-lg text-sm tabular-nums transition-colors',
                 inMonth ? 'text-ink' : 'text-muted',
-                !sel && !disabled && 'hover:bg-canvas',
-                sel && 'bg-forest font-semibold text-surface',
+                !sel && !disabled && 'hover:bg-hover',
+                sel && 'bg-forest font-semibold text-on-forest',
                 disabled && 'cursor-not-allowed opacity-35',
-                iso === TODAY && !sel && 'font-semibold text-forest after:absolute after:bottom-1 after:size-1 after:rounded-full after:bg-forest',
+                iso === TODAY && !sel && 'font-semibold text-accent after:absolute after:bottom-1 after:size-1 after:rounded-full after:bg-forest',
               )}
             >
               {Number(iso.slice(8))}
@@ -114,18 +114,18 @@ export default function DatePicker({ label, value, onChange, placeholder = 'Pili
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy(id, hint, error)}
         onClick={() => { if (open) close(); else { setTarget(portalTarget(anchorRef.current)); setOpen(true) } }}
-        className={cn(fieldClass, 'gap-2.5 text-left', open && 'border-forest ring-3 ring-forest/15')}
+        className={cn(fieldClass, 'gap-2.5 text-left', open && 'border-accent ring-3 ring-accent/20')}
       >
         <CalendarDays className="size-4 shrink-0 text-muted" aria-hidden="true" />
         <span className={cn('flex-1 truncate', !value && 'text-muted')}>{value ? valueFmt.format(fromISO(value)) : placeholder}</span>
       </button>
 
       {open && target && createPortal(
-        <div ref={panelRef} style={style} role="dialog" aria-label={label ?? 'Pilih tanggal'} className="float-panel z-[70] overflow-hidden rounded-xl border border-line bg-surface shadow-soft-lg">
+        <div ref={panelRef} style={style} role="dialog" aria-label={label ?? 'Pilih tanggal'} className="float-panel z-[70] overflow-hidden rounded-xl border border-line bg-raised shadow-soft-lg">
           <CalendarGrid value={value} min={min} autoFocus onSelect={(iso) => { emit(iso); close(true) }} />
           <div className="flex items-center justify-between border-t border-line px-3 py-2">
-            <button type="button" onClick={() => { emit(TODAY); close(true) }} className="rounded-md px-2 py-1 text-sm font-semibold text-forest hover:bg-sage">Hari ini</button>
-            {clearable && value && <button type="button" onClick={() => { emit(''); close(true) }} className="rounded-md px-2 py-1 text-sm text-ink-2 hover:bg-canvas">Kosongkan</button>}
+            <button type="button" onClick={() => { emit(TODAY); close(true) }} className="rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-sage">Hari ini</button>
+            {clearable && value && <button type="button" onClick={() => { emit(''); close(true) }} className="rounded-md px-2 py-1 text-sm text-ink-2 hover:bg-hover">Kosongkan</button>}
           </div>
         </div>,
         target,

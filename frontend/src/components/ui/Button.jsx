@@ -3,11 +3,11 @@ import { cn } from '@/lib/cn'
 
 // Satu sistem tombol. primary = Forest Green (satu aksi utama per area), secondary = permukaan timbul halus.
 const variants = {
-  primary: 'bg-forest text-surface shadow-soft-sm hover:bg-forest-mid active:bg-forest-deep active:shadow-press',
-  secondary: 'bg-surface text-ink shadow-raised hover:bg-[#f3f2ea] active:bg-[#eceae1] active:shadow-press',
+  primary: 'bg-forest text-on-forest shadow-soft-sm hover:bg-forest-mid active:bg-forest-deep active:shadow-press',
+  secondary: 'bg-raised text-ink shadow-raised hover:bg-surface-hover active:bg-surface-press active:shadow-press',
   ghost: 'bg-transparent text-ink-2 hover:bg-ink/5 hover:text-ink active:bg-ink/10',
-  subtle: 'bg-sage text-forest hover:bg-sage-deep active:bg-sage-deep active:shadow-press',
-  danger: 'bg-danger text-white shadow-soft-sm hover:brightness-110 active:brightness-95 active:shadow-press',
+  subtle: 'bg-sage text-accent hover:bg-sage-deep active:bg-sage-deep active:shadow-press',
+  danger: 'bg-danger text-on-danger shadow-soft-sm hover:brightness-110 active:brightness-95 active:shadow-press',
 }
 variants.neutral = variants.secondary
 

@@ -69,7 +69,7 @@ export default function OnboardingPage() {
                     role="radio"
                     aria-checked={level === l.value}
                     onClick={() => setLevel(l.value)}
-                    className={cn('flex h-14 items-center justify-between rounded-xl border px-4 text-left font-medium transition-all active:scale-[0.98]', level === l.value ? 'border-forest bg-sage text-forest' : 'border-line bg-surface hover:border-line-strong')}
+                    className={cn('flex h-14 items-center justify-between rounded-xl border px-4 text-left font-medium transition-all active:scale-[0.98]', level === l.value ? 'border-forest bg-sage text-accent' : 'border-line bg-surface hover:border-line-strong')}
                   >
                     {l.label}
                     {level === l.value && <Check className="size-4" aria-hidden="true" />}

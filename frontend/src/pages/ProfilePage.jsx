@@ -30,7 +30,7 @@ function Profile({ data }) {
             <Badge tone="neutral">Target {user.daily_goal_minutes} menit/hari</Badge>
           </div>
         </div>
-        <Link to="/pengaturan" className="inline-flex h-11 items-center gap-2 rounded-control bg-surface px-4.5 font-semibold shadow-raised transition-[background-color,transform] hover:bg-[#f3f2ea] active:scale-[0.98]">
+        <Link to="/pengaturan" className="inline-flex h-11 items-center gap-2 rounded-control bg-raised px-4.5 font-semibold shadow-raised transition-[background-color,transform] hover:bg-surface-hover active:scale-[0.98]">
           <Pencil className="size-4" aria-hidden="true" /> Ubah profil
         </Link>
       </section>
@@ -52,7 +52,7 @@ function Profile({ data }) {
           <ul className="flex flex-wrap gap-3">
             {unlocked.map((a) => (
               <li key={a.id} className="flex items-center gap-2.5 rounded-full border border-sand bg-sand-soft py-1.5 pl-1.5 pr-4">
-                <span className="grid size-8 place-items-center rounded-full bg-sand text-[#6b5326]"><Award className="size-4" aria-hidden="true" /></span>
+                <span className="grid size-8 place-items-center rounded-full bg-sand text-sand-ink"><Award className="size-4" aria-hidden="true" /></span>
                 <span className="text-sm font-medium">{a.title}</span>
               </li>
             ))}

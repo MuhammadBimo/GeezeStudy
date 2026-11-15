@@ -52,7 +52,7 @@ function TimerRing({ fraction, phase, children }) {
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-ink/[0.06]" />
         <m.circle
           cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} strokeLinecap="round"
-          className={phase === 'focus' ? 'stroke-forest' : 'stroke-[#c9a96a]'}
+          className={phase === 'focus' ? 'stroke-accent' : 'stroke-[#c9a96a]'}
           strokeDasharray={c}
           animate={{ strokeDashoffset: c * (1 - fraction) }}
           transition={{ duration: 0.3, ease: 'linear' }}
@@ -177,7 +177,7 @@ export default function TimerPage() {
           <div className="mt-8">
             <TimerRing fraction={fraction} phase={s.phase}>
               <div className="text-center">
-                <p className={cn('inline-flex items-center gap-1.5 text-sm font-medium', s.phase === 'focus' ? 'text-forest' : 'text-[#8a6a2c]')}>
+                <p className={cn('inline-flex items-center gap-1.5 text-sm font-medium', s.phase === 'focus' ? 'text-accent' : 'text-sand-ink')}>
                   {s.phase === 'focus' ? 'Waktu fokus' : <><Coffee className="size-4" aria-hidden="true" /> Istirahat</>}
                 </p>
                 <p role="timer" aria-live="off" aria-label={`Sisa waktu ${mmss(remaining)}`} className="mt-1 font-display text-[4.25rem] leading-none tabular-nums sm:text-[4.75rem]">
@@ -213,9 +213,9 @@ export default function TimerPage() {
         </section>
 
         <aside className="space-y-6">
-          <section aria-labelledby="today-title" className="rounded-panel bg-forest p-5 text-surface">
-            <h2 id="today-title" className="text-sm font-medium text-surface/75">Belajar hari ini</h2>
-            <p className="mt-1 font-display text-[2.25rem] leading-tight tabular-nums">{todayMinutes}<span className="font-sans text-base text-surface/70"> / {user.daily_goal_minutes} menit</span></p>
+          <section aria-labelledby="today-title" className="rounded-panel bg-panel p-5 text-on-panel">
+            <h2 id="today-title" className="text-sm font-medium text-on-panel/75">Belajar hari ini</h2>
+            <p className="mt-1 font-display text-[2.25rem] leading-tight tabular-nums">{todayMinutes}<span className="font-sans text-base text-on-panel/70"> / {user.daily_goal_minutes} menit</span></p>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
               <div className="h-full rounded-full bg-sand transition-[width] duration-500" style={{ width: `${Math.min(100, (todayMinutes / Math.max(user.daily_goal_minutes, 1)) * 100)}%` }} />
             </div>

@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
   }
 
   const back = (
-    <Link to="/masuk" className="inline-flex items-center gap-1.5 font-semibold text-forest underline-offset-4 hover:underline">
+    <Link to="/masuk" className="inline-flex items-center gap-1.5 font-semibold text-accent underline-offset-4 hover:underline">
       <ArrowLeft className="size-4" aria-hidden="true" /> Kembali ke halaman masuk
     </Link>
   )
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <AuthLayout title="Cek emailmu" subtitle={`Jika ${email.trim()} terdaftar, tautan untuk mengatur ulang password sudah dikirim.`} footer={back}>
-        <div role="status" className="flex items-start gap-3 rounded-xl border border-sage-deep bg-sage p-4 text-sm text-forest">
+        <div role="status" className="flex items-start gap-3 rounded-xl border border-sage-deep bg-sage p-4 text-sm text-accent">
           <MailCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
           <p>Tautan berlaku 60 menit. Tidak ada di kotak masuk? Cek folder spam atau <button type="button" onClick={() => setSent(false)} className="font-semibold underline underline-offset-4">kirim ulang</button>.</p>
         </div>

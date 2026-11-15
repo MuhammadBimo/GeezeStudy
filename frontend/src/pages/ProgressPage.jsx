@@ -27,16 +27,16 @@ function Progress({ data }) {
         <StatCard icon={Trophy} label="Points" value={user.points.toLocaleString('id-ID')} hint={`Level ${user.level}`} />
       </StatRow>
 
-      <section aria-labelledby="level-title" className="mt-8 rounded-panel bg-forest p-6 text-surface sm:p-7">
+      <section aria-labelledby="level-title" className="mt-8 rounded-panel bg-panel p-6 text-on-panel sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 id="level-title" className="text-sm font-medium text-surface/70">{maxed ? 'Level tertinggi' : `Menuju Level ${user.level + 1}`}</h2>
+            <h2 id="level-title" className="text-sm font-medium text-on-panel/70">{maxed ? 'Level tertinggi' : `Menuju Level ${user.level + 1}`}</h2>
             <p className="mt-1 font-display text-[2.75rem] leading-none">Level {user.level}</p>
           </div>
-          <p className="text-sm tabular-nums text-surface/80">{maxed ? `${user.points.toLocaleString('id-ID')} Points` : `${user.points.toLocaleString('id-ID')} / ${user.next_level_at.toLocaleString('id-ID')} Points`}</p>
+          <p className="text-sm tabular-nums text-on-panel/80">{maxed ? `${user.points.toLocaleString('id-ID')} Points` : `${user.points.toLocaleString('id-ID')} / ${user.next_level_at.toLocaleString('id-ID')} Points`}</p>
         </div>
         <ProgressBar className="mt-5" tone="light" value={maxed ? 1 : user.points - user.level_floor} max={maxed ? 1 : user.next_level_at - user.level_floor} label="Progres level" />
-        <p className="mt-3 text-sm text-surface/70">Level tidak turun saat kamu tidak aktif.</p>
+        <p className="mt-3 text-sm text-on-panel/70">Level tidak turun saat kamu tidak aktif.</p>
       </section>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -50,12 +50,12 @@ function Progress({ data }) {
                 const Icon = sourceIcon(p.description)
                 return (
                   <li key={p.id} className="relative flex items-center gap-3 py-2">
-                    <span className="relative z-10 grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface text-forest"><Icon className="size-4" aria-hidden="true" /></span>
+                    <span className="relative z-10 grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface text-accent"><Icon className="size-4" aria-hidden="true" /></span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{p.description}</p>
                       <p className="text-xs text-ink-2">{relativeTime(p.created_at)}</p>
                     </div>
-                    <span className="shrink-0 text-sm font-semibold tabular-nums text-forest">+{p.points}</span>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-accent">+{p.points}</span>
                   </li>
                 )
               })}
@@ -84,7 +84,7 @@ function Progress({ data }) {
           </section>
 
           <Link to="/achievements" className="group flex items-center gap-4 rounded-panel border border-sand bg-sand-soft p-5 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-soft">
-            <span className="grid size-12 place-items-center rounded-xl bg-sand text-[#6b5326]"><Award className="size-6" aria-hidden="true" /></span>
+            <span className="grid size-12 place-items-center rounded-xl bg-sand text-sand-ink"><Award className="size-6" aria-hidden="true" /></span>
             <span className="flex-1">
               <span className="block font-semibold">Achievements</span>
               <span className="block text-sm text-ink-2">{unlocked} dari {data.achievements.length} sudah terbuka</span>

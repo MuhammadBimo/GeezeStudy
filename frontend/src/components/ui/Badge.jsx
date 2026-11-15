@@ -2,9 +2,9 @@ import { cn } from '@/lib/cn'
 
 const tones = {
   neutral: 'bg-ink/[0.06] text-ink-2',
-  forest: 'bg-forest text-surface',
-  sage: 'bg-sage text-forest',
-  sand: 'bg-sand text-[#5b4a2a]',
+  forest: 'bg-forest text-on-forest',
+  sage: 'bg-sage text-accent',
+  sand: 'bg-sand text-sand-ink',
   success: 'bg-success-soft text-success',
   warning: 'bg-warning-soft text-warning',
   danger: 'bg-danger-soft text-danger',

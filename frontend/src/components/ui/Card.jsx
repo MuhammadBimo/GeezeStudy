@@ -6,7 +6,7 @@ const variants = {
   tint: 'border border-sage-deep/60 bg-sage',
   sand: 'border border-sand bg-sand-soft',
   plain: '',
-  dark: 'bg-forest text-surface',
+  dark: 'bg-panel text-on-panel',
 }
 
 export default function Card({ as: Tag = 'div', variant = 'surface', interactive = false, color, tone, className, ...props }) {

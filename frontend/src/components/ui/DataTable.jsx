@@ -19,7 +19,7 @@ export default function DataTable({ caption, columns, rows, rowKey = 'id', empty
         </thead>
         <tbody className="divide-y divide-line">
           {rows.map((row) => (
-            <tr key={row[rowKey]} className="block px-4 py-3 transition-colors hover:bg-canvas/60 md:table-row md:p-0">
+            <tr key={row[rowKey]} className="block px-4 py-3 transition-colors hover:bg-hover/60 md:table-row md:p-0">
               {columns.map((c) => (
                 <td key={c.key} className={cn('flex items-center justify-between gap-4 py-1 md:table-cell md:px-4 md:py-3 md:align-middle', c.className)}>
                   <span className="text-xs text-ink-2 md:hidden">{c.label}</span>

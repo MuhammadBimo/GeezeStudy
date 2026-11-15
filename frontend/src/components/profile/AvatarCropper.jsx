@@ -144,7 +144,7 @@ function CropArea({ src, onCancel, onConfirm }) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onKeyDown={onKeyDown}
-        className="relative cursor-grab touch-none select-none overflow-hidden rounded-2xl bg-ink/90 outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2 active:cursor-grabbing"
+        className="relative cursor-grab touch-none select-none overflow-hidden rounded-2xl bg-[#20241f] outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 active:cursor-grabbing"
         style={{ width: VIEW, height: VIEW }}
       >
         <img
@@ -158,7 +158,7 @@ function CropArea({ src, onCancel, onConfirm }) {
         />
         {/* Panduan lingkaran: area di luar lingkaran digelapkan. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full border-2 border-white/90 shadow-[0_0_0_9999px_rgb(32_36_31/0.55)]" />
-        <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-ink/60 px-2 py-0.5 text-[0.6875rem] text-white">
+        <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[0.6875rem] text-white">
           <Move className="size-3" /> Geser
         </span>
       </div>

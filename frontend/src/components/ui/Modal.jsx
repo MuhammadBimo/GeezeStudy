@@ -52,7 +52,7 @@ export default function Modal({ open, onClose, title, description, children, foo
         sizes[size],
       )}
     >
-      <div className="flex max-h-[92dvh] flex-col rounded-t-2xl border border-line bg-surface shadow-soft-lg sm:max-h-[86dvh] sm:rounded-2xl">
+      <div className="flex max-h-[92dvh] flex-col rounded-t-2xl border border-line bg-raised shadow-soft-lg sm:max-h-[86dvh] sm:rounded-2xl">
         <header className="flex items-start gap-4 px-5 pb-3 pt-5 sm:px-6">
           <div className="min-w-0 flex-1">
             <h2 id={titleId} className="text-lg font-semibold">{view.title}</h2>

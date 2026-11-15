@@ -5,9 +5,9 @@ export const describedBy = (id, hint, error) => (error ? `${id}-error` : hint ? 
 
 // Kelas dasar semua kontrol berbentuk kotak isian (dipakai juga oleh Select, DatePicker).
 export const fieldClass = cn(
-  'flex h-11 w-full items-center rounded-control border border-line-strong bg-surface px-3.5 text-[0.9375rem] text-ink shadow-inset',
+  'flex h-11 w-full items-center rounded-control border border-line-strong bg-field px-3.5 text-[0.9375rem] text-ink shadow-inset',
   'transition-[border-color,box-shadow,background-color] duration-150',
-  'hover:border-[#bdb9ab] focus:border-forest focus:outline-none focus:ring-3 focus:ring-forest/15',
+  'hover:border-line-hover focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15',
   'disabled:cursor-not-allowed disabled:bg-canvas disabled:text-muted',
   'aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15',
 )

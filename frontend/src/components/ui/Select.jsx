@@ -90,12 +90,12 @@ export default function Select({
         aria-describedby={describedBy(id, hint, error)}
         onClick={() => (open ? close() : openPanel())}
         onKeyDown={(e) => { if (['ArrowDown', 'ArrowUp'].includes(e.key) && !open) { e.preventDefault(); openPanel() } }}
-        className={cn(fieldClass, 'justify-between gap-2 text-left', multiple && labels.length > 0 && 'h-auto min-h-11 py-1.5', open && 'border-forest ring-3 ring-forest/15')}
+        className={cn(fieldClass, 'justify-between gap-2 text-left', multiple && labels.length > 0 && 'h-auto min-h-11 py-1.5', open && 'border-accent ring-3 ring-accent/20')}
       >
         <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
           {multiple && labels.length > 0
             ? labels.map((o) => (
-                <span key={o.value} className="inline-flex items-center rounded-md bg-sage px-2 py-0.5 text-[0.8125rem] font-medium text-forest">
+                <span key={o.value} className="inline-flex items-center rounded-md bg-sage px-2 py-0.5 text-[0.8125rem] font-medium text-accent">
                   {o.label}
                 </span>
               ))
@@ -105,7 +105,7 @@ export default function Select({
       </button>
 
       {open && target && createPortal(
-        <div ref={panelRef} style={style} className="float-panel z-[70] flex flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-soft-lg">
+        <div ref={panelRef} style={style} className="float-panel z-[70] flex flex-col overflow-hidden rounded-xl border border-line bg-raised shadow-soft-lg">
           {searchable && (
             <div className="relative border-b border-line p-2">
               <Search className="pointer-events-none absolute left-4.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
@@ -118,7 +118,7 @@ export default function Select({
                 aria-label={`Cari ${label ?? 'pilihan'}`}
                 aria-controls={listId}
                 aria-activedescendant={filtered[active] ? `${id}-opt-${active}` : undefined}
-                className="h-9 w-full rounded-lg bg-canvas pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-forest/20"
+                className="h-9 w-full rounded-lg bg-canvas pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-accent/20"
               />
             </div>
           )}
@@ -146,13 +146,13 @@ export default function Select({
                   onClick={() => choose(o)}
                   className={cn(
                     'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[0.9375rem] transition-colors',
-                    i === active && 'bg-canvas',
-                    isSel && 'font-medium text-forest',
+                    i === active && 'bg-hover',
+                    isSel && 'font-medium text-accent',
                     o.disabled && 'cursor-not-allowed opacity-50',
                   )}
                 >
                   {multiple && (
-                    <span className={cn('grid size-4 shrink-0 place-items-center rounded border', isSel ? 'border-forest bg-forest text-surface' : 'border-line-strong')}>
+                    <span className={cn('grid size-4 shrink-0 place-items-center rounded border', isSel ? 'border-forest bg-forest text-on-forest' : 'border-line-strong')}>
                       {isSel && <Check className="size-3" strokeWidth={3} aria-hidden="true" />}
                     </span>
                   )}

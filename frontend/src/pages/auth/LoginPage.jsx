@@ -53,7 +53,7 @@ export default function LoginPage() {
     <AuthLayout
       title="Selamat datang kembali"
       subtitle="Masuk untuk melanjutkan belajarmu."
-      footer={<>Belum punya akun? <Link to="/daftar" className="font-semibold text-forest underline-offset-4 hover:underline">Buat akun</Link></>}
+      footer={<>Belum punya akun? <Link to="/daftar" className="font-semibold text-accent underline-offset-4 hover:underline">Buat akun</Link></>}
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-5">
         {formError && (
@@ -69,7 +69,7 @@ export default function LoginPage() {
               <input type="checkbox" checked={form.remember} onChange={(e) => setForm((f) => ({ ...f, remember: e.target.checked }))} className="size-4 rounded accent-forest" />
               Ingat saya
             </label>
-            <Link to="/lupa-password" className="text-sm font-medium text-forest underline-offset-4 hover:underline">Lupa password?</Link>
+            <Link to="/lupa-password" className="text-sm font-medium text-accent underline-offset-4 hover:underline">Lupa password?</Link>
           </div>
         </div>
         <Button type="submit" size="lg" className="w-full" loading={loading}>{loading ? 'Memeriksa...' : 'Masuk'}</Button>
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => { setForm({ email: a.email, password: 'password123', remember: true }); setErrors({}) }}
-                  className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-canvas"
+                  className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-hover"
                 >
                   <Avatar name={a.name} size="xs" />
                   <span className="flex-1 text-sm font-medium">{a.name}</span>

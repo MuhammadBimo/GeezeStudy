@@ -15,7 +15,7 @@ export default function StudySummary({ minutes, goal }) {
         <p className="text-sm text-ink-2">minggu ini</p>
       </div>
       <div className="relative">
-        <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-forest/30" style={{ bottom: `calc(${(goal / max) * 100}% * 0.86 + 1.5rem)` }} aria-hidden="true">
+        <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-accent/40" style={{ bottom: `calc(${(goal / max) * 100}% * 0.86 + 1.5rem)` }} aria-hidden="true">
           <span className="absolute -top-2.5 right-0 bg-surface pl-1.5 text-[0.6875rem] text-ink-2">target {goal}</span>
         </div>
         <ul className="grid h-40 grid-cols-7 items-end gap-2 sm:gap-3">

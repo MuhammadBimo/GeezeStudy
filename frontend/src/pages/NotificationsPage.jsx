@@ -17,9 +17,9 @@ import { relativeTime } from '@/lib/mappers'
 const catMeta = {
   deadline: { label: 'Tenggat', icon: Clock, tint: 'bg-danger-soft text-danger' },
   schedule: { label: 'Jadwal', icon: CalendarClock, tint: 'bg-info-soft text-info' },
-  mission: { label: 'Misi', icon: Flag, tint: 'bg-sage text-forest' },
-  social: { label: 'Sosial', icon: Users, tint: 'bg-sage text-forest' },
-  achievement: { label: 'Achievements', icon: Award, tint: 'bg-sand text-[#6b5326]' },
+  mission: { label: 'Misi', icon: Flag, tint: 'bg-sage text-accent' },
+  social: { label: 'Sosial', icon: Users, tint: 'bg-sage text-accent' },
+  achievement: { label: 'Achievements', icon: Award, tint: 'bg-sand text-sand-ink' },
   system: { label: 'Sistem', icon: Info, tint: 'bg-ink/[0.06] text-ink-2' },
 }
 const categories = [{ value: 'all', label: 'Semua' }, ...Object.entries(catMeta).map(([value, m]) => ({ value, label: m.label }))]
@@ -99,7 +99,7 @@ function NotificationList({ resource, data }) {
         const meta = catMeta[n.category] ?? catMeta.system
         return (
           <li key={n.id}>
-            <button type="button" onClick={() => markRead(n)} className={cn('flex w-full items-start gap-3.5 px-4 py-4 text-left transition-colors hover:bg-canvas/70 sm:px-5', !read && 'bg-sage/25')}>
+            <button type="button" onClick={() => markRead(n)} className={cn('flex w-full items-start gap-3.5 px-4 py-4 text-left transition-colors hover:bg-hover/70 sm:px-5', !read && 'bg-sage/25')}>
               <span className={cn('grid size-9 shrink-0 place-items-center rounded-full', meta.tint)}><meta.icon className="size-4" aria-hidden="true" /></span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-start justify-between gap-3">

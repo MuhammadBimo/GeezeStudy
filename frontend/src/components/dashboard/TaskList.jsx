@@ -36,11 +36,11 @@ export default function TaskList({ tasks, onComplete }) {
                 disabled={busy === t.id}
                 aria-label={`Tandai selesai: ${t.title}`}
                 className={cn(
-                  'group grid size-6 shrink-0 place-items-center rounded-full border-[1.5px] border-line-strong transition-all hover:border-forest hover:bg-sage active:scale-90',
+                  'group grid size-6 shrink-0 place-items-center rounded-full border-[1.5px] border-line-strong transition-all hover:border-accent hover:bg-sage active:scale-90',
                   busy === t.id && 'border-forest bg-forest',
                 )}
               >
-                <Check className={cn('size-3.5 transition-opacity', busy === t.id ? 'text-surface opacity-100' : 'text-forest opacity-0 group-hover:opacity-100')} strokeWidth={3} aria-hidden="true" />
+                <Check className={cn('size-3.5 transition-opacity', busy === t.id ? 'text-on-forest opacity-100' : 'text-accent opacity-0 group-hover:opacity-100')} strokeWidth={3} aria-hidden="true" />
               </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{t.title}</p>

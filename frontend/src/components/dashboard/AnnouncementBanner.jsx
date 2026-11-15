@@ -17,7 +17,7 @@ export default function AnnouncementBanner({ items }) {
           transition={{ duration: 0.2 }}
           className="mb-6 flex items-start gap-3 overflow-hidden rounded-xl border border-sand bg-sand-soft px-4 py-3"
         >
-          <Megaphone className="mt-0.5 size-4.5 shrink-0 text-[#6b5326]" aria-hidden="true" />
+          <Megaphone className="mt-0.5 size-4.5 shrink-0 text-sand-ink" aria-hidden="true" />
           <div className="min-w-0 flex-1 text-sm">
             <p className="font-semibold">{a.title}</p>
             <p className="text-ink-2">{a.body}</p>

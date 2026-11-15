@@ -53,7 +53,7 @@ export default function RegisterPage() {
     <AuthLayout
       title="Buat akun"
       subtitle="Gratis. Cukup beberapa data, sisanya bisa diatur nanti."
-      footer={<>Sudah punya akun? <Link to="/masuk" className="font-semibold text-forest underline-offset-4 hover:underline">Masuk</Link></>}
+      footer={<>Sudah punya akun? <Link to="/masuk" className="font-semibold text-accent underline-offset-4 hover:underline">Masuk</Link></>}
     >
       <form onSubmit={submit} noValidate className="flex flex-col gap-5">
         {errors.form && (

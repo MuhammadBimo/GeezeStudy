@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { m } from 'motion/react'
 import { ArrowLeft, Bell, GraduationCap, LayoutGrid, LogOut, Settings, ShieldCheck, UserRound } from 'lucide-react'
 import Avatar from '@/components/ui/Avatar'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import Menu from '@/components/ui/Menu'
 import Modal from '@/components/ui/Modal'
 import Skeleton from '@/components/ui/Skeleton'
@@ -16,11 +17,11 @@ const isActivePath = (pathname, to) => (to === '/' || to === '/admin' ? pathname
 function Brand({ admin }) {
   return (
     <Link to={admin ? '/admin' : '/'} className="flex items-center gap-2.5 rounded-lg">
-      <span className="grid size-8 place-items-center rounded-[0.6rem] bg-forest text-sand">
+      <span className="grid size-8 place-items-center rounded-[0.6rem] bg-panel text-[#e8dcc4]">
         <GraduationCap className="size-4.5" aria-hidden="true" />
       </span>
       <span className="font-display text-[1.15rem] font-medium tracking-tight">GeezeStudy</span>
-      {admin && <span className="rounded-md bg-sand px-1.5 py-0.5 text-[0.6875rem] font-semibold text-[#5b4a2a]">Admin</span>}
+      {admin && <span className="rounded-md bg-sand px-1.5 py-0.5 text-[0.6875rem] font-semibold text-sand-ink">Admin</span>}
     </Link>
   )
 }
@@ -32,7 +33,7 @@ function SideLink({ to, label, icon: Icon, active }) {
       end={to === '/' || to === '/admin'}
       className={cn(
         'group relative flex h-10 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors duration-150',
-        active ? 'font-semibold text-forest' : 'text-ink-2 hover:bg-ink/[0.04] hover:text-ink',
+        active ? 'font-semibold text-accent' : 'text-ink-2 hover:bg-ink/[0.04] hover:text-ink',
       )}
     >
       {active && (
@@ -77,13 +78,13 @@ export default function AppShell() {
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_1fr]">
-      <a href="#konten" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[90] focus:rounded-lg focus:bg-forest focus:px-3 focus:py-2 focus:text-surface">
+      <a href="#konten" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[90] focus:rounded-lg focus:bg-forest focus:px-3 focus:py-2 focus:text-on-forest">
         Lewati ke konten
       </a>
 
       {/* Sidebar desktop */}
-      <aside className="hidden border-r border-line bg-canvas lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
-        <div className="px-5 pb-4 pt-6"><Brand admin={inAdmin} /></div>
+      <aside className="hidden border-r border-line bg-rail lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
+        <div className="flex items-center justify-between px-5 pb-4 pt-6"><Brand admin={inAdmin} /><ThemeToggle /></div>
         <nav aria-label={inAdmin ? 'Menu admin' : 'Menu utama'} className="thin-scroll flex-1 overflow-y-auto px-3 pb-4">
           {groups.map((g) => (
             <div key={g.label} className="mt-4 first:mt-1">
@@ -108,9 +109,10 @@ export default function AppShell() {
 
       <div className="min-w-0">
         {/* Bar atas mobile */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-line bg-canvas/95 px-4 lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-line bg-rail/95 px-4 lg:hidden">
           <Brand admin={inAdmin} />
           <div className="flex items-center gap-1">
+            <ThemeToggle className="size-10" />
             {!inAdmin && (
               <Link to="/notifikasi" aria-label="Notifikasi" className="grid size-10 place-items-center rounded-lg text-ink-2 hover:bg-ink/5 hover:text-ink">
                 <Bell className="size-5" aria-hidden="true" />
@@ -144,7 +146,7 @@ export default function AppShell() {
         {primary.map(({ to, label, short, icon: Icon }) => {
           const active = isActivePath(pathname, to)
           return (
-            <NavLink key={to} to={to} end={to === '/' || to === '/admin'} className={cn('relative flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium transition-colors', active ? 'text-forest' : 'text-ink-2')}>
+            <NavLink key={to} to={to} end={to === '/' || to === '/admin'} className={cn('relative flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium transition-colors', active ? 'text-accent' : 'text-ink-2')}>
               {active && <m.span layoutId="bottom-active" className="absolute top-1 h-8 w-12 rounded-full bg-sage" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
               <Icon className="relative size-5" aria-hidden="true" />
               <span className="relative">{short ?? label}</span>
@@ -155,7 +157,7 @@ export default function AppShell() {
           type="button"
           onClick={() => setMoreOpen(true)}
           aria-haspopup="dialog"
-          className={cn('flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium', !primary.some((p) => isActivePath(pathname, p.to)) ? 'text-forest' : 'text-ink-2')}
+          className={cn('flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium', !primary.some((p) => isActivePath(pathname, p.to)) ? 'text-accent' : 'text-ink-2')}
         >
           <LayoutGrid className="size-5" aria-hidden="true" /> Lainnya
         </button>
@@ -173,7 +175,7 @@ export default function AppShell() {
                     to={to}
                     end={to === '/' || to === '/admin'}
                     onClick={() => setMoreOpen(false)}
-                    className={cn('flex h-12 items-center gap-2.5 rounded-xl border px-3 text-sm font-medium transition-colors', isActivePath(pathname, to) ? 'border-sage-deep bg-sage text-forest' : 'border-line bg-surface hover:bg-canvas')}
+                    className={cn('flex h-12 items-center gap-2.5 rounded-xl border px-3 text-sm font-medium transition-colors', isActivePath(pathname, to) ? 'border-sage-deep bg-sage text-accent' : 'border-line bg-surface hover:bg-hover')}
                   >
                     <Icon className="size-4.5" aria-hidden="true" /> {label}
                   </NavLink>

@@ -3,7 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="theme-color" content="#FF4D94" />
+    <meta name="theme-color" content="#f7f6f0" />
+    <script>
+      // Pasang tema sebelum halaman digambar supaya tidak berkedip terang lalu gelap.
+      (function () {
+        var t = null
+        try { t = localStorage.getItem('geezestudy.theme') } catch (e) {}
+        if (t !== 'light' && t !== 'dark') t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', t)
+        if (t === 'dark') document.querySelector('meta[name=theme-color]').setAttribute('content', '#151a17')
+      })()
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GeezeStudy</title>
   </head>

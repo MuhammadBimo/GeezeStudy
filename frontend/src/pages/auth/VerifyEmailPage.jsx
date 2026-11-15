@@ -51,10 +51,10 @@ export default function VerifyEmailPage() {
     <AuthLayout
       title="Verifikasi emailmu"
       subtitle="Satu langkah lagi sebelum mulai."
-      footer={<button type="button" onClick={logout} className="font-semibold text-forest underline-offset-4 hover:underline">Pakai akun lain</button>}
+      footer={<button type="button" onClick={logout} className="font-semibold text-accent underline-offset-4 hover:underline">Pakai akun lain</button>}
     >
       <div className="flex items-start gap-3 rounded-xl border border-line bg-surface p-4">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-forest"><MailCheck className="size-5" aria-hidden="true" /></span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-accent"><MailCheck className="size-5" aria-hidden="true" /></span>
         <p className="text-sm text-ink-2">
           Kami mengirim tautan verifikasi ke <strong className="break-all font-semibold text-ink">{user.email}</strong>. Buka email itu, klik tautannya, lalu kembali ke sini.
         </p>

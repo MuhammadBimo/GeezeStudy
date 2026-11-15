@@ -8,11 +8,23 @@ import SegmentedControl from '@/components/ui/SegmentedControl'
 import Toggle from '@/components/ui/Toggle'
 import { useAuth } from '@/hooks/useAuth'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useTheme } from '@/hooks/useTheme'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 import { educationLevels, institutionField } from '@/lib/profile'
 
 // Satu baris pengaturan: judul + penjelasan di kiri, kontrol di kanan. Dipisah garis, bukan kartu bertumpuk.
+const themeOptions = [
+  { value: 'light', label: 'Terang' },
+  { value: 'dark', label: 'Gelap' },
+  { value: 'system', label: 'Otomatis' },
+]
+
+function ThemeSetting() {
+  const { preference, setPreference } = useTheme()
+  return <SegmentedControl label="Tema tampilan" options={themeOptions} value={preference} onChange={setPreference} />
+}
+
 function Row({ title, description, children }) {
   return (
     <div className="grid gap-4 py-6 md:grid-cols-[16rem_minmax(0,1fr)] md:gap-10">
@@ -99,6 +111,10 @@ export default function SettingsPage() {
       <PageHeader title="Pengaturan" subtitle="Profil, target belajar, privasi, dan akun." />
 
       <div className="divide-y divide-line border-y border-line">
+        <Row title="Tampilan" description="Pilih tema terang atau gelap. Otomatis mengikuti pengaturan perangkatmu.">
+          <ThemeSetting />
+        </Row>
+
         <Row title="Foto profil" description="Opsional. Tanpa foto, inisial namamu dipakai sebagai avatar.">
           <AvatarPicker name={user.name} currentUrl={user.avatar_url} onUpload={uploadAvatar} onRemove={removeAvatar} busy={avatarBusy} />
         </Row>

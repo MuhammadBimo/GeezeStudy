@@ -67,7 +67,7 @@ export default function TaskDetail({ task }) {
 function AttachmentRow({ task, downloading, onDownload }) {
   const body = (
     <>
-      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-forest">
+      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-accent">
         {task.attachmentFile ? <FileIcon name={task.attachment} className="size-5" aria-hidden="true" /> : <Paperclip className="size-5" aria-hidden="true" />}
       </span>
       <span className="min-w-0 flex-1">
@@ -76,13 +76,13 @@ function AttachmentRow({ task, downloading, onDownload }) {
       </span>
       {task.attachmentFile && (downloading
         ? <Loader2 className="size-4.5 animate-spin text-muted" aria-hidden="true" />
-        : <Download className="size-4.5 text-forest" aria-hidden="true" />)}
+        : <Download className="size-4.5 text-accent" aria-hidden="true" />)}
     </>
   )
   const cls = 'flex w-full items-center gap-3 rounded-control border border-line bg-canvas px-3 py-2.5 text-left'
   if (!task.attachmentFile) return <div className={cls}>{body}</div>
   return (
-    <button type="button" onClick={onDownload} disabled={downloading} aria-label={`Unduh ${task.attachment}`} className={`${cls} transition-colors hover:border-forest/40 hover:bg-sage/30 active:bg-sage/50 disabled:opacity-70`}>
+    <button type="button" onClick={onDownload} disabled={downloading} aria-label={`Unduh ${task.attachment}`} className={`${cls} transition-colors hover:border-accent/40 hover:bg-sage/30 active:bg-sage/50 disabled:opacity-70`}>
       {body}
     </button>
   )

@@ -12,7 +12,7 @@ const kinds = {
   info: { icon: Info, color: 'text-info', bar: 'bg-info' },
   warning: { icon: AlertTriangle, color: 'text-warning', bar: 'bg-warning' },
   error: { icon: XCircle, color: 'text-danger', bar: 'bg-danger' },
-  loading: { icon: Loader2, color: 'text-forest', bar: '' },
+  loading: { icon: Loader2, color: 'text-accent', bar: '' },
 }
 
 // Dibuat di luar komponen: fungsi toast() sekaligus objek dengan metode tambahan.
@@ -83,7 +83,7 @@ export default function ToastProvider({ children }) {
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 32, transition: { duration: 0.16 } }}
                 transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                className="toast pointer-events-auto relative overflow-hidden rounded-xl border border-line bg-surface shadow-soft-lg"
+                className="toast pointer-events-auto relative overflow-hidden rounded-xl border border-line bg-raised shadow-soft-lg"
               >
                 <div className="flex items-start gap-3 py-3 pl-3.5 pr-2">
                   <Icon className={cn('mt-0.5 size-5 shrink-0', meta.color, t.kind === 'loading' && 'animate-spin')} aria-hidden="true" />

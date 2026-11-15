@@ -25,7 +25,7 @@ export default function SegmentedControl({ options, value, onChange, label, clas
               <m.span
                 layoutId={layoutId}
                 transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                className="absolute inset-0 rounded-lg bg-surface shadow-raised"
+                className="absolute inset-0 rounded-lg bg-raised shadow-raised"
               />
             )}
             <span className="relative flex items-center gap-1.5">

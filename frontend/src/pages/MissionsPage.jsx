@@ -71,7 +71,7 @@ function MissionBoard({ resource, missions }) {
               const Icon = m.title.toLowerCase().includes('tugas') ? ListChecks : Timer
               return (
                 <li key={m.id} className={cn('flex flex-wrap items-center gap-4 p-5 sm:flex-nowrap', m.claimable && 'bg-sand-soft/70')}>
-                  <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl', m.claimed ? 'bg-success-soft text-success' : 'bg-sage text-forest')}>
+                  <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl', m.claimed ? 'bg-success-soft text-success' : 'bg-sage text-accent')}>
                     {m.claimed ? <Check className="size-5" strokeWidth={2.5} aria-hidden="true" /> : <Icon className="size-5" aria-hidden="true" />}
                   </span>
                   <div className="min-w-0 flex-1">

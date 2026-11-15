@@ -1,7 +1,7 @@
 import { m } from 'motion/react'
 import { cn } from '@/lib/cn'
 
-const fills = { forest: 'bg-forest', sand: 'bg-[#c9a96a]', light: 'bg-sand', success: 'bg-success' }
+const fills = { forest: 'bg-forest', sand: 'bg-[#c9a96a]', light: 'bg-[#e8dcc4]', success: 'bg-success' }
 
 export default function ProgressBar({ value, max = 100, tone = 'forest', color, label, size = 'md', className }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0
@@ -37,7 +37,7 @@ export function ProgressRing({ value, max = 100, size = 64, stroke = 6, children
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className={tone === 'light' ? 'stroke-white/15' : 'stroke-ink/[0.07]'} />
         <m.circle
           cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} strokeLinecap="round"
-          className={tone === 'light' ? 'stroke-sand' : 'stroke-forest'}
+          className={tone === 'light' ? 'stroke-[#e8dcc4]' : 'stroke-accent'}
           strokeDasharray={c}
           initial={{ strokeDashoffset: c }}
           animate={{ strokeDashoffset: c * (1 - pct) }}

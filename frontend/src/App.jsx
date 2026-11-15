@@ -7,6 +7,7 @@ import Skeleton from '@/components/ui/Skeleton'
 import ToastProvider from '@/components/ui/ToastProvider'
 import ConfirmProvider from '@/components/ui/ConfirmProvider'
 import AuthProvider from '@/context/AuthProvider'
+import ThemeProvider from '@/context/ThemeProvider'
 
 // Setiap halaman dimuat saat dibutuhkan (route-based code splitting).
 const page = (loader) => lazy(loader)
@@ -52,6 +53,7 @@ function PageFallback() {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation} strict>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
@@ -107,5 +109,6 @@ export default function App() {
         </BrowserRouter>
       </LazyMotion>
     </MotionConfig>
+    </ThemeProvider>
   )
 }

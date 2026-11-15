@@ -8,7 +8,7 @@ export default function SectionHeader({ title, to, linkLabel = 'Lihat semua', me
       <h2 id={id} className="text-base font-semibold">{title}</h2>
       {meta && <span className="text-sm text-ink-2">{meta}</span>}
       {to && (
-        <Link to={to} className="group inline-flex items-center gap-0.5 rounded text-sm font-medium text-forest">
+        <Link to={to} className="group inline-flex items-center gap-0.5 rounded text-sm font-medium text-accent">
           <span className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-200 group-hover:bg-[length:100%_1px]">{linkLabel}</span>
           <ArrowUpRight className="size-3.5 transition-transform duration-150 group-hover:-translate-y-px group-hover:translate-x-px" aria-hidden="true" />
         </Link>

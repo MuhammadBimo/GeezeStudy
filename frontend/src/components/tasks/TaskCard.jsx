@@ -26,14 +26,14 @@ export default function TaskCard({ task, onCycle, onSetStatus, onOpen, onEdit, o
 
   return (
     <m.li layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
-      <ContextMenu items={items} className="group flex items-start gap-3.5 px-4 py-3.5 transition-colors hover:bg-canvas/70 sm:px-5">
+      <ContextMenu items={items} className="group flex items-start gap-3.5 px-4 py-3.5 transition-colors hover:bg-hover/70 sm:px-5">
         <button
           type="button"
           onClick={() => onCycle(task)}
           aria-label={`Status: ${meta.label}. Ubah status ${task.title}`}
           className={cn(
             'mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-[1.5px] transition-all active:scale-90',
-            done ? 'border-forest bg-forest text-surface' : task.status === 'progress' ? 'border-info bg-info-soft text-info' : 'border-line-strong hover:border-forest hover:bg-sage',
+            done ? 'border-forest bg-forest text-on-forest' : task.status === 'progress' ? 'border-info bg-info-soft text-info' : 'border-line-strong hover:border-accent hover:bg-sage',
           )}
         >
           {done && <Check className="size-3.5 animate-pop" strokeWidth={3} aria-hidden="true" />}

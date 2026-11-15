@@ -22,7 +22,7 @@ function Achievements({ data }) {
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {unlocked.map((a) => (
               <li key={a.id} className="flex flex-col items-start rounded-panel border border-sand bg-sand-soft p-5">
-                <span className="grid size-14 place-items-center rounded-2xl bg-sand text-[#6b5326] shadow-[inset_0_1px_0_rgb(255_255_255/0.6)]"><Award className="size-7" aria-hidden="true" /></span>
+                <span className="grid size-14 place-items-center rounded-2xl bg-sand text-sand-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.6)]"><Award className="size-7" aria-hidden="true" /></span>
                 <h3 className="mt-4 font-display text-xl">{a.title}</h3>
                 <p className="mt-1 text-sm text-ink-2">{a.description}</p>
                 <p className="mt-4 text-xs text-ink-2">Terbuka {dateFmt.format(new Date(a.unlocked_at))}{a.reward_points > 0 ? ` · +${a.reward_points} Points` : ''}</p>

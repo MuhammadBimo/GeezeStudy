@@ -10,7 +10,7 @@ export default function NotFoundPage({ standalone = false }) {
         title="Halaman tidak ditemukan"
         description="Alamatnya mungkin salah ketik atau halamannya sudah dipindah."
         action={
-          <Link to="/" className="inline-flex h-11 items-center gap-2 rounded-control bg-forest px-4.5 font-semibold text-surface shadow-soft-sm transition-[background-color,transform] hover:bg-forest-mid active:scale-[0.98]">
+          <Link to="/" className="inline-flex h-11 items-center gap-2 rounded-control bg-forest px-4.5 font-semibold text-on-forest shadow-soft-sm transition-[background-color,transform] hover:bg-forest-mid active:scale-[0.98]">
             <ArrowLeft className="size-4" aria-hidden="true" /> Kembali ke beranda
           </Link>
         }

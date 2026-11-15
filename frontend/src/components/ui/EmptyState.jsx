@@ -70,9 +70,9 @@ export default function EmptyState({ illustration = 'tasks', icon: Icon, title, 
   return (
     <div className={cn('flex flex-col items-center text-center', compact ? 'gap-2 px-4 py-6' : 'gap-3 px-6 py-12', className)}>
       {compact && Icon ? (
-        <span className="grid size-10 place-items-center rounded-full bg-sage text-forest"><Icon className="size-5" aria-hidden="true" /></span>
+        <span className="grid size-10 place-items-center rounded-full bg-sage text-accent"><Icon className="size-5" aria-hidden="true" /></span>
       ) : (
-        <svg viewBox="0 0 96 96" aria-hidden="true" className={cn('fill-none stroke-forest/70', compact ? 'size-16' : 'size-24')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg viewBox="0 0 96 96" aria-hidden="true" className={cn('fill-none stroke-accent/70', compact ? 'size-16' : 'size-24')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           {art[illustration] ?? art.tasks}
         </svg>
       )}

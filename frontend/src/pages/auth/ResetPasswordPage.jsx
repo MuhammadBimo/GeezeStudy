@@ -18,7 +18,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
 
   const set = (f) => (e) => setForm((cur) => ({ ...cur, [f]: e.target.value }))
-  const back = <Link to="/masuk" className="font-semibold text-forest underline-offset-4 hover:underline">Kembali ke halaman masuk</Link>
+  const back = <Link to="/masuk" className="font-semibold text-accent underline-offset-4 hover:underline">Kembali ke halaman masuk</Link>
 
   if (!token || !email) {
     return (

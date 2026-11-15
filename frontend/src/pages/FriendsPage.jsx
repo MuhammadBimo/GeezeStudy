@@ -96,7 +96,7 @@ function FriendsBoard({ resource, data }) {
 
         <aside className="space-y-6">
           <section aria-labelledby="invite-title" className="rounded-panel border border-line bg-surface p-5">
-            <h2 id="invite-title" className="flex items-center gap-2 font-semibold"><UserPlus className="size-4.5 text-forest" aria-hidden="true" /> Tambah teman</h2>
+            <h2 id="invite-title" className="flex items-center gap-2 font-semibold"><UserPlus className="size-4.5 text-accent" aria-hidden="true" /> Tambah teman</h2>
             <form onSubmit={invite} noValidate className="mt-3 space-y-3">
               <Input label="Email teman" labelHidden type="email" icon={Mail} autoComplete="off" placeholder="email@teman.com" value={email} onChange={(e) => setEmail(e.target.value)} error={error} hint="Temanmu harus sudah punya akun." />
               <Button type="submit" className="w-full" loading={sending}>Kirim permintaan</Button>
@@ -115,7 +115,7 @@ function FriendsBoard({ resource, data }) {
           </section>
 
           <section aria-labelledby="incoming-title" className="rounded-panel border border-sand bg-sand-soft p-5">
-            <h2 id="incoming-title" className="font-semibold">Permintaan masuk {data.incoming.length > 0 && <span className="ml-1 rounded-full bg-forest px-2 py-0.5 text-xs text-surface">{data.incoming.length}</span>}</h2>
+            <h2 id="incoming-title" className="font-semibold">Permintaan masuk {data.incoming.length > 0 && <span className="ml-1 rounded-full bg-forest px-2 py-0.5 text-xs text-on-forest">{data.incoming.length}</span>}</h2>
             {data.incoming.length === 0 ? (
               <p className="mt-2 text-sm text-ink-2">Tidak ada permintaan baru.</p>
             ) : (

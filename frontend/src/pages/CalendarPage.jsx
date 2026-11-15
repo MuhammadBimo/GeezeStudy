@@ -19,9 +19,9 @@ import { TODAY, addDays, formatLong, formatMonth, fromISO, toISO, weekdayIndex }
 import { eventFromApi, eventToApi, eventTypeOptions } from '@/lib/mappers'
 
 const typeStyle = {
-  Kuliah: { dot: 'bg-forest', chip: 'border-forest bg-sage/70 text-forest' },
+  Kuliah: { dot: 'bg-forest', chip: 'border-forest bg-sage/70 text-accent' },
   Deadline: { dot: 'bg-danger', chip: 'border-danger bg-danger-soft text-danger' },
-  Ujian: { dot: 'bg-[#b5832a]', chip: 'border-[#b5832a] bg-sand-soft text-[#6b5326]' },
+  Ujian: { dot: 'bg-[#b5832a]', chip: 'border-[#b5832a] bg-sand-soft text-sand-ink' },
   Presentasi: { dot: 'bg-info', chip: 'border-info bg-info-soft text-info' },
   Rapat: { dot: 'bg-sage-deep', chip: 'border-sage-deep bg-sage/60 text-ink' },
   Pribadi: { dot: 'bg-muted', chip: 'border-muted bg-ink/[0.04] text-ink-2' },
@@ -209,13 +209,13 @@ export default function CalendarPage() {
                     className={cn(
                       'flex min-h-16 flex-col items-stretch gap-1 border-line p-1.5 text-left transition-colors sm:min-h-24 sm:p-2',
                       i % 7 !== 6 && 'border-r', i < 35 && 'border-b',
-                      isSel ? 'bg-sage/50' : 'hover:bg-canvas',
+                      isSel ? 'bg-sage/50' : 'hover:bg-hover',
                       !inMonth && 'bg-canvas/40',
                     )}
                   >
                     <span className={cn(
                       'grid size-7 place-items-center self-start rounded-full text-sm tabular-nums',
-                      iso === TODAY ? 'bg-forest font-semibold text-surface' : inMonth ? 'text-ink' : 'text-muted',
+                      iso === TODAY ? 'bg-forest font-semibold text-on-forest' : inMonth ? 'text-ink' : 'text-muted',
                     )}>
                       {Number(iso.slice(8))}
                     </span>
@@ -246,7 +246,7 @@ export default function CalendarPage() {
               <section key={iso} aria-label={formatLong(iso)} className={cn('min-h-40 bg-surface p-3', iso === TODAY && 'bg-sage/40')}>
                 <button type="button" onClick={() => { setSelected(iso); setView('day') }} className="mb-2 flex items-baseline gap-1.5 rounded text-left">
                   <span className="text-xs capitalize text-ink-2">{shortDay.format(fromISO(iso))}</span>
-                  <span className={cn('font-display text-xl tabular-nums', iso === TODAY && 'text-forest')}>{Number(iso.slice(8))}</span>
+                  <span className={cn('font-display text-xl tabular-nums', iso === TODAY && 'text-accent')}>{Number(iso.slice(8))}</span>
                 </button>
                 {evs.length === 0 ? <p className="text-xs text-muted">Kosong</p> : (
                   <ul className="space-y-1.5">

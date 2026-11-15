@@ -31,7 +31,7 @@ function MenuPanel({ id, items, open, anchorRef, point, onClose, target }) {
       tabIndex={-1}
       style={style}
       onKeyDown={onKey}
-      className="float-panel z-[70] min-w-48 rounded-xl border border-line bg-surface p-1.5 shadow-soft-lg outline-none"
+      className="float-panel z-[70] min-w-48 rounded-xl border border-line bg-raised p-1.5 shadow-soft-lg outline-none"
     >
       {items.map((it, i) =>
         it === '-' ? (
@@ -47,7 +47,7 @@ function MenuPanel({ id, items, open, anchorRef, point, onClose, target }) {
             onClick={() => { it.onSelect?.(); onClose(true) }}
             className={cn(
               'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors disabled:opacity-40',
-              'data-[active]:bg-canvas',
+              'data-[active]:bg-hover',
               it.danger ? 'text-danger data-[active]:bg-danger-soft' : 'text-ink',
             )}
           >

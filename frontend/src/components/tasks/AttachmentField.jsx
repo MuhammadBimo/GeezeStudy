@@ -32,7 +32,7 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
 
       {shown ? (
         <div className="flex items-center gap-3 rounded-control border border-line bg-canvas px-3 py-2.5">
-          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-forest">
+          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-accent">
             <FileIcon name={shown.name} className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
@@ -44,7 +44,7 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-forest transition-colors hover:bg-forest/5 active:bg-forest/10"
+            className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-accent/10 active:bg-accent/15"
           >
             Ganti
           </button>
@@ -67,10 +67,10 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
           onDrop={(e) => { e.preventDefault(); setDragging(false); accept(e.dataTransfer.files?.[0]) }}
           className={cn(
             'flex w-full items-center gap-3 rounded-control border border-dashed px-3 py-3 text-left transition-colors',
-            dragging ? 'border-forest bg-sage/60' : 'border-line-strong bg-surface hover:border-forest/50 hover:bg-sage/30',
+            dragging ? 'border-accent bg-sage/60' : 'border-line-strong bg-surface hover:border-accent/50 hover:bg-sage/30',
           )}
         >
-          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-forest">
+          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sage text-accent">
             <Paperclip className="size-5" aria-hidden="true" />
           </span>
           <span className="min-w-0">

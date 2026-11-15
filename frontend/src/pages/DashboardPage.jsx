@@ -54,10 +54,10 @@ function Dashboard({ d, resource }) {
           <p className="mt-2 text-ink-2">{summaryLine(d)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link to="/tugas?baru=1" className="inline-flex h-11 items-center gap-2 rounded-control bg-surface px-4.5 font-semibold text-ink shadow-raised transition-[background-color,transform] hover:bg-[#f3f2ea] active:scale-[0.98]">
+          <Link to="/tugas?baru=1" className="inline-flex h-11 items-center gap-2 rounded-control bg-raised px-4.5 font-semibold text-ink shadow-raised transition-[background-color,transform] hover:bg-surface-hover active:scale-[0.98]">
             <Plus className="size-4" aria-hidden="true" /> Tambah tugas
           </Link>
-          <Link to="/timer" className="inline-flex h-11 items-center gap-2 rounded-control bg-forest px-4.5 font-semibold text-surface shadow-soft-sm transition-[background-color,transform] hover:bg-forest-mid active:scale-[0.98]">
+          <Link to="/timer" className="inline-flex h-11 items-center gap-2 rounded-control bg-forest px-4.5 font-semibold text-on-forest shadow-soft-sm transition-[background-color,transform] hover:bg-forest-mid active:scale-[0.98]">
             <Play className="size-4" aria-hidden="true" /> Mulai sesi fokus
           </Link>
         </div>
