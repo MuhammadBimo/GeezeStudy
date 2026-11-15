@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 export default function SegmentedControl({ options, value, onChange, label, className, size = 'md' }) {
   const layoutId = useId()
   return (
-    <div role="group" aria-label={label} className={cn('thin-scroll inline-flex max-w-full gap-1 overflow-x-auto rounded-xl bg-ink/[0.05] p-1 [scrollbar-width:none]', className)}>
+    <div role="group" aria-label={label} className={cn('thin-scroll inline-flex max-w-full gap-1 overflow-x-auto rounded-xl bg-track p-1 [scrollbar-width:none]', className)}>
       {options.map((o) => {
         const active = o.value === value
         return (

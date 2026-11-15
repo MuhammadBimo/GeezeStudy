@@ -62,6 +62,7 @@
   --color-hover: #f7f6f0;           /* sorotan baris/opsi saat disentuh */
   --color-on-panel: #f7f6f0;        /* teks di atas panel hijau pekat */
   --color-display: #20241f;         /* judul halaman */
+  --color-track: rgb(32 36 31 / 0.05); /* alur pilihan segmen */
 
   --radius-panel: 1rem;
   --radius-control: 0.625rem;
@@ -102,6 +103,7 @@
   --color-raised: #29352d;
   --color-field: #1b231d;
   --color-hover: #313f36;
+  --color-track: #171e19;
 
   --color-ink: #f2f2ea;
   --color-ink-2: #b1b9af;
@@ -155,6 +157,19 @@
   --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 0.35);
   --shadow-press: inset 0 2px 4px rgb(0 0 0 / 0.35);
 }
+
+/*
+ * Tailwind menyalin nilai bayangan mode terang langsung ke kelas .shadow-* saat build, jadi token --shadow-* di atas
+ * tidak otomatis berlaku. Di mode gelap, kelas-kelas itu diarahkan ulang ke token gelap lewat --tw-shadow.
+ */
+:root[data-theme='dark'] .shadow-xs { --tw-shadow: var(--shadow-xs); }
+:root[data-theme='dark'] .shadow-soft-sm { --tw-shadow: var(--shadow-soft-sm); }
+:root[data-theme='dark'] .shadow-soft { --tw-shadow: var(--shadow-soft); }
+:root[data-theme='dark'] .shadow-soft-lg { --tw-shadow: var(--shadow-soft-lg); }
+:root[data-theme='dark'] .shadow-raised { --tw-shadow: var(--shadow-raised); }
+:root[data-theme='dark'] .shadow-inset { --tw-shadow: var(--shadow-inset); }
+:root[data-theme='dark'] .shadow-press { --tw-shadow: var(--shadow-press); }
+:root[data-theme='dark'] .active\:shadow-press:active { --tw-shadow: var(--shadow-press); }
 
 /* Judul halaman memakai Warm Cream di mode gelap (hanya di area konten, tidak di panel hijau). */
 :root[data-theme='dark'] main h1 { color: var(--color-display); }
