@@ -161,6 +161,9 @@ docs/                       banner dan screenshot README
   `SESSION_DOMAIN=.contoh.id`, `SANCTUM_STATEFUL_DOMAINS=app.contoh.id`, `SESSION_SECURE_COOKIE=true`, dan
   `FRONTEND_URL` + CORS ke alamat frontend.
 - **Cron**: `* * * * * php artisan schedule:run` agar pengingat berjalan.
+- **Captcha (opsional)**: Cloudflare Turnstile di halaman masuk, daftar, lupa dan atur ulang password. Aktif hanya jika
+  `VITE_TURNSTILE_SITE_KEY` (frontend, saat build) dan `TURNSTILE_SECRET_KEY` (backend) diisi; tanpa keduanya captcha dilewati,
+  jadi pengembangan lokal tidak terpengaruh. Jika backend berada di balik reverse proxy, proxy tepercaya sudah diatur di `bootstrap/app.php`.
 
 ## Catatan batasan
 
