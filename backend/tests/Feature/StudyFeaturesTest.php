@@ -79,8 +79,15 @@ class StudyFeaturesTest extends TestCase
         $admin->forceFill(['role' => 'admin'])->save();
         $student = User::factory()->create();
 
-        $this->actingAs($admin)->postJson("/api/admin/users/{$student->id}/reset-password")->assertOk();
-        $this->actingAs($student)->postJson("/api/admin/users/{$admin->id}/reset-password")->assertForbidden();
+        $this->actingAs($admin)->postJson("/api/admin/users/{$student->id}/reset-password", [
+            'password' => 'NewPassword123',
+            'password_confirmation' => 'NewPassword123',
+        ])->assertOk();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewPassword123', $student->fresh()->password));
+        $this->actingAs($student)->postJson("/api/admin/users/{$admin->id}/reset-password", [
+            'password' => 'NewPassword123',
+            'password_confirmation' => 'NewPassword123',
+        ])->assertForbidden();
     }
 
     public function test_utc_times_from_client_are_stored_in_app_timezone(): void

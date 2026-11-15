@@ -7,7 +7,10 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -30,13 +33,26 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    /** Kirim tautan reset password ke pengguna. Admin tidak pernah melihat atau mengatur password. */
+    /** Mengatur password baru pengguna secara langsung tanpa mengirim email reset. */
     public function sendReset(Request $request, User $user): JsonResponse
     {
-        Password::sendResetLink(['email' => $user->email]);
-        AuditLog::record($request->user(), "Mengirim tautan reset password ke {$user->name}", ['user_id' => $user->id]);
+        $data = $request->validate([
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+        ]);
 
-        return response()->json(['message' => 'Tautan reset dikirim.']);
+        $user->forceFill([
+            'password' => Hash::make($data['password']),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        $user->tokens()->delete();
+        if (config('session.driver') === 'database') {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        }
+
+        AuditLog::record($request->user(), "Mengubah password {$user->name}", ['user_id' => $user->id], 'warning');
+
+        return response()->json(['message' => 'Password pengguna berhasil diperbarui.']);
     }
 
     /** Admin hanya boleh menangguhkan/mengaktifkan akun, bukan mengubah Points atau peran. */

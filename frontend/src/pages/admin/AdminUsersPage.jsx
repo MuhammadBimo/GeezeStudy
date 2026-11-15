@@ -4,13 +4,14 @@ import AsyncView from '@/components/ui/AsyncView'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import DataTable from '@/components/ui/DataTable'
-import Input from '@/components/ui/Input'
+import Input, { PasswordInput } from '@/components/ui/Input'
+import Modal from '@/components/ui/Modal'
 import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import { useAuth } from '@/hooks/useAuth'
 import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
-import { api, errorMessage } from '@/lib/api'
+import { api, errorMessage, fieldErrors } from '@/lib/api'
 import { educationLevels } from '@/lib/profile'
 
 const roleFilters = [
@@ -24,6 +25,10 @@ const joinedFmt = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'sho
 function UsersTable({ resource, page, onPage }) {
   const toast = useToast()
   const { user: me } = useAuth()
+  const [resetTarget, setResetTarget] = useState(null)
+  const [form, setForm] = useState({ password: '', confirm: '' })
+  const [errors, setErrors] = useState({})
+  const [saving, setSaving] = useState(false)
 
   const toggleStatus = async (u) => {
     const next = u.status === 'active' ? 'suspended' : 'active'
@@ -36,12 +41,35 @@ function UsersTable({ resource, page, onPage }) {
     }
   }
 
-  const sendReset = async (u) => {
+  const openReset = (u) => {
+    setResetTarget(u)
+    setForm({ password: '', confirm: '' })
+    setErrors({})
+  }
+
+  const submitReset = async (e) => {
+    e.preventDefault()
+    if (!resetTarget) return
+    const next = {}
+    if (form.password.length < 8) next.password = 'Minimal 8 karakter.'
+    else if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) next.password = 'Gunakan kombinasi huruf dan angka.'
+    if (form.confirm !== form.password) next.confirm = 'Belum sama dengan password baru.'
+    setErrors(next)
+    if (Object.keys(next).length > 0) return
+
+    setSaving(true)
     try {
-      await api.post(`/admin/users/${u.id}/reset-password`)
-      toast(`Tautan reset dikirim ke ${u.email}`)
+      await api.post(`/admin/users/${resetTarget.id}/reset-password`, {
+        password: form.password,
+        password_confirmation: form.confirm,
+      })
+      toast(`Password ${resetTarget.name} berhasil diubah`)
+      setResetTarget(null)
     } catch (error) {
-      toast(errorMessage(error), 'error')
+      const fields = fieldErrors(error)
+      setErrors(Object.keys(fields).length ? fields : { password: errorMessage(error) })
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -73,7 +101,7 @@ function UsersTable({ resource, page, onPage }) {
           <Button size="sm" variant="neutral" disabled={u.id === me.id} onClick={() => toggleStatus(u)} aria-label={`${u.status === 'active' ? 'Tangguhkan' : 'Aktifkan'} ${u.name}`}>
             {u.status === 'active' ? <UserX className="size-4" aria-hidden="true" /> : <UserCheck className="size-4" aria-hidden="true" />}
           </Button>
-          <Button size="sm" variant="neutral" onClick={() => sendReset(u)} aria-label={`Kirim tautan reset password ke ${u.name}`}>
+          <Button size="sm" variant="neutral" onClick={() => openReset(u)} aria-label={`Ubah password ${u.name}`}>
             <KeyRound className="size-4" aria-hidden="true" />
           </Button>
         </div>
@@ -92,6 +120,41 @@ function UsersTable({ resource, page, onPage }) {
           <Button size="sm" variant="neutral" disabled={data.current_page >= data.last_page} onClick={() => onPage(page + 1)}>Berikutnya</Button>
         </div>
       </div>
+
+      <Modal
+        open={Boolean(resetTarget)}
+        onClose={() => !saving && setResetTarget(null)}
+        title="Ubah password"
+        description={resetTarget ? `Atur password baru untuk ${resetTarget.name} (${resetTarget.email}).` : ''}
+        size="sm"
+        footer={(
+          <>
+            <Button variant="neutral" disabled={saving} onClick={() => setResetTarget(null)}>Batal</Button>
+            <Button type="submit" form="admin-reset-pw-form" loading={saving}>Simpan password</Button>
+          </>
+        )}
+      >
+        <form id="admin-reset-pw-form" onSubmit={submitReset} noValidate className="flex flex-col gap-4">
+          <PasswordInput
+            label="Password baru"
+            required
+            showStrength
+            autoComplete="new-password"
+            value={form.password}
+            onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+            error={errors.password}
+            hint="Minimal 8 karakter, kombinasi huruf dan angka."
+          />
+          <PasswordInput
+            label="Ulangi password baru"
+            required
+            autoComplete="new-password"
+            value={form.confirm}
+            onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
+            error={errors.confirm}
+          />
+        </form>
+      </Modal>
     </>
   )
 }
@@ -113,7 +176,7 @@ export default function AdminUsersPage() {
 
   return (
     <>
-      <PageHeader title="Pengguna" subtitle="Kelola akun Student dan Admin. Admin tidak bisa mengubah Points atau password pengguna." />
+      <PageHeader title="Pengguna" subtitle="Kelola akun Student dan Admin. Admin tidak bisa mengubah Points pengguna." />
 
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <Input className="w-full sm:w-72" label="Cari nama atau email" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
