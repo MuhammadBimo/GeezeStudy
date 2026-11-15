@@ -5,6 +5,9 @@ import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input, { PasswordInput } from '@/components/ui/Input'
 import SegmentedControl from '@/components/ui/SegmentedControl'
+import TurnstileWidget from '@/components/ui/TurnstileWidget'
+
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY)
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { errorMessage, fieldErrors } from '@/lib/api'
@@ -14,6 +17,8 @@ export default function RegisterPage() {
   const { register } = useAuth()
   const toast = useToast()
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '', education_level: 'sma', institution: '' })
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [captchaReset, setCaptchaReset] = useState(0)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
@@ -29,6 +34,7 @@ export default function RegisterPage() {
     else if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) next.password = 'Gunakan kombinasi huruf dan angka.'
     if (!form.password_confirmation) next.password_confirmation = 'Ulangi password.'
     else if (form.password !== form.password_confirmation) next.password_confirmation = 'Belum sama dengan password di atas.'
+    if (TURNSTILE_ENABLED && !turnstileToken) next.turnstile_token = 'Selesaikan verifikasi captcha terlebih dahulu.'
     return next
   }
 
@@ -40,11 +46,12 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      const user = await register({ ...form, name: form.name.trim(), email: form.email.trim(), institution: form.institution.trim() || null })
+      const user = await register({ ...form, name: form.name.trim(), email: form.email.trim(), institution: form.institution.trim() || null, turnstile_token: turnstileToken })
       toast(`Akun dibuat. Halo, ${user.name}`)
     } catch (error) {
       const fields = fieldErrors(error)
       setErrors(Object.keys(fields).length ? fields : { form: errorMessage(error) })
+      setCaptchaReset((k) => k + 1)
       setLoading(false)
     }
   }
@@ -73,6 +80,14 @@ export default function RegisterPage() {
         </div>
         <Input label={`${inst.label} (opsional)`} autoComplete="organization" placeholder={inst.placeholder} value={form.institution} onChange={set('institution')} error={errors.institution} />
 
+        <TurnstileWidget
+          onVerify={(token) => {
+            setTurnstileToken(token)
+            if (token) setErrors((cur) => ({ ...cur, turnstile_token: undefined }))
+          }}
+          resetKey={captchaReset}
+          error={errors.turnstile_token}
+        />
         <Button type="submit" size="lg" className="w-full" loading={loading}>{loading ? 'Membuat akun...' : 'Buat akun'}</Button>
       </form>
     </AuthLayout>

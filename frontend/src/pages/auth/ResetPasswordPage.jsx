@@ -4,6 +4,9 @@ import { AlertCircle } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/Input'
+import TurnstileWidget from '@/components/ui/TurnstileWidget'
+
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY)
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fetchCsrfCookie, fieldErrors } from '@/lib/api'
 
@@ -14,6 +17,8 @@ export default function ResetPasswordPage() {
   const token = params.get('token')
   const email = params.get('email')
   const [form, setForm] = useState({ password: '', confirm: '' })
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [captchaReset, setCaptchaReset] = useState(0)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
@@ -34,18 +39,20 @@ export default function ResetPasswordPage() {
     if (form.password.length < 8) next.password = 'Minimal 8 karakter.'
     else if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) next.password = 'Gunakan kombinasi huruf dan angka.'
     if (form.confirm !== form.password) next.confirm = 'Belum sama dengan password baru.'
+    if (TURNSTILE_ENABLED && !turnstileToken) next.turnstile_token = 'Selesaikan verifikasi captcha terlebih dahulu.'
     setErrors(next)
     if (Object.keys(next).length > 0) return
 
     setLoading(true)
     try {
       await fetchCsrfCookie()
-      await api.post('/reset-password', { token, email, password: form.password, password_confirmation: form.confirm })
+      await api.post('/reset-password', { token, email, password: form.password, password_confirmation: form.confirm, turnstile_token: turnstileToken })
       toast('Password diperbarui. Silakan masuk.')
       navigate('/masuk', { replace: true })
     } catch (err) {
       const fields = fieldErrors(err)
       setErrors(Object.keys(fields).length ? { ...fields, form: fields.email } : { form: errorMessage(err) })
+      setCaptchaReset((k) => k + 1)
       setLoading(false)
     }
   }
@@ -60,6 +67,14 @@ export default function ResetPasswordPage() {
         )}
         <PasswordInput label="Password baru" required showStrength autoComplete="new-password" value={form.password} onChange={set('password')} error={errors.password} hint="Minimal 8 karakter, kombinasi huruf dan angka." />
         <PasswordInput label="Ulangi password baru" required autoComplete="new-password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
+        <TurnstileWidget
+          onVerify={(token) => {
+            setTurnstileToken(token)
+            if (token) setErrors((cur) => ({ ...cur, turnstile_token: undefined }))
+          }}
+          resetKey={captchaReset}
+          error={errors.turnstile_token}
+        />
         <Button type="submit" size="lg" className="w-full" loading={loading}>Simpan password</Button>
       </form>
     </AuthLayout>

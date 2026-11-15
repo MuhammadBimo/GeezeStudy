@@ -6,6 +6,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Rules\TurnstileToken;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -36,6 +37,7 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
+        $this->validateTurnstile($request);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages(['email' => 'Email atau password salah.']);
@@ -102,6 +104,7 @@ class AuthController extends Controller
     public function forgotPassword(Request $request): JsonResponse
     {
         $request->validate(['email' => ['required', 'email']]);
+        $this->validateTurnstile($request);
 
         // Respons selalu sama agar tidak membocorkan email mana yang terdaftar.
         Password::sendResetLink($request->only('email'));
@@ -116,6 +119,7 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->letters()->numbers()],
         ]);
+        $this->validateTurnstile($request);
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
@@ -152,5 +156,17 @@ class AuthController extends Controller
         }
 
         return response()->json(['message' => 'Email verifikasi dikirim.']);
+    }
+
+    private function validateTurnstile(Request $request): void
+    {
+        if (blank(config('services.turnstile.secret'))) {
+            return;
+        }
+
+        $request->validate(
+            ['turnstile_token' => ['required', 'string', new TurnstileToken()]],
+            ['turnstile_token.required' => 'Selesaikan verifikasi captcha terlebih dahulu.'],
+        );
     }
 }
