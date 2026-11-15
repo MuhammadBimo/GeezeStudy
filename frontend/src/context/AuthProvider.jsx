@@ -48,15 +48,18 @@ export default function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await api.post('/logout')
-    } finally {
-      // Hapus sisa data perangkat milik akun ini (mis. timer yang berjalan) agar tidak bocor ke akun berikutnya.
-      try {
-        localStorage.removeItem('geezestudy.timer')
-      } catch {
-        /* penyimpanan tidak tersedia */
+    } catch (err) {
+      if (err?.response?.status !== 401) {
+        throw err
       }
-      setUser(null)
     }
+    // Hapus sisa data perangkat milik akun ini (mis. timer yang berjalan) agar tidak bocor ke akun berikutnya.
+    try {
+      localStorage.removeItem('geezestudy.timer')
+    } catch {
+      /* penyimpanan tidak tersedia */
+    }
+    setUser(null)
   }, [setUser])
 
   const refresh = useCallback(async () => {

@@ -26,8 +26,9 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
 
 // Sudah masuk (belum tentu terverifikasi)
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'show']);
     Route::patch('/user', [AuthController::class, 'update']);
     Route::post('/onboarding', [AuthController::class, 'completeOnboarding']);
