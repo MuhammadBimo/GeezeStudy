@@ -74,18 +74,18 @@ function FriendsBoard({ resource, data }) {
                 <li key={f.friendship_id} className="flex flex-wrap items-center gap-4 px-4 py-4 sm:flex-nowrap sm:px-5">
                   <span className="w-5 text-center text-sm tabular-nums text-muted" aria-hidden="true">{f.stats ? i + 1 : '–'}</span>
                   <Avatar name={f.name} src={f.avatar_url} size="md" />
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-[9rem] flex-1">
                     <p className="truncate font-semibold">{f.name}</p>
                     <p className="truncate text-sm text-ink-2">{f.institution || 'Pelajar GeezeStudy'}</p>
                   </div>
                   {f.stats ? (
-                    <dl className="flex gap-5 text-sm">
+                    <dl className="flex gap-5 text-sm max-sm:order-2 max-sm:w-full max-sm:justify-between max-sm:rounded-lg max-sm:bg-canvas max-sm:px-3 max-sm:py-2">
                       <div><dt className="text-xs text-ink-2">Minggu ini</dt><dd className="font-semibold tabular-nums">{Math.round((f.stats.week_minutes / 60) * 10) / 10} jam</dd></div>
                       <div><dt className="text-xs text-ink-2">Streak</dt><dd className="flex items-center gap-1 font-semibold tabular-nums"><Flame className="size-3.5 text-[#b5832a]" aria-hidden="true" />{f.stats.streak}</dd></div>
                       <div><dt className="text-xs text-ink-2">Level</dt><dd className="font-semibold tabular-nums">{f.stats.level}</dd></div>
                     </dl>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 text-sm text-ink-2"><EyeOff className="size-4" aria-hidden="true" /> Statistik disembunyikan</span>
+                    <span className="inline-flex items-center gap-1.5 text-sm text-ink-2 max-sm:order-2 max-sm:w-full"><EyeOff className="size-4" aria-hidden="true" /> Statistik disembunyikan</span>
                   )}
                   <Menu items={[{ label: 'Hapus teman', icon: UserMinus, danger: true, onSelect: () => unfriend(f) }]} label={`Aksi untuk ${f.name}`} />
                 </li>
