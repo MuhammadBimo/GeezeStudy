@@ -10,6 +10,7 @@ import Skeleton from '@/components/ui/Skeleton'
 import { adminMobilePrimary, adminNavGroups, mobilePrimary, navGroups } from '@/lib/navigation'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/hooks/useAuth'
+import { useNavBadges } from '@/hooks/useNavBadges'
 import { useToast } from '@/hooks/useToast'
 
 const isActivePath = (pathname, to) => (to === '/' || to === '/admin' ? pathname === to : pathname.startsWith(to))
@@ -26,7 +27,18 @@ function Brand({ admin }) {
   )
 }
 
-function SideLink({ to, label, icon: Icon, active }) {
+// Lencana: angka merah kecil; tampil hanya bila ada yang belum dibuka.
+function Badge({ count, className }) {
+  if (!count) return null
+  return (
+    <span className={cn('grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-danger px-1 text-[0.6875rem] font-semibold leading-none text-on-danger', className)}>
+      <span aria-hidden="true">{count > 99 ? '99+' : count}</span>
+      <span className="sr-only">{count} belum dibuka</span>
+    </span>
+  )
+}
+
+function SideLink({ to, label, icon: Icon, active, count }) {
   return (
     <NavLink
       to={to}
@@ -42,7 +54,8 @@ function SideLink({ to, label, icon: Icon, active }) {
         </m.span>
       )}
       <Icon className="relative size-[1.125rem] transition-transform duration-150 group-hover:scale-105" aria-hidden="true" />
-      <span className="relative">{label}</span>
+      <span className="relative min-w-0 flex-1">{label}</span>
+      <Badge count={count} className="relative" />
     </NavLink>
   )
 }
@@ -53,10 +66,13 @@ export default function AppShell() {
   const { user, logout } = useAuth()
   const toast = useToast()
   const [moreOpen, setMoreOpen] = useState(false)
+  const badges = useNavBadges(user.role === 'admin')
 
   const inAdmin = pathname.startsWith('/admin')
   const groups = inAdmin ? adminNavGroups : navGroups
   const allItems = groups.flatMap((g) => g.items)
+  const primaryTo = inAdmin ? adminMobilePrimary : mobilePrimary
+  const hiddenBadge = allItems.some((i) => !primaryTo.includes(i.to) && badges[i.to] > 0)
   const primary = (inAdmin ? adminMobilePrimary : mobilePrimary).map((to) => allItems.find((i) => i.to === to))
   const isAdmin = user.role === 'admin'
 
@@ -90,7 +106,7 @@ export default function AppShell() {
             <div key={g.label} className="mt-4 first:mt-1">
               <p className="mb-1.5 px-3 text-xs font-medium text-muted">{g.label}</p>
               <div className="flex flex-col gap-0.5">
-                {g.items.map((item) => <SideLink key={item.to} {...item} active={isActivePath(pathname, item.to)} />)}
+                {g.items.map((item) => <SideLink key={item.to} {...item} active={isActivePath(pathname, item.to)} count={badges[item.to]} />)}
               </div>
             </div>
           ))}
@@ -114,8 +130,9 @@ export default function AppShell() {
           <div className="flex items-center gap-1">
             <ThemeToggle className="size-10" />
             {!inAdmin && (
-              <Link to="/notifikasi" aria-label="Notifikasi" className="grid size-10 place-items-center rounded-lg text-ink-2 hover:bg-ink/5 hover:text-ink">
+              <Link to="/notifikasi" aria-label="Notifikasi" className="relative grid size-10 place-items-center rounded-lg text-ink-2 hover:bg-ink/5 hover:text-ink">
                 <Bell className="size-5" aria-hidden="true" />
+                {badges['/notifikasi'] > 0 && <span aria-hidden="true" className="absolute right-2 top-2 size-2.5 rounded-full bg-danger ring-2 ring-rail" />}
               </Link>
             )}
             <Menu items={accountMenu} label="Menu akun" className="size-10"><Avatar name={user.name} src={user.avatar_url} size="xs" /></Menu>
@@ -148,7 +165,10 @@ export default function AppShell() {
           return (
             <NavLink key={to} to={to} end={to === '/' || to === '/admin'} className={cn('relative flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium transition-colors', active ? 'text-accent' : 'text-ink-2')}>
               {active && <m.span layoutId="bottom-active" className="absolute top-1 h-8 w-12 rounded-full bg-sage" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
-              <Icon className="relative size-5" aria-hidden="true" />
+              <span className="relative">
+                <Icon className="size-5" aria-hidden="true" />
+                {badges[to] > 0 && <span aria-hidden="true" className="absolute -right-1 -top-0.5 size-2.5 rounded-full bg-danger ring-2 ring-surface" />}
+              </span>
               <span className="relative">{short ?? label}</span>
             </NavLink>
           )
@@ -159,7 +179,11 @@ export default function AppShell() {
           aria-haspopup="dialog"
           className={cn('flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[0.6875rem] font-medium', !primary.some((p) => isActivePath(pathname, p.to)) ? 'text-accent' : 'text-ink-2')}
         >
-          <LayoutGrid className="size-5" aria-hidden="true" /> Lainnya
+          <span className="relative">
+            <LayoutGrid className="size-5" aria-hidden="true" />
+            {hiddenBadge && <span aria-hidden="true" className="absolute -right-1 -top-0.5 size-2.5 rounded-full bg-danger ring-2 ring-surface" />}
+          </span>
+          Lainnya
         </button>
       </nav>
 
@@ -177,7 +201,8 @@ export default function AppShell() {
                     onClick={() => setMoreOpen(false)}
                     className={cn('flex h-12 items-center gap-2.5 rounded-xl border px-3 text-sm font-medium transition-colors', isActivePath(pathname, to) ? 'border-sage-deep bg-sage text-accent' : 'border-line bg-surface hover:bg-hover')}
                   >
-                    <Icon className="size-4.5" aria-hidden="true" /> {label}
+                    <Icon className="size-4.5" aria-hidden="true" /> <span className="min-w-0 flex-1 truncate">{label}</span>
+                    <Badge count={badges[to]} />
                   </NavLink>
                 ))}
               </div>

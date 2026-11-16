@@ -1,5 +1,5 @@
 import {
-  Award, Bell, CalendarDays, Flag, Home, ListChecks, Megaphone, ScrollText, Settings,
+  Award, Bell, CalendarDays, Flag, Home, LifeBuoy, ListChecks, Megaphone, ScrollText, Settings,
   ShieldCheck, Target, Timer, TrendingUp, Trophy, UserCog, UserRound, Users,
 } from 'lucide-react'
 
@@ -30,6 +30,7 @@ export const navGroups = [
       { to: '/notifikasi', label: 'Notifikasi', icon: Bell },
       { to: '/profil', label: 'Profil', icon: UserRound },
       { to: '/pengaturan', label: 'Pengaturan', icon: Settings },
+      { to: '/bantuan', label: 'Bantuan', icon: LifeBuoy },
     ],
   },
 ]
@@ -41,6 +42,7 @@ export const adminNavGroups = [
       { to: '/admin', label: 'Ringkasan', icon: ShieldCheck },
       { to: '/admin/pengguna', label: 'Pengguna', icon: UserCog },
       { to: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
+      { to: '/admin/helpdesk', label: 'Helpdesk & Account Assistance', short: 'Helpdesk', icon: LifeBuoy },
       { to: '/admin/log', label: 'Log', icon: ScrollText },
     ],
   },

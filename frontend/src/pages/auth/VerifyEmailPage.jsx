@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
 import Button from '@/components/ui/Button'
@@ -51,7 +52,7 @@ export default function VerifyEmailPage() {
     <AuthLayout
       title="Verifikasi emailmu"
       subtitle="Satu langkah lagi sebelum mulai."
-      footer={<button type="button" onClick={logout} className="font-semibold text-accent underline-offset-4 hover:underline">Pakai akun lain</button>}
+      footer={<><button type="button" onClick={logout} className="font-semibold text-accent underline-offset-4 hover:underline">Pakai akun lain</button> atau <Link to="/bantuan-akun" className="font-semibold text-accent underline-offset-4 hover:underline">hubungi Helpdesk</Link></>}
     >
       <div className="flex items-start gap-3 rounded-xl border border-line bg-surface p-4">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-accent"><MailCheck className="size-5" aria-hidden="true" /></span>

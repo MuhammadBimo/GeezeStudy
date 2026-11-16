@@ -27,7 +27,7 @@ export function RequireAuth() {
   if (!user.onboarded && user.role !== 'admin') {
     return pathname === '/mulai' ? <Outlet /> : <Navigate to="/mulai" replace />
   }
-  if (pathname === '/verifikasi-email' || pathname === '/mulai') return <Navigate to="/" replace />
+  if (pathname === '/verifikasi-email' || pathname === '/mulai') return <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace />
   return <Outlet />
 }
 
@@ -35,7 +35,7 @@ export function RequireAuth() {
 export function GuestOnly() {
   const { user, status } = useAuth()
   if (status === 'loading') return <Splash />
-  return user ? <Navigate to="/" replace /> : <Outlet />
+  return user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <Outlet />
 }
 
 // Panel admin hanya untuk role Admin (server tetap memeriksa ulang di setiap permintaan).

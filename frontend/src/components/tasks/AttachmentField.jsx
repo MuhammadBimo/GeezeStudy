@@ -8,17 +8,21 @@ import { cn } from '@/lib/cn'
  * Lampiran tugas: klik atau seret berkas ke kotak. Satu berkas per tugas.
  * `current` = lampiran yang sudah tersimpan ({ name, size }), `file` = berkas baru yang belum diunggah.
  */
-export default function AttachmentField({ current, file, onChange, onRemove }) {
+export default function AttachmentField({
+  current, file, onChange, onRemove,
+  label = 'Lampiran', accept = ATTACHMENT_ACCEPT, maxBytes = ATTACHMENT_MAX_BYTES,
+  hint = 'PDF, Word, PowerPoint, Excel, gambar, atau ZIP. Maksimal 10 MB.', pendingNote = 'Diunggah saat disimpan',
+}) {
   const inputRef = useRef(null)
   const hintId = useId()
   const [error, setError] = useState('')
   const [dragging, setDragging] = useState(false)
 
-  const accept = (f) => {
+  const pick = (f) => {
     if (!f) return
     const ext = `.${f.name.split('.').pop()?.toLowerCase()}`
-    if (!ATTACHMENT_ACCEPT.split(',').includes(ext)) return setError('Jenis berkas ini tidak didukung.')
-    if (f.size > ATTACHMENT_MAX_BYTES) return setError('Ukuran berkas maksimal 10 MB.')
+    if (!accept.split(',').includes(ext)) return setError('Jenis berkas ini tidak didukung.')
+    if (f.size > maxBytes) return setError(`Ukuran berkas maksimal ${Math.round(maxBytes / 1024 / 1024)} MB.`)
     setError('')
     onChange(f)
     return undefined
@@ -28,7 +32,7 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
 
   return (
     <div>
-      <p className="mb-1.5 text-sm font-medium text-ink">Lampiran</p>
+      <p className="mb-1.5 text-sm font-medium text-ink">{label}</p>
 
       {shown ? (
         <div className="flex items-center gap-3 rounded-control border border-line bg-canvas px-3 py-2.5">
@@ -38,7 +42,7 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{shown.name}</p>
             <p className="text-xs text-ink-2">
-              {[formatSize(shown.size), shown.pending ? 'Diunggah saat disimpan' : null].filter(Boolean).join(' · ') || 'Lampiran tersimpan'}
+              {[formatSize(shown.size), shown.pending ? pendingNote : null].filter(Boolean).join(' · ') || 'Lampiran tersimpan'}
             </p>
           </div>
           <button
@@ -64,7 +68,7 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
           onClick={() => inputRef.current?.click()}
           onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
-          onDrop={(e) => { e.preventDefault(); setDragging(false); accept(e.dataTransfer.files?.[0]) }}
+          onDrop={(e) => { e.preventDefault(); setDragging(false); pick(e.dataTransfer.files?.[0]) }}
           className={cn(
             'flex w-full items-center gap-3 rounded-control border border-dashed px-3 py-3 text-left transition-colors',
             dragging ? 'border-accent bg-sage/60' : 'border-line-strong bg-surface hover:border-accent/50 hover:bg-sage/30',
@@ -83,17 +87,17 @@ export default function AttachmentField({ current, file, onChange, onRemove }) {
       <input
         ref={inputRef}
         type="file"
-        accept={ATTACHMENT_ACCEPT}
+        accept={accept}
         className="sr-only"
         tabIndex={-1}
         aria-hidden="true"
-        onChange={(e) => { accept(e.target.files?.[0]); e.target.value = '' }}
+        onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }}
       />
 
       {error ? (
         <p role="alert" className="mt-1.5 text-[0.8125rem] font-medium text-danger">{error}</p>
       ) : (
-        <p id={hintId} className="mt-1.5 text-[0.8125rem] text-ink-2">PDF, Word, PowerPoint, Excel, gambar, atau ZIP. Maksimal 10 MB.</p>
+        <p id={hintId} className="mt-1.5 text-[0.8125rem] text-ink-2">{hint}</p>
       )}
     </div>
   )

@@ -55,12 +55,13 @@ Tersedia **mode terang dan gelap**. Pergantiannya berupa lingkaran yang melebar 
 - **Teman, Notifikasi, Profil**: peringkat teman, preferensi notifikasi dan jam tenang, foto profil opsional
   (bisa **dipotong dan di-zoom** sebelum diunggah, tersedia di Pengaturan).
 - **Pengaturan**: profil, target belajar harian, privasi, tema (terang, gelap, otomatis).
+- **Bantuan (Helpdesk)**: kirim laporan bug, kendala login, atau pertanyaan (dengan screenshot opsional), dapat nomor tiket, lalu pantau status dan balasan admin.
 
 **Akun**: masuk, daftar (tampil/sembunyikan password, indikator kekuatan password), lupa dan atur ulang password,
-verifikasi email, onboarding singkat.
+verifikasi email, onboarding singkat. Yang tidak bisa masuk (lupa email, akun tidak bisa diakses) bisa mengirim permintaan lewat **Bantuan akun** tanpa login; balasan admin dikirim ke email kontak.
 
 **Admin**: ringkasan, pengguna (tangguhkan, kirim tautan reset password), misi, Points dan level, achievements,
-pengumuman, dan log audit.
+pengumuman, log audit, dan **Helpdesk & Account Assistance** (tiket, balasan, status, dan pemulihan email akun setelah kepemilikan diverifikasi).
 
 **Desain**: terinspirasi minimalisme Apple, editorial, dan earthy (Warm Ivory, Forest Green, Sand Beige, Soft Sage).
 Komponen kustom tanpa library tambahan: select (bisa dicari dan multi-pilih), date picker, time picker, menu dan
@@ -168,6 +169,7 @@ docs/                       banner dan screenshot README
 ## Catatan batasan
 
 - Sinkronisasi Google Calendar belum tersambung (pilihannya tersimpan, tetapi belum menyinkronkan apa pun).
+- Pengunjung yang belum punya akses hanya menerima balasan Helpdesk lewat email, jadi hosting perlu SMTP sungguhan. Pemulihan email hanya mengganti email ke alamat kontak pelapor setelah admin memverifikasi kepemilikan; password tidak pernah dilihat admin.
 - Satu tugas hanya bisa punya satu lampiran, dan belum ada pratinjau berkas di dalam aplikasi.
 - Workflow `.github/workflows/deploy.yml` hanya mem-build frontend untuk GitHub Pages. Tanpa backend publik, login tidak
   akan berfungsi di sana. Aktifkan di Settings, Pages, Source: GitHub Actions bila diperlukan.

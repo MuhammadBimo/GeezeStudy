@@ -90,6 +90,11 @@ export default function LoginPage() {
         <Button type="submit" size="lg" className="w-full" loading={loading}>{loading ? 'Memeriksa...' : 'Masuk'}</Button>
       </form>
 
+      <nav aria-label="Bantuan akun" className="mt-6 flex flex-col gap-2 border-t border-line pt-5 text-sm">
+        <Link to="/bantuan-akun?kategori=account_recovery" className="font-medium text-accent underline-offset-4 hover:underline">Lupa email atau tidak bisa mengakses akun?</Link>
+        <Link to="/bantuan-akun" className="font-medium text-accent underline-offset-4 hover:underline">Hubungi Helpdesk</Link>
+      </nav>
+
       {import.meta.env.DEV && (
         <section aria-labelledby="demo-title" className="mt-8 border-t border-line pt-6">
           <div className="flex items-baseline justify-between">

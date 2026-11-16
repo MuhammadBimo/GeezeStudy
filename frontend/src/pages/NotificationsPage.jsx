@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Award, CalendarClock, CheckCheck, Clock, Flag, Info, Users } from 'lucide-react'
+import { Award, CalendarClock, CheckCheck, Clock, Flag, Info, LifeBuoy, Users } from 'lucide-react'
 import AsyncView from '@/components/ui/AsyncView'
 import Button from '@/components/ui/Button'
 import EmptyState from '@/components/ui/EmptyState'
@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage } from '@/lib/api'
+import { refreshBadges } from '@/lib/badges'
 import { cn } from '@/lib/cn'
 import { relativeTime } from '@/lib/mappers'
 
@@ -20,6 +21,7 @@ const catMeta = {
   mission: { label: 'Misi', icon: Flag, tint: 'bg-sage text-accent' },
   social: { label: 'Sosial', icon: Users, tint: 'bg-sage text-accent' },
   achievement: { label: 'Achievements', icon: Award, tint: 'bg-sand text-sand-ink' },
+  support: { label: 'Bantuan', icon: LifeBuoy, tint: 'bg-info-soft text-info' },
   system: { label: 'Sistem', icon: Info, tint: 'bg-ink/[0.06] text-ink-2' },
 }
 const categories = [{ value: 'all', label: 'Semua' }, ...Object.entries(catMeta).map(([value, m]) => ({ value, label: m.label }))]
@@ -49,7 +51,7 @@ function Preferences() {
       <h2 id="pref-title" className="font-semibold">Preferensi</h2>
       <p className="mt-0.5 text-sm text-ink-2">Pilih notifikasi yang ingin kamu terima.</p>
       <ul className="mt-4 divide-y divide-line">
-        {Object.entries(catMeta).map(([key, meta]) => (
+        {Object.entries(catMeta).filter(([key]) => key !== 'support').map(([key, meta]) => (
           <li key={key} className="flex items-center justify-between gap-3 py-2.5">
             <span className="flex items-center gap-2.5 text-sm"><meta.icon className="size-4 text-muted" aria-hidden="true" />{meta.label}</span>
             <Toggle label={`Notifikasi ${meta.label}`} checked={prefs[key] !== false} onChange={(v) => save({ notification_prefs: { ...prefs, [key]: v } })} />
@@ -84,6 +86,7 @@ function NotificationList({ resource, data }) {
     resource.mutate((d) => ({ ...d, unread: Math.max(0, d.unread - 1), notifications: { ...d.notifications, data: d.notifications.data.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)) } }))
     try {
       await api.patch(`/notifications/${n.id}/read`)
+      refreshBadges()
     } catch (error) {
       toast(errorMessage(error), 'error')
       resource.reload()
@@ -127,6 +130,7 @@ export default function NotificationsPage() {
   const markAll = async () => {
     try {
       await api.post('/notifications/read-all')
+      refreshBadges()
       toast('Semua notifikasi ditandai dibaca')
       resource.reload()
     } catch (error) {

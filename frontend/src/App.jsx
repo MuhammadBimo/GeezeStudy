@@ -24,6 +24,7 @@ const NotificationsPage = page(() => import('@/pages/NotificationsPage'))
 const SettingsPage = page(() => import('@/pages/SettingsPage'))
 const ProfilePage = page(() => import('@/pages/ProfilePage'))
 const AchievementsPage = page(() => import('@/pages/AchievementsPage'))
+const HelpdeskPage = page(() => import('@/pages/HelpdeskPage'))
 const NotFoundPage = page(() => import('@/pages/NotFoundPage'))
 
 const LoginPage = page(() => import('@/pages/auth/LoginPage'))
@@ -32,6 +33,7 @@ const ForgotPasswordPage = page(() => import('@/pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = page(() => import('@/pages/auth/ResetPasswordPage'))
 const VerifyEmailPage = page(() => import('@/pages/auth/VerifyEmailPage'))
 const OnboardingPage = page(() => import('@/pages/auth/OnboardingPage'))
+const HelpPage = page(() => import('@/pages/auth/HelpPage'))
 
 const AdminOverviewPage = page(() => import('@/pages/admin/AdminOverviewPage'))
 const AdminUsersPage = page(() => import('@/pages/admin/AdminUsersPage'))
@@ -40,6 +42,7 @@ const AdminPointsPage = page(() => import('@/pages/admin/AdminPointsPage'))
 const AdminAchievementsPage = page(() => import('@/pages/admin/AdminAchievementsPage'))
 const AdminAnnouncementsPage = page(() => import('@/pages/admin/AdminAnnouncementsPage'))
 const AdminLogsPage = page(() => import('@/pages/admin/AdminLogsPage'))
+const AdminHelpdeskPage = page(() => import('@/pages/admin/AdminHelpdeskPage'))
 
 function PageFallback() {
   return (
@@ -62,6 +65,8 @@ export default function App() {
               <ConfirmProvider>
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
+                    <Route path="/bantuan-akun" element={<HelpPage />} />
+
                     <Route element={<GuestOnly />}>
                       <Route path="/masuk" element={<LoginPage />} />
                       <Route path="/daftar" element={<RegisterPage />} />
@@ -84,6 +89,7 @@ export default function App() {
                         <Route path="notifikasi" element={<NotificationsPage />} />
                         <Route path="pengaturan" element={<SettingsPage />} />
                         <Route path="profil" element={<ProfilePage />} />
+                        <Route path="bantuan" element={<HelpdeskPage />} />
                         <Route path="achievements" element={<AchievementsPage />} />
 
                         <Route path="admin" element={<RequireAdmin />}>
@@ -94,6 +100,7 @@ export default function App() {
                           <Route path="achievements" element={<AdminAchievementsPage />} />
                           <Route path="pengumuman" element={<AdminAnnouncementsPage />} />
                           <Route path="log" element={<AdminLogsPage />} />
+                          <Route path="helpdesk" element={<AdminHelpdeskPage />} />
                         </Route>
 
                         <Route path="*" element={<NotFoundPage />} />
