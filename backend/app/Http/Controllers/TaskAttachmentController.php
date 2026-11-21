@@ -28,7 +28,7 @@ class TaskAttachmentController extends Controller
         $file = $request->file('file');
         $stored = Str::random(40).'.'.($file->extension() ?: 'bin');
 
-        Storage::disk('local')->putFileAs(self::DIR, $file, $stored);
+        Storage::disk()->putFileAs(self::DIR, $file, $stored);
         self::deleteFile($model->attachment_path);
 
         $model->forceFill([
@@ -43,9 +43,22 @@ class TaskAttachmentController extends Controller
     public function show(Request $request, int $task): StreamedResponse
     {
         $model = $request->user()->tasks()->findOrFail($task);
-        abort_unless($model->attachment_path && Storage::disk('local')->exists(self::DIR.'/'.$model->attachment_path), 404);
+        $stream = null;
+        if ($model->attachment_path) {
+            try {
+                $stream = Storage::disk()->readStream(self::DIR.'/'.$model->attachment_path);
+            } catch (\Throwable) {
+                $stream = null;
+            }
+        }
+        abort_unless($stream, 404);
 
-        return Storage::disk('local')->download(self::DIR.'/'.$model->attachment_path, $model->attachment_name ?: $model->attachment_path, [
+        return response()->streamDownload(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, $model->attachment_name ?: $model->attachment_path, [
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }
@@ -62,7 +75,7 @@ class TaskAttachmentController extends Controller
     public static function deleteFile(?string $name): void
     {
         if ($name) {
-            Storage::disk('local')->delete(self::DIR.'/'.$name);
+            Storage::disk()->delete(self::DIR.'/'.$name);
         }
     }
 

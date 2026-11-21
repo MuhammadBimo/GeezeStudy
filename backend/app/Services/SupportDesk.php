@@ -109,7 +109,7 @@ class SupportDesk
     private function storeFile(UploadedFile $file): array
     {
         $stored = Str::random(40).'.'.($file->extension() ?: 'bin');
-        Storage::disk('local')->putFileAs(self::DIR, $file, $stored);
+        Storage::disk()->putFileAs(self::DIR, $file, $stored);
         $clean = trim(preg_replace('/[\x00-\x1F\x7F\/\\:*?"<>|]+/u', '_', $file->getClientOriginalName()));
 
         return [

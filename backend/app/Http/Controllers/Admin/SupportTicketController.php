@@ -162,9 +162,22 @@ class SupportTicketController extends Controller
     public function attachment(int $ticket): StreamedResponse
     {
         $model = SupportTicket::findOrFail($ticket);
-        abort_unless($model->attachment_path && Storage::disk('local')->exists(SupportDesk::DIR.'/'.$model->attachment_path), 404);
+        $stream = null;
+        if ($model->attachment_path) {
+            try {
+                $stream = Storage::disk()->readStream(SupportDesk::DIR.'/'.$model->attachment_path);
+            } catch (\Throwable) {
+                $stream = null;
+            }
+        }
+        abort_unless($stream, 404);
 
-        return Storage::disk('local')->download(SupportDesk::DIR.'/'.$model->attachment_path, $model->attachment_name ?: $model->attachment_path, [
+        return response()->streamDownload(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, $model->attachment_name ?: $model->attachment_path, [
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * Foto profil opsional. File disimpan di disk privat dengan nama acak dan disajikan lewat
- * rute sendiri, jadi tidak perlu `storage:link` (yang sering gagal di Windows).
+ * Foto profil opsional. File disimpan di disk terkonfigurasi (`FILESYSTEM_DISK`)
+ * dengan nama acak dan disajikan lewat rute sendiri.
  */
 class AvatarController extends Controller
 {
@@ -26,7 +26,7 @@ class AvatarController extends Controller
         $file = $request->file('avatar');
         $name = Str::random(40).'.'.$file->extension();
 
-        Storage::disk('local')->putFileAs(self::DIR, $file, $name);
+        Storage::disk()->putFileAs(self::DIR, $file, $name);
         $this->deleteFile($user->avatar_path);
 
         $user->forceFill(['avatar_path' => $name])->save();
@@ -43,14 +43,26 @@ class AvatarController extends Controller
         return new UserResource($user);
     }
 
-    public function show(string $filename): BinaryFileResponse
+    public function show(string $filename): Response
     {
-        abort_unless(preg_match('/^[A-Za-z0-9]{40}\.(jpe?g|png|webp)$/', $filename) === 1, 404);
+        abort_unless(preg_match('/^[A-Za-z0-9]{40}\.(jpe?g|png|webp)$/', $filename, $matches) === 1, 404);
 
         $path = self::DIR.'/'.$filename;
-        abort_unless(Storage::disk('local')->exists($path), 404);
+        try {
+            $content = Storage::disk()->get($path);
+        } catch (\Throwable) {
+            $content = null;
+        }
+        abort_if($content === null, 404);
 
-        return response()->file(Storage::disk('local')->path($path), [
+        $mime = match ($matches[1]) {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'image/jpeg',
+        };
+
+        return response($content, 200, [
+            'Content-Type' => $mime,
             'Cache-Control' => 'public, max-age=31536000, immutable',
             'X-Content-Type-Options' => 'nosniff',
         ]);
@@ -59,7 +71,7 @@ class AvatarController extends Controller
     private function deleteFile(?string $name): void
     {
         if ($name) {
-            Storage::disk('local')->delete(self::DIR.'/'.$name);
+            Storage::disk()->delete(self::DIR.'/'.$name);
         }
     }
 }

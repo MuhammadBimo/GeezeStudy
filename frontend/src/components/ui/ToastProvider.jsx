@@ -67,7 +67,7 @@ export default function ToastProvider({ children }) {
       <section
         aria-label="Notifikasi"
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-3 top-3 z-[80] flex flex-col items-stretch gap-2 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[22rem] sm:flex-col-reverse"
+        className="pointer-events-none fixed inset-x-3 top-3 z-[80] flex flex-col items-stretch gap-2 transition-[bottom] duration-200 ease-out sm:inset-x-auto sm:bottom-[calc(1.25rem+var(--upload-tray-offset,0px))] sm:right-5 sm:top-auto sm:w-[22rem] sm:flex-col-reverse"
       >
         <AnimatePresence initial={false}>
           {toasts.map((t) => {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import { Pencil, Plus, Search } from 'lucide-react'
@@ -12,6 +12,7 @@ import SegmentedControl from '@/components/ui/SegmentedControl'
 import TaskCard from '@/components/tasks/TaskCard'
 import TaskDetail from '@/components/tasks/TaskDetail'
 import TaskForm from '@/components/tasks/TaskForm'
+import UploadTray from '@/components/tasks/UploadTray'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
@@ -50,6 +51,8 @@ function TaskBoard({ resource, tasks }) {
   const [editing, setEditing] = useState(() => (params.get('baru') ? 'new' : null)) // null | 'new' | tugas
   const [viewing, setViewing] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [uploads, setUploads] = useState([])
+  const controllersRef = useRef(new Map())
   const viewed = viewing ? tasks.find((t) => t.id === viewing.id) : null
 
   const courses = useMemo(() => [...new Set(tasks.map((t) => t.course).filter(Boolean))], [tasks])
@@ -95,20 +98,91 @@ function TaskBoard({ resource, tasks }) {
     if (params.get('baru')) setParams({}, { replace: true })
   }
 
-  // Lampiran diurus setelah tugasnya tersimpan: unggah berkas baru, atau hapus lampiran lama.
-  const syncAttachment = async (taskId, form, hadAttachment) => {
-    if (form.file) {
-      const body = new FormData()
-      body.append('file', form.file)
-      return (await api.post(`/tasks/${taskId}/attachment`, body)).data
+  const patchUpload = (id, patch) => setUploads((list) => list.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+
+  const cancelUpload = (id) => {
+    const controller = controllersRef.current.get(id)
+    if (controller) {
+      controller.abort()
+      controllersRef.current.delete(id)
     }
-    if (form.clearAttachment && hadAttachment) return (await api.delete(`/tasks/${taskId}/attachment`)).data
-    return null
+    patchUpload(id, { status: 'cancelled' })
+  }
+
+  const cancelAllUploads = () => {
+    for (const [id, controller] of controllersRef.current.entries()) {
+      controller.abort()
+      controllersRef.current.delete(id)
+      patchUpload(id, { status: 'cancelled' })
+    }
+  }
+
+  const uploadAttachment = (savedTask, file) => {
+    const id = `${savedTask.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const controller = new AbortController()
+    controllersRef.current.set(id, controller)
+    const startedAt = Date.now()
+
+    setUploads((list) => [
+      {
+        id,
+        taskId: savedTask.id,
+        taskTitle: savedTask.title,
+        taskCourse: savedTask.course || '',
+        fileName: file.name,
+        fileSize: file.size,
+        startedAt,
+        progress: 0,
+        etaSeconds: null,
+        status: 'uploading',
+        error: '',
+      },
+      ...list.filter((item) => item.status === 'uploading' || item.taskId !== savedTask.id),
+    ])
+
+    const body = new FormData()
+    body.append('file', file)
+
+    api
+      .post(`/tasks/${savedTask.id}/attachment`, body, {
+        signal: controller.signal,
+        onUploadProgress: (event) => {
+          const total = event.total || file.size
+          if (!total) return
+          const ratio = Math.min(1, event.loaded / total)
+          // Maksimal 99% selama transfer browser→backend; 100% baru saat backend selesai menyimpan ke S3.
+          const progress = Math.min(99, Math.round(ratio * 99))
+          const elapsed = Math.max(0.05, (Date.now() - startedAt) / 1000)
+          const rate = event.rate || (event.loaded / elapsed)
+          const etaSeconds = typeof event.estimated === 'number' && Number.isFinite(event.estimated)
+            ? Math.max(1, event.estimated)
+            : rate > 0
+              ? Math.max(1, (total - event.loaded) / rate)
+              : null
+          patchUpload(id, { progress, etaSeconds })
+        },
+      })
+      .then(({ data }) => {
+        controllersRef.current.delete(id)
+        replace(data)
+        patchUpload(id, { progress: 100, etaSeconds: 0, status: 'done' })
+      })
+      .catch((error) => {
+        controllersRef.current.delete(id)
+        if (error?.code === 'ERR_CANCELED' || controller.signal.aborted) {
+          patchUpload(id, { status: 'cancelled' })
+          return
+        }
+        const msg = errorMessage(error)
+        patchUpload(id, { status: 'error', error: msg })
+        toast.error(`Lampiran "${savedTask.title}" gagal diunggah`, { description: msg })
+      })
   }
 
   const save = async (form) => {
     setSaving(true)
     const isNew = editing === 'new'
+    const hadAttachment = !isNew && Boolean(editing.attachment)
     let saved = null
     try {
       saved = (isNew ? await api.post('/tasks', taskToApi(form)) : await api.patch(`/tasks/${editing.id}`, taskToApi(form))).data
@@ -119,12 +193,23 @@ function TaskBoard({ resource, tasks }) {
       setSaving(false)
       return
     }
+
+    if (form.file) {
+      setSaving(false)
+      closeForm()
+      toast(isNew ? 'Tugas ditambahkan, mengunggah lampiran...' : 'Perubahan disimpan, mengunggah lampiran...')
+      uploadAttachment(saved, form.file)
+      return
+    }
+
     try {
-      const withFile = await syncAttachment(saved.id, form, !isNew && Boolean(editing.attachment))
-      if (withFile) replace(withFile)
+      if (form.clearAttachment && hadAttachment) {
+        const { data } = await api.delete(`/tasks/${saved.id}/attachment`)
+        replace(data)
+      }
       toast(isNew ? 'Tugas ditambahkan' : 'Perubahan disimpan')
     } catch (error) {
-      toast.error('Tugas tersimpan, tapi lampiran gagal diunggah', { description: errorMessage(error) })
+      toast.error('Tugas tersimpan, tapi lampiran gagal dihapus', { description: errorMessage(error) })
     } finally {
       setSaving(false)
       closeForm()
@@ -211,6 +296,13 @@ function TaskBoard({ resource, tasks }) {
           <TaskForm key={editing === 'new' ? 'new' : editing.id} initial={editing === 'new' ? undefined : editing} courses={courses} onSubmit={save} />
         )}
       </Modal>
+
+      <UploadTray
+        items={uploads}
+        onCancel={cancelUpload}
+        onCancelAll={cancelAllUploads}
+        onDismiss={() => setUploads([])}
+      />
     </>
   )
 }
