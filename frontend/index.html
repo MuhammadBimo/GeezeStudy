@@ -16,8 +16,203 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GeezeStudy</title>
+    <style>
+      /*
+       * Splash "Cinematic Brand Reveal". Murni CSS karena harus tampil sebelum JavaScript dimuat.
+       * Satu rangkaian: cahaya ambien -> logo terbentuk dari tiga lapisan -> logo "bernapas" (kedalaman)
+       * -> kilatan cahaya sekali lewat -> keluar: logo mengecil ke titik fokus, lalu latar terbuka dari titik itu.
+       * Logo memakai file yang sama (splash-logo.webp) di beberapa lapisan dengan clip-path; filenya tidak diubah.
+       * src/lib/splash.js memicu fase keluar begitu aplikasi siap, dari fase mana pun, tanpa jeda buatan.
+       */
+      @property --splash-hole { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+
+      html { background: #f7f6f0; }
+      :root[data-theme='dark'] { background: #151a17; }
+
+      #splash {
+        --bg: #f7f6f0;
+        --glow-a: rgb(255 255 255 / 0.75);
+        --glow-b: rgb(212 194 162 / 0.22);
+        --sheen: rgb(255 252 240 / 0.7);
+        --spark: #f0e9dc;
+        --line: rgb(32 36 31 / 0.09);
+        --accent: #1f3d2b;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+        /*
+         * Lebar 100vw (termasuk area scrollbar), bukan inset: 0. Saat halaman di bawahnya selesai dimuat dan
+         * memunculkan scrollbar, titik tengah splash tidak ikut bergeser.
+         */
+        position: fixed; top: 0; bottom: 0; left: 0; width: 100vw; z-index: 9999; overflow: hidden;
+        display: grid; place-items: center;
+        background: var(--bg);
+      }
+      :root[data-theme='dark'] #splash {
+        --bg: #151a17;
+        --glow-a: rgb(168 197 165 / 0.10);
+        --glow-b: rgb(212 194 162 / 0.07);
+        --sheen: rgb(255 248 230 / 0.42);
+        --line: rgb(242 242 234 / 0.1);
+        --accent: #a8c5a5;
+      }
+
+      /* PHASE 1: cahaya ambien. Dua sumber cahaya lembut yang bergeser perlahan berlawanan arah (kedalaman). */
+      #splash .splash-glow { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform, opacity; }
+      #splash .glow-a {
+        width: 120vmax; height: 120vmax; left: 50%; top: 44%; margin: -60vmax 0 0 -60vmax;
+        background: radial-gradient(closest-side, var(--glow-a), transparent 70%);
+        animation: glow-in 1100ms var(--ease-out) both, glow-drift-a 9s ease-in-out 1100ms infinite alternate;
+      }
+      #splash .glow-b {
+        width: 70vmax; height: 70vmax; left: 58%; top: 58%; margin: -35vmax 0 0 -35vmax;
+        background: radial-gradient(closest-side, var(--glow-b), transparent 72%);
+        animation: glow-in 1400ms var(--ease-out) 200ms both, glow-drift-b 11s ease-in-out 1600ms infinite alternate;
+      }
+
+      /* Pembungkus untuk fase keluar (focus) dan untuk kedalaman (stage), supaya transform keduanya tidak bertabrakan. */
+      #splash .splash-center { position: relative; display: flex; flex-direction: column; align-items: center; gap: 36px; }
+      #splash .splash-focus { position: relative; }
+      #splash .splash-stage { position: relative; }
+      #splash .splash-art { position: relative; width: min(190px, 50vw); aspect-ratio: 440 / 510; }
+      #splash .splash-art img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; }
+
+      /*
+       * PHASE 2: logo terbentuk. Tiga pita horizontal dari gambar yang sama (toga, perisai, daun dan pita) masuk bergantian,
+       * lalu disegel satu gambar utuh. Batas pita memakai mask bergradien supaya tepinya lembut, tidak ada garis potong.
+       */
+      #splash .layer-top { -webkit-mask: linear-gradient(#000 0 20%, transparent 30%); mask: linear-gradient(#000 0 20%, transparent 30%); }
+      #splash .layer-mid { -webkit-mask: linear-gradient(transparent 18%, #000 28% 62%, transparent 74%); mask: linear-gradient(transparent 18%, #000 28% 62%, transparent 74%); }
+      #splash .layer-bottom { -webkit-mask: linear-gradient(transparent 60%, #000 72%); mask: linear-gradient(transparent 60%, #000 72%); }
+      #splash.logo-ready .layer-top { animation: assemble-top 820ms var(--ease-out) 60ms both; }
+      #splash.logo-ready .layer-mid { animation: assemble-mid 900ms var(--ease-out) 180ms both; }
+      #splash.logo-ready .layer-bottom { animation: assemble-bottom 860ms var(--ease-out) 300ms both; }
+      #splash.logo-ready .layer-full { animation: seal 260ms ease-out 1000ms both; }
+
+      /* PHASE 3: kedalaman. Logo "bernapas" sangat halus, berlawanan dengan geseran cahaya ambien. */
+      #splash.logo-ready .splash-stage { animation: breathe 4.2s ease-in-out 1200ms infinite alternate; }
+
+      /* PHASE 4: kilatan cahaya diagonal, sekali lewat, hanya di dalam bentuk logo (mask = gambar yang sama). */
+      #splash .splash-sheen {
+        position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+        -webkit-mask: url(/splash-logo.webp) center / 100% 100% no-repeat;
+        mask: url(/splash-logo.webp) center / 100% 100% no-repeat;
+      }
+      #splash .splash-sheen::before {
+        content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 42%;
+        background: linear-gradient(90deg, transparent, var(--sheen) 50%, transparent);
+        transform: translateX(-160%) skewX(-20deg); opacity: 0;
+      }
+      #splash.logo-ready .splash-sheen::before { animation: sheen 1000ms var(--ease-in-out) 1250ms both; }
+      #splash .splash-spark { position: absolute; width: 14px; height: 14px; color: var(--spark); opacity: 0; pointer-events: none; }
+      #splash .splash-spark svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 3px rgb(212 194 162 / 0.5)); }
+      #splash .spark-1 { left: 74%; top: 8%; }
+      #splash .spark-2 { left: 22%; top: 40%; width: 10px; height: 10px; }
+      #splash.logo-ready .spark-1 { animation: twinkle 700ms var(--ease-out) 1750ms both; }
+      #splash.logo-ready .spark-2 { animation: twinkle 640ms var(--ease-out) 1500ms both; }
+
+      /* PHASE 6: loading tak tentu (tanpa persentase palsu): garis tipis dengan aksen titik di ujungnya. */
+      #splash .splash-loader { position: relative; width: 132px; height: 2px; border-radius: 999px; background: var(--line); clip-path: inset(-4px 0 -4px 0); opacity: 0; }
+      #splash.logo-ready .splash-loader { animation: glow-in 500ms ease-out 700ms both; }
+      #splash .splash-loader span {
+        position: absolute; top: 0; bottom: 0; left: 0; width: 38%; border-radius: inherit;
+        background: linear-gradient(90deg, transparent, var(--accent));
+        animation: run 1.6s var(--ease-in-out) infinite;
+      }
+      #splash .splash-loader span::after {
+        content: ''; position: absolute; right: -2px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px;
+        border-radius: 50%; background: var(--accent);
+      }
+
+      /* PHASE 7: keluar. Logo mengecil ke titik fokus, lalu latar terbuka melingkar dari titik itu ke halaman di bawahnya. */
+      #splash.is-hiding { pointer-events: none; }
+      #splash.is-hiding .splash-focus { animation: focus-out 460ms cubic-bezier(0.5, 0, 0.2, 1) both; }
+      #splash.is-hiding .splash-loader { animation: fade-out 220ms ease-in both; }
+      #splash.is-hiding {
+        -webkit-mask: radial-gradient(circle at 50% 46%, transparent var(--splash-hole), #000 calc(var(--splash-hole) + 14%));
+        mask: radial-gradient(circle at 50% 46%, transparent var(--splash-hole), #000 calc(var(--splash-hole) + 14%));
+        animation: iris 680ms cubic-bezier(0.65, 0, 0.25, 1) 220ms both;
+      }
+
+      @keyframes glow-in { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+      @keyframes glow-drift-a { to { transform: translate(-2.5%, 1.5%) scale(1.06); } }
+      @keyframes glow-drift-b { to { transform: translate(3%, -2.5%) scale(0.94); opacity: 0.7; } }
+      @keyframes assemble-top { from { opacity: 0; transform: translateY(-16px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+      @keyframes assemble-mid { from { opacity: 0; transform: scale(0.9); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+      @keyframes assemble-bottom { from { opacity: 0; transform: translateY(16px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+      @keyframes seal { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes breathe { from { transform: none; } to { transform: translateY(-4px) scale(1.012); } }
+      @keyframes sheen {
+        0% { transform: translateX(-160%) skewX(-20deg); opacity: 0; }
+        15% { opacity: 1; }
+        85% { opacity: 1; }
+        100% { transform: translateX(300%) skewX(-20deg); opacity: 0; }
+      }
+      @keyframes twinkle {
+        0% { opacity: 0; transform: scale(0.2) rotate(-30deg); }
+        45% { opacity: 1; transform: scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: scale(0.4) rotate(25deg); }
+      }
+      @keyframes run { from { transform: translateX(-110%); } to { transform: translateX(270%); } }
+      @keyframes focus-out {
+        0% { transform: none; opacity: 1; }
+        100% { transform: translateY(-6px) scale(0.78); opacity: 0; }
+      }
+      @keyframes fade-out { to { opacity: 0; } }
+      @keyframes iris {
+        0% { --splash-hole: 0%; opacity: 1; }
+        70% { opacity: 1; }
+        100% { --splash-hole: 160%; opacity: 0; }
+      }
+
+      /* Versi sederhana untuk prefers-reduced-motion: tanpa gerakan, lapisan, kilatan, atau iris. */
+      @media (prefers-reduced-motion: reduce) {
+        #splash .splash-glow { animation: glow-in 300ms linear both; }
+        #splash .splash-art img.layer-top, #splash .splash-art img.layer-mid, #splash .splash-art img.layer-bottom, #splash .splash-sheen, #splash .splash-spark { display: none; }
+        #splash.logo-ready .layer-full { animation: seal 240ms linear both; }
+        #splash.logo-ready .splash-stage { animation: none; }
+        #splash.logo-ready .splash-loader { animation: none; opacity: 1; }
+        #splash .splash-loader span { animation: none; width: 100%; opacity: 0.35; }
+        #splash.is-hiding { -webkit-mask: none; mask: none; animation: fade-out 200ms linear both; }
+        #splash.is-hiding .splash-focus { animation: none; }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" role="status" aria-label="Memuat GeezeStudy">
+      <div class="splash-glow glow-a" aria-hidden="true"></div>
+      <div class="splash-glow glow-b" aria-hidden="true"></div>
+      <div class="splash-center">
+        <div class="splash-focus">
+          <div class="splash-stage">
+            <div class="splash-art">
+              <img class="layer-top" src="/splash-logo.webp" alt="" aria-hidden="true" />
+              <img class="layer-mid" src="/splash-logo.webp" alt="" aria-hidden="true" />
+              <img class="layer-bottom" src="/splash-logo.webp" alt="" aria-hidden="true" />
+              <img class="layer-full" src="/splash-logo.webp" width="440" height="510" alt="GeezeStudy" fetchpriority="high" />
+              <div class="splash-sheen" aria-hidden="true"></div>
+              <span class="splash-spark spark-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0c1 7 4 10 12 12-8 2-11 5-12 12-1-7-4-10-12-12 8-2 11-5 12-12z"/></svg></span>
+              <span class="splash-spark spark-2" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0c1 7 4 10 12 12-8 2-11 5-12 12-1-7-4-10-12-12 8-2 11-5 12-12z"/></svg></span>
+            </div>
+          </div>
+        </div>
+        <div class="splash-loader" aria-hidden="true"><span></span></div>
+      </div>
+    </div>
+    <script>
+      // Mulai rangkaian setelah gambar logo siap digambar (semua lapisan memakai file yang sama), maksimal tunggu 1,5 detik.
+      (function () {
+        var sp = document.getElementById('splash')
+        if (!sp) return
+        // Catat kapan rangkaian dimulai; src/lib/splash.js memakainya agar logo utuh tampil minimal 1 detik.
+        var go = function () { if (!sp.dataset.readyAt) sp.dataset.readyAt = String(performance.now()); sp.classList.add('logo-ready') }
+        var img = sp.querySelector('.layer-full')
+        var t = setTimeout(go, 1500)
+        var done = function () { clearTimeout(t); go() }
+        if (img.decode) img.decode().then(done, done)
+        else if (img.complete) done()
+        else { img.onload = done; img.onerror = done }
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Models\Achievement;
-use App\Models\Announcement;
 use App\Services\AchievementService;
 use App\Services\GoalService;
 use App\Services\MissionService;
@@ -48,7 +47,7 @@ class ProgressController extends Controller
             'goals' => $user->goals()->orderBy('id')->get()->map(fn ($g) => $goalService->present($user, $g))
                 ->filter(fn ($g) => $g['progress'] < $g['target'])->take(4)->values(),
             'daily_missions' => $missions->listFor($user, 'daily'),
-            'announcements' => Announcement::whereNotNull('published_at')->where('published_at', '<=', now())->latest('published_at')->limit(3)->get(['id', 'title', 'body', 'published_at']),
+            'announcements' => AnnouncementController::activeFor($user->id),
         ]);
     }
 
@@ -74,14 +73,6 @@ class ProgressController extends Controller
                 'progress' => min($metrics[$a->metric] ?? 0, $a->threshold),
                 'threshold' => $a->threshold,
             ]),
-        ]);
-    }
-
-    public function announcements(): JsonResponse
-    {
-        return response()->json([
-            'data' => Announcement::whereNotNull('published_at')->where('published_at', '<=', now())
-                ->latest('published_at')->limit(10)->get(['id', 'title', 'body', 'published_at']),
         ]);
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Bentuk tiket untuk API. `staff` menambahkan data akun pelapor yang relevan bagi Admin;
+ * Bentuk laporan untuk API. `staff` menambahkan data akun pelapor yang relevan bagi Admin;
  * Student tidak pernah menerimanya.
  *
  * @mixin SupportTicket

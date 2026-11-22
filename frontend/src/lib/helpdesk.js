@@ -16,10 +16,19 @@ export const statuses = [
   { value: 'pending', label: 'Pending', tone: 'warning' },
   { value: 'in_progress', label: 'In Progress', tone: 'info' },
   { value: 'waiting_user', label: 'Waiting for User', tone: 'sand' },
-  { value: 'resolved', label: 'Resolved', tone: 'success' },
   { value: 'closed', label: 'Closed', tone: 'neutral' },
 ]
 export const statusMeta = Object.fromEntries(statuses.map((s) => [s.value, s]))
+// Resolved sudah digabung ke Closed di server; jaga-jaga bila ada data lama yang masih memakainya.
+statusMeta.resolved = statusMeta.closed
+
+// Pilihan status untuk Admin. Memilih Resolved menutup laporan (server menyimpannya sebagai Closed).
+export const adminStatusOptions = [
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'waiting_user', label: 'Waiting for User' },
+  { value: 'resolved', label: 'Resolved (laporan ditutup)' },
+]
+export const isClosing = (value) => value === 'resolved' || value === 'closed'
 
 export const ATTACHMENT_ACCEPT = '.jpg,.jpeg,.png,.webp,.pdf'
 export const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024

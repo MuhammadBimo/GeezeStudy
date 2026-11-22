@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/** Aturan Helpdesk di satu tempat: membuat tiket, membalas, mengubah status, dan memberi tahu pelapor. */
+/** Aturan Helpdesk di satu tempat: membuat laporan, membalas, mengubah status, dan memberi tahu pelapor. */
 class SupportDesk
 {
     public const DIR = 'support-attachments';
@@ -46,8 +46,8 @@ class SupportDesk
             return $ticket;
         });
 
-        $this->notify($ticket, 'Laporanmu sudah kami terima', "Nomor tiket {$ticket->code}: {$ticket->subject}. Kami akan membalas secepatnya.");
-        $this->mail($ticket, "Tiket {$ticket->code} diterima", "Halo {$ticket->requester_name},\n\nLaporanmu \"{$ticket->subject}\" sudah kami terima dengan nomor tiket {$ticket->code}.\nBalasan dari tim GeezeStudy akan dikirim ke email ini.\n\nJangan kirim password kepada siapa pun, termasuk tim GeezeStudy.");
+        $this->notify($ticket, 'Laporanmu sudah kami terima', "Nomor laporan {$ticket->code}: {$ticket->subject}. Kami akan membalas secepatnya.");
+        $this->mail($ticket, "Laporan {$ticket->code} diterima", "Halo {$ticket->requester_name},\n\nLaporanmu \"{$ticket->subject}\" sudah kami terima dengan nomor laporan {$ticket->code}.\nBalasan dari tim GeezeStudy akan dikirim ke email ini.\n\nJangan kirim password kepada siapa pun, termasuk tim GeezeStudy.");
 
         return $ticket;
     }
@@ -65,22 +65,34 @@ class SupportDesk
         return $message;
     }
 
-    /** Mengubah status dan mencatatnya di riwayat. Mengembalikan true bila status memang berubah. */
+    /**
+     * Mengubah status dan mencatatnya di riwayat. Mengembalikan true bila status memang berubah.
+     * Resolved dan Closed digabung: menyelesaikan laporan berarti menutupnya, dan laporan yang ditutup terkunci.
+     */
     public function setStatus(SupportTicket $ticket, string $status, User $actor, bool $notify = true): bool
     {
+        if ($status === 'resolved') {
+            $status = 'closed';
+        }
+
         if ($ticket->status === $status) {
             return false;
         }
 
-        $ticket->forceFill([
-            'status' => $status,
-            'resolved_at' => $status === 'resolved' ? now() : ($status === 'closed' ? $ticket->resolved_at : null),
-        ])->save();
+        $closing = $status === 'closed';
+        $ticket->forceFill(['status' => $status, 'resolved_at' => $closing ? now() : null])->save();
 
-        $this->message($ticket, $actor, 'Status diubah menjadi '.self::STATUS_LABELS[$status].'.', true, 'event');
+        $this->message($ticket, $actor, $closing
+            ? 'Laporan ditutup. Percakapan sekarang hanya bisa dibaca.'
+            : 'Status diubah menjadi '.self::STATUS_LABELS[$status].'.', true, 'event');
 
         if ($notify) {
-            $this->notify($ticket, "Status tiket {$ticket->code} berubah", 'Sekarang: '.self::STATUS_LABELS[$status].'.');
+            if ($closing) {
+                $this->notify($ticket, "Laporan {$ticket->code} sudah ditutup", 'Laporanmu sudah diselesaikan. Riwayat percakapan tetap bisa dilihat.');
+                $this->mail($ticket, "Laporan {$ticket->code} sudah ditutup", "Laporanmu \"{$ticket->subject}\" sudah diselesaikan dan laporannya ditutup.\nMasih ada kendala? Kirim laporan baru lewat halaman Bantuan.");
+            } else {
+                $this->notify($ticket, "Status laporan {$ticket->code} berubah", 'Sekarang: '.self::STATUS_LABELS[$status].'.');
+            }
         }
 
         return true;

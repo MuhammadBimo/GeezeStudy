@@ -3,7 +3,7 @@ import { cn } from '@/lib/cn'
 import { dayTime } from '@/lib/mappers'
 
 /**
- * Riwayat percakapan tiket, mengikuti sudut pandang pembaca: pesanmu sendiri di kanan,
+ * Riwayat percakapan laporan, mengikuti sudut pandang pembaca: pesanmu sendiri di kanan,
  * pesan lawan bicara di kiri, catatan sistem di tengah. `viewer` = 'student' atau 'admin'.
  */
 export default function TicketThread({ messages, viewer = 'student' }) {

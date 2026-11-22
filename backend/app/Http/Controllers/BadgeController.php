@@ -15,7 +15,9 @@ class BadgeController extends Controller
 
         return response()->json([
             'notifications' => $user->appNotifications()->whereNull('read_at')->count(),
-            // Student: balasan atau perubahan status tiket yang belum dibuka. Admin: tiket yang menunggu penanganan.
+            // Student: balasan atau perubahan status laporan yang belum dibuka. Admin: laporan yang menunggu penanganan.
+            // Hanya Admin: laporan Pending khusus bantuan akun (untuk submenu Account Assistance).
+            'recovery' => $user->isAdmin() ? SupportTicket::where('status', 'pending')->where('category', 'account_recovery')->count() : 0,
             'helpdesk' => $user->isAdmin()
                 ? SupportTicket::where('status', 'pending')->count()
                 : $user->appNotifications()->whereNull('read_at')->where('category', 'support')->count(),

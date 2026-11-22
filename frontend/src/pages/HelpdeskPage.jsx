@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LifeBuoy, Plus, Send } from 'lucide-react'
+import { CheckCircle2, LifeBuoy, Plus, Send } from 'lucide-react'
 import AttachmentLink from '@/components/helpdesk/AttachmentLink'
 import StatusBadge from '@/components/helpdesk/StatusBadge'
 import TicketForm from '@/components/helpdesk/TicketForm'
@@ -15,13 +15,14 @@ import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 import { refreshBadges } from '@/lib/badges'
+import { cn } from '@/lib/cn'
 import { categoryLabel } from '@/lib/helpdesk'
 import { relativeTime } from '@/lib/mappers'
 
 function TicketDetail({ id, onChanged, onNew }) {
   const toast = useToast()
   const resource = useResource(`/helpdesk/${id}`)
-  // Membuka tiket menandai notifikasinya terbaca di server; segarkan lencana di sidebar.
+  // Membuka laporan menandai notifikasinya terbaca di server; segarkan lencana di sidebar.
   useEffect(() => { if (resource.data) refreshBadges() }, [resource.data])
   const [body, setBody] = useState('')
   const [error, setError] = useState('')
@@ -70,12 +71,12 @@ function TicketDetail({ id, onChanged, onNew }) {
 
           {t.status === 'closed' ? (
             <div className="rounded-xl bg-canvas p-4 text-sm text-ink-2">
-              Tiket ini sudah ditutup. Masih ada kendala? <button type="button" onClick={onNew} className="font-semibold text-accent underline-offset-4 hover:underline">Buat laporan baru</button>.
+              Laporan ini sudah ditutup dan percakapannya terkunci, tetapi riwayatnya tetap bisa kamu baca. Masih ada kendala? <button type="button" onClick={onNew} className="font-semibold text-accent underline-offset-4 hover:underline">Buat laporan baru</button>.
             </div>
           ) : (
             <form onSubmit={send} noValidate className="flex flex-col gap-3 border-t border-line pt-4">
               {t.status === 'waiting_user' && <p className="text-sm font-medium text-sand-ink">Admin menunggu jawabanmu.</p>}
-              <Textarea label={t.status === 'resolved' ? 'Masih ada kendala? Balas di sini' : waiting ? 'Tambah keterangan (opsional)' : 'Balasanmu'} rows={3} maxLength={3000} value={body} onChange={(e) => setBody(e.target.value)} error={error} />
+              <Textarea label={waiting ? 'Tambah keterangan (opsional)' : 'Balasanmu'} rows={3} maxLength={3000} value={body} onChange={(e) => setBody(e.target.value)} error={error} />
               <Button type="submit" loading={sending} className="self-end"><Send aria-hidden="true" /> {waiting ? 'Kirim keterangan' : 'Kirim balasan'}</Button>
             </form>
           )}
@@ -83,6 +84,35 @@ function TicketDetail({ id, onChanged, onNew }) {
         )
       }}
     </AsyncView>
+  )
+}
+
+// Satu daftar laporan; tidak tampil bila kosong. Laporan yang sudah ditutup menampilkan kapan ditutup.
+function ReportList({ title, hint, items, onOpen }) {
+  if (items.length === 0) return null
+  return (
+    <section aria-labelledby={`list-${title}`}>
+      <h2 id={`list-${title}`} className="mb-1 text-base font-semibold">{title} <span className="font-normal text-muted">{items.length}</span></h2>
+      {hint && <p className="mb-3 text-sm text-ink-2">{hint}</p>}
+      <ul className={cn('divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface shadow-xs', !hint && 'mt-3')} aria-label={title}>
+        {items.map((t) => (
+          <li key={t.id}>
+            <button type="button" onClick={() => onOpen(t.id)} className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 text-left transition-colors hover:bg-hover/70 sm:flex-nowrap sm:px-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-accent">
+                {t.status === 'closed' ? <CheckCircle2 className="size-4.5" aria-hidden="true" /> : <LifeBuoy className="size-4.5" aria-hidden="true" />}
+              </span>
+              <span className="min-w-0 flex-1 basis-48">
+                <span className="block truncate font-semibold">{t.subject}</span>
+                <span className="block truncate text-sm text-ink-2">
+                  {t.code} · {categoryLabel[t.category]} · {t.status === 'closed' && t.resolved_at ? `ditutup ${relativeTime(t.resolved_at)}` : relativeTime(t.last_activity_at)}
+                </span>
+              </span>
+              <StatusBadge status={t.status} />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
@@ -109,20 +139,10 @@ export default function HelpdeskPage() {
             <EmptyState illustration="inbox" title="Belum ada laporan" description="Kalau ada yang tidak berjalan semestinya, ceritakan saja. Admin akan membalas lewat halaman ini." action={newButton} />
           </div>
         ) : (
-          <ul className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface shadow-xs" aria-label="Laporanmu">
-            {tickets.map((t) => (
-              <li key={t.id}>
-                <button type="button" onClick={() => setOpenId(t.id)} className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 text-left transition-colors hover:bg-hover/70 sm:flex-nowrap sm:px-5">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-accent"><LifeBuoy className="size-4.5" aria-hidden="true" /></span>
-                  <span className="min-w-0 flex-1 basis-48">
-                    <span className="block truncate font-semibold">{t.subject}</span>
-                    <span className="block truncate text-sm text-ink-2">{t.code} · {categoryLabel[t.category]} · {relativeTime(t.last_activity_at)}</span>
-                  </span>
-                  <StatusBadge status={t.status} />
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-8">
+            <ReportList title="Sedang berjalan" items={tickets.filter((t) => t.status !== 'closed')} onOpen={setOpenId} />
+            <ReportList title="Riwayat" hint="Laporan yang sudah ditutup. Percakapannya terkunci, tetapi tetap bisa dibaca." items={tickets.filter((t) => t.status === 'closed')} onOpen={setOpenId} />
+          </div>
         ))}
       </AsyncView>
 
@@ -133,7 +153,7 @@ export default function HelpdeskPage() {
           onDone={(t) => {
             setCreating(false)
             resource.reload()
-            toast.success(`Laporan terkirim. Nomor tiket ${t.code}`)
+            toast.success(`Laporan terkirim. Nomor laporan ${t.code}`)
             setOpenId(t.id)
           }}
         />

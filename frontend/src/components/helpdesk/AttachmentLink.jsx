@@ -6,7 +6,7 @@ import { errorMessage } from '@/lib/api'
 import { formatSize } from '@/lib/files'
 import { downloadAttachment } from '@/lib/helpdesk'
 
-/** Baris lampiran tiket; berkas privat diunduh lewat permintaan terautentikasi. */
+/** Baris lampiran laporan; berkas privat diunduh lewat permintaan terautentikasi. */
 export default function AttachmentLink({ path, name, size }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)

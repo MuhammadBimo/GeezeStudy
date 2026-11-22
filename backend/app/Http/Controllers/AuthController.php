@@ -165,7 +165,7 @@ class AuthController extends Controller
         }
 
         $request->validate(
-            ['turnstile_token' => ['required', 'string', new TurnstileToken()]],
+            ['turnstile_token' => ['required', 'string', new TurnstileToken]],
             ['turnstile_token.required' => 'Selesaikan verifikasi captcha terlebih dahulu.'],
         );
     }

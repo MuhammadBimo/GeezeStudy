@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\BadgeController;
@@ -51,7 +52,8 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 Route::middleware(['auth:sanctum', 'active', 'verified'])->group(function () {
     Route::get('/dashboard', [ProgressController::class, 'dashboard']);
     Route::get('/progress', [ProgressController::class, 'progress']);
-    Route::get('/announcements', [ProgressController::class, 'announcements']);
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::post('/announcements/{announcement}/dismiss', [AnnouncementController::class, 'dismiss'])->middleware('throttle:60,1');
     Route::get('/badges', BadgeController::class);
 
     Route::apiResource('tasks', TaskController::class);

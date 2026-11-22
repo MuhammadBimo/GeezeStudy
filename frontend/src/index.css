@@ -244,3 +244,15 @@ html.theme-fade, html.theme-fade *, html.theme-fade *::before, html.theme-fade *
 @media (prefers-reduced-motion: reduce) {
   .toast-progress { animation-duration: var(--toast-duration) !important; }
 }
+
+/* Notifikasi: kilatan cahaya sekali lewat pada achievement baru yang belum dibaca. */
+.notif-sheen { position: relative; overflow: hidden; isolation: isolate; }
+.notif-sheen::after {
+  content: ''; position: absolute; inset: -20% auto -20% 0; width: 40%; z-index: -1; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 252 240 / 0.55), transparent);
+  transform: translateX(-150%) skewX(-18deg);
+  animation: notif-sheen 1.3s cubic-bezier(0.65, 0, 0.35, 1) 0.5s 1 both;
+}
+:root[data-theme='dark'] .notif-sheen::after { background: linear-gradient(90deg, transparent, rgb(255 248 230 / 0.12), transparent); }
+@keyframes notif-sheen { to { transform: translateX(330%) skewX(-18deg); } }
+@media (prefers-reduced-motion: reduce) { .notif-sheen::after { animation: none; display: none; } }

@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Database\Seeders\GamificationSeeder;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -109,19 +110,85 @@ class HelpdeskTest extends TestCase
 
         $this->actingAs($admin)->postJson("/api/admin/helpdesk/{$bug->id}/replies", ['body' => 'Coba perbarui halaman lalu ulangi.'])
             ->assertOk()->assertJsonPath('status', 'in_progress');
-        $this->assertDatabaseHas('app_notifications', ['user_id' => $student->id, 'title' => "Admin membalas tiket {$bug->code}"]);
+        $this->assertDatabaseHas('app_notifications', ['user_id' => $student->id, 'title' => "Admin membalas laporan {$bug->code}"]);
 
         $this->actingAs($student)->getJson("/api/helpdesk/{$bug->id}")->assertOk()
             ->assertJsonPath('messages.1.is_staff', true)->assertJsonMissingPath('user');
 
-        $this->actingAs($admin)->patchJson("/api/admin/helpdesk/{$bug->id}/status", ['status' => 'resolved'])->assertOk()->assertJsonPath('status', 'resolved');
-        $this->assertDatabaseHas('app_notifications', ['user_id' => $student->id, 'title' => "Status tiket {$bug->code} berubah"]);
+        $this->actingAs($admin)->patchJson("/api/admin/helpdesk/{$bug->id}/status", ['status' => 'waiting_user'])->assertOk()->assertJsonPath('status', 'waiting_user');
+        $this->assertDatabaseHas('app_notifications', ['user_id' => $student->id, 'title' => "Status laporan {$bug->code} berubah"]);
         $this->actingAs($admin)->patchJson("/api/admin/helpdesk/{$bug->id}/status", ['status' => 'bogus'])->assertUnprocessable();
 
-        // Balasan Student membuka kembali tiket yang sudah selesai; tiket yang ditutup tidak bisa dibalas.
-        $this->actingAs($student)->postJson("/api/helpdesk/{$bug->id}/replies", ['body' => 'Masih terjadi.'])->assertOk()->assertJsonPath('status', 'pending');
-        $this->actingAs($admin)->patchJson("/api/admin/helpdesk/{$bug->id}/status", ['status' => 'closed'])->assertOk();
-        $this->actingAs($student)->postJson("/api/helpdesk/{$bug->id}/replies", ['body' => 'Halo?'])->assertUnprocessable();
+        // Jawaban Student atas laporan yang menunggunya membuat laporan kembali ditangani.
+        $this->actingAs($student)->postJson("/api/helpdesk/{$bug->id}/replies", ['body' => 'Masih terjadi.'])->assertOk()->assertJsonPath('status', 'in_progress');
+    }
+
+    public function test_admin_reply_is_optional_and_empty_messages_are_never_saved(): void
+    {
+        $admin = $this->admin();
+        $ticket = $this->ticketFor(User::factory()->create());
+        $reply = "/api/admin/helpdesk/{$ticket->id}/replies";
+        $messages = fn () => $ticket->messages()->where('kind', 'reply')->count();
+
+        // Tanpa balasan dan tanpa status baru: tidak ada yang berubah, jadi ditolak.
+        $this->actingAs($admin)->postJson($reply, [])->assertUnprocessable()->assertJsonValidationErrors('body');
+        $this->actingAs($admin)->postJson($reply, ['body' => '   '])->assertUnprocessable();
+        $this->assertSame(1, $messages());
+
+        // Hanya ubah status, balasan kosong: berhasil dan tidak membuat pesan.
+        $this->actingAs($admin)->postJson($reply, ['status' => 'waiting_user', 'body' => ''])->assertOk()->assertJsonPath('status', 'waiting_user');
+        $this->assertSame(1, $messages());
+
+        // Balasan saja: tersimpan di riwayat.
+        $this->actingAs($admin)->postJson($reply, ['body' => 'Mohon kirim screenshot.'])->assertOk()->assertJsonPath('status', 'waiting_user');
+        $this->assertSame(2, $messages());
+        $this->assertDatabaseMissing('support_messages', ['ticket_id' => $ticket->id, 'body' => '']);
+    }
+
+    public function test_resolved_closes_ticket_and_locks_the_conversation(): void
+    {
+        $admin = $this->admin();
+        $student = User::factory()->create();
+        $ticket = $this->ticketFor($student);
+
+        // Memilih Resolved (tanpa balasan) langsung menutup laporan di server.
+        $this->actingAs($admin)->postJson("/api/admin/helpdesk/{$ticket->id}/replies", ['status' => 'resolved'])
+            ->assertOk()->assertJsonPath('status', 'closed');
+        $this->assertDatabaseHas('support_tickets', ['id' => $ticket->id, 'status' => 'closed']);
+        $this->assertNotNull($ticket->fresh()->resolved_at);
+        $this->assertDatabaseHas('app_notifications', ['user_id' => $student->id, 'title' => "Laporan {$ticket->code} sudah ditutup"]);
+
+        // Terkunci untuk semua pihak.
+        $this->actingAs($student)->postJson("/api/helpdesk/{$ticket->id}/replies", ['body' => 'Halo?'])->assertUnprocessable();
+        $this->actingAs($admin)->postJson("/api/admin/helpdesk/{$ticket->id}/replies", ['body' => 'Tambahan'])->assertUnprocessable();
+        $this->actingAs($admin)->patchJson("/api/admin/helpdesk/{$ticket->id}/status", ['status' => 'in_progress'])->assertUnprocessable();
+        $this->assertSame('closed', $ticket->fresh()->status);
+
+        // Riwayat tetap utuh dan bisa dibaca kedua pihak.
+        $this->actingAs($student)->getJson("/api/helpdesk/{$ticket->id}")->assertOk()->assertJsonPath('status', 'closed')
+            ->assertJsonPath('messages.0.body', 'Timer berhenti setelah beberapa menit tanpa sebab.')
+            ->assertJsonPath('messages.1.kind', 'event');
+        $this->actingAs($admin)->getJson("/api/admin/helpdesk/{$ticket->id}")->assertOk()->assertJsonCount(2, 'messages');
+    }
+
+    public function test_reply_with_resolved_saves_message_then_closes(): void
+    {
+        $admin = $this->admin();
+        $ticket = $this->ticketFor(User::factory()->create());
+
+        $this->actingAs($admin)->postJson("/api/admin/helpdesk/{$ticket->id}/replies", ['body' => 'Sudah beres ya.', 'status' => 'resolved'])
+            ->assertOk()->assertJsonPath('status', 'closed')->assertJsonPath('messages.1.body', 'Sudah beres ya.');
+    }
+
+    public function test_legacy_resolved_tickets_are_migrated_to_closed_without_losing_history(): void
+    {
+        $ticket = $this->ticketFor(User::factory()->create());
+        $ticket->forceFill(['status' => 'resolved'])->save();
+
+        (require base_path('database/migrations/2026_11_22_000001_close_resolved_support_tickets.php'))->up();
+
+        $this->assertSame('closed', $ticket->fresh()->status);
+        $this->assertSame(1, $ticket->messages()->count());
     }
 
     public function test_student_cannot_use_admin_endpoints(): void
@@ -152,7 +219,11 @@ class HelpdeskTest extends TestCase
         $this->postJson('/api/forgot-password', ['email' => 'tidakada@example.com'])->assertOk(); // respons sama, tidak membocorkan akun
 
         $token = null;
-        Notification::assertSentTo($user, ResetPassword::class, function ($n) use (&$token) { $token = $n->token; return true; });
+        Notification::assertSentTo($user, ResetPassword::class, function ($n) use (&$token) {
+            $token = $n->token;
+
+            return true;
+        });
 
         $this->postJson('/api/reset-password', ['email' => 'reset@example.com', 'token' => $token, 'password' => 'Baru12345', 'password_confirmation' => 'Baru12345'])->assertOk();
         $this->postJson('/api/login', ['email' => 'reset@example.com', 'password' => 'Baru12345'])->assertOk();
@@ -212,7 +283,7 @@ class HelpdeskTest extends TestCase
         $this->assertNull($fresh->email_verified_at);
         $this->assertSame(0, $fresh->tokens()->count());
         $this->assertDatabaseHas('audit_logs', ['actor_id' => $admin->id, 'level' => 'warning']);
-        $this->assertStringNotContainsString('lama@example.com', (string) \App\Models\AuditLog::latest('id')->first()->action.json_encode(\App\Models\AuditLog::latest('id')->first()->context));
+        $this->assertStringNotContainsString('lama@example.com', (string) AuditLog::latest('id')->first()->action.json_encode(AuditLog::latest('id')->first()->context));
 
         // Email kontak yang sudah dipakai akun lain ditolak.
         $this->postJson('/api/helpdesk/guest', [
@@ -247,7 +318,7 @@ class HelpdeskTest extends TestCase
         $student = User::factory()->create();
         $ticket = $this->ticketFor($student);
 
-        // Tiket baru: admin melihat 1 tiket Pending; Student punya 1 notifikasi Helpdesk ("laporan diterima").
+        // Laporan baru: admin melihat 1 laporan Pending; Student punya 1 notifikasi Helpdesk ("laporan diterima").
         $this->actingAs($admin)->getJson('/api/badges')->assertOk()->assertJsonPath('helpdesk', 1);
         $this->actingAs($student)->getJson('/api/badges')->assertOk()->assertJsonPath('helpdesk', 1)->assertJsonPath('notifications', 1);
 
@@ -255,7 +326,7 @@ class HelpdeskTest extends TestCase
         $this->actingAs($admin)->getJson('/api/badges')->assertJsonPath('helpdesk', 0);
         $this->actingAs($student)->getJson('/api/badges')->assertJsonPath('helpdesk', 2);
 
-        // Membuka tiket menandai notifikasinya terbaca, tanpa menyentuh notifikasi kategori lain.
+        // Membuka laporan menandai notifikasinya terbaca, tanpa menyentuh notifikasi kategori lain.
         $student->appNotifications()->create(['category' => 'system', 'title' => 'Lain']);
         $this->actingAs($student)->getJson("/api/helpdesk/{$ticket->id}")->assertOk();
         $this->actingAs($student)->getJson('/api/badges')->assertJsonPath('helpdesk', 0)->assertJsonPath('notifications', 1);

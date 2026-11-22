@@ -22,7 +22,7 @@ export default function HelpPage() {
           <CheckCircle2 className="size-8 text-success" aria-hidden="true" />
           <div>
             <h2 className="text-lg font-semibold">Permintaanmu sudah terkirim</h2>
-            <p className="mt-1 text-sm text-ink-2">Nomor tiket: <strong className="text-ink">{sent.code}</strong>. Simpan nomor ini. Balasan admin dikirim ke email kontak yang kamu isi, jadi cek juga folder spam.</p>
+            <p className="mt-1 text-sm text-ink-2">Nomor laporan: <strong className="text-ink">{sent.code}</strong>. Simpan nomor ini. Balasan admin dikirim ke email kontak yang kamu isi, jadi cek juga folder spam.</p>
           </div>
           <Link to="/masuk" className="text-sm font-semibold text-accent underline-offset-4 hover:underline">Kembali ke halaman masuk</Link>
         </div>

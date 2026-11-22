@@ -42,7 +42,7 @@ class StoreSupportTicketRequest extends FormRequest
                 Rule::requiredIf(fn () => $this->isGuest() && filled(config('services.turnstile.secret'))),
                 'nullable',
                 'string',
-                new TurnstileToken(),
+                new TurnstileToken,
             ],
         ];
     }

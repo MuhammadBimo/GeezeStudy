@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/** Helpdesk sisi Student: hanya tiket milik sendiri. */
+/** Helpdesk sisi Student: hanya laporan milik sendiri. */
 class SupportTicketController extends Controller
 {
     public function __construct(private readonly SupportDesk $desk) {}
@@ -35,7 +35,7 @@ class SupportTicketController extends Controller
     {
         $model = $this->own($request, $ticket);
 
-        // Membuka tiket berarti notifikasi tentang tiket ini sudah dilihat.
+        // Membuka laporan berarti notifikasi tentang laporan ini sudah dilihat.
         $request->user()->appNotifications()->whereNull('read_at')->where('support_ticket_id', $model->id)->update(['read_at' => now()]);
 
         return new SupportTicketResource($model->load('messages.author'));
@@ -47,14 +47,14 @@ class SupportTicketController extends Controller
         $data = $request->validate(['body' => ['required', 'string', 'min:2', 'max:3000']]);
 
         if ($model->isClosed()) {
-            throw ValidationException::withMessages(['body' => 'Tiket ini sudah ditutup. Buat laporan baru jika masih ada kendala.']);
+            throw ValidationException::withMessages(['body' => 'Laporan ini sudah ditutup dan tidak bisa dibalas lagi. Buat laporan baru jika masih ada kendala.']);
         }
 
         $this->desk->message($model, $request->user(), trim($data['body']), false);
 
-        // Balasan Student membuka kembali tiket yang sudah selesai atau menunggu jawabannya.
-        if (in_array($model->status, ['resolved', 'waiting_user'], true)) {
-            $model->forceFill(['status' => $model->status === 'resolved' ? 'pending' : 'in_progress', 'resolved_at' => null])->save();
+        // Jawaban Student atas laporan yang menunggunya berarti laporan kembali ditangani.
+        if ($model->status === 'waiting_user') {
+            $model->forceFill(['status' => 'in_progress'])->save();
         }
 
         return new SupportTicketResource($model->load('messages.author'));

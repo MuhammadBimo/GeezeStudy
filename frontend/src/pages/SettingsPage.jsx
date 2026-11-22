@@ -3,7 +3,6 @@ import { LogOut } from 'lucide-react'
 import AvatarPicker from '@/components/profile/AvatarPicker'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Toggle from '@/components/ui/Toggle'
 import { useAuth } from '@/hooks/useAuth'
@@ -108,8 +107,6 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Pengaturan" subtitle="Profil, target belajar, privasi, dan akun." />
-
       <div className="divide-y divide-line border-y border-line">
         <Row title="Tampilan" description="Pilih tema terang atau gelap. Otomatis mengikuti pengaturan perangkatmu.">
           <ThemeSetting />

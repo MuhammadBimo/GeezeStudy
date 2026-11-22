@@ -22,7 +22,7 @@ function AccountCard({ account, children }) {
 }
 
 /**
- * Pemulihan akses akun untuk tiket "Lupa akun atau email". Admin mencocokkan data pelapor dengan akun,
+ * Pemulihan akses akun untuk laporan "Lupa akun atau email". Admin mencocokkan data pelapor dengan akun,
  * memverifikasi kepemilikan di luar aplikasi, lalu mengganti email ke alamat kontak pelapor.
  * Email baru tidak bisa diketik bebas dan password tidak pernah terlihat atau diubah di sini.
  */
@@ -84,7 +84,7 @@ export default function RecoveryPanel({ ticket, onDone }) {
 
       {ticket.user ? (
         <AccountCard account={ticket.user}>
-          <p className="mt-1 text-xs text-ink-2">Akun ini sudah terhubung ke tiket.</p>
+          <p className="mt-1 text-xs text-ink-2">Akun ini sudah terhubung ke laporan.</p>
         </AccountCard>
       ) : picked ? (
         <AccountCard account={picked}>

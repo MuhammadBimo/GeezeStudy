@@ -50,6 +50,7 @@ class AchievementService
                     'category' => 'achievement',
                     'title' => "Achievement terbuka: {$achievement->title}",
                     'body' => $achievement->description,
+                    'points' => $achievement->reward_points > 0 ? $achievement->reward_points : null,
                 ]);
             }
         }

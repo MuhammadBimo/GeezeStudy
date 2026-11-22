@@ -82,6 +82,7 @@ class MissionService
         }
 
         $this->points->award($user, $mission->reward_points, 'mission', "{$mission->id}:{$key}", "Misi: {$mission->title}");
+        $user->notifyActivity('mission', "Misi selesai: {$mission->title}", 'Hadiahnya sudah masuk ke Points-mu.', $mission->reward_points, "mission:{$mission->id}:{$key}");
 
         return $mission->reward_points;
     }

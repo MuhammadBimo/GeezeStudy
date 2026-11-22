@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { LazyMotion, MotionConfig, domAnimation } from 'motion/react'
 import AppShell from '@/components/layout/AppShell'
 import { GuestOnly, RequireAdmin, RequireAuth } from '@/components/layout/RouteGuards'
@@ -21,8 +21,8 @@ const MissionsPage = page(() => import('@/pages/MissionsPage'))
 const ProgressPage = page(() => import('@/pages/ProgressPage'))
 const FriendsPage = page(() => import('@/pages/FriendsPage'))
 const NotificationsPage = page(() => import('@/pages/NotificationsPage'))
-const SettingsPage = page(() => import('@/pages/SettingsPage'))
-const ProfilePage = page(() => import('@/pages/ProfilePage'))
+const ProfileSettingsPage = page(() => import('@/pages/ProfileSettingsPage'))
+const AnnouncementsPage = page(() => import('@/pages/AnnouncementsPage'))
 const AchievementsPage = page(() => import('@/pages/AchievementsPage'))
 const HelpdeskPage = page(() => import('@/pages/HelpdeskPage'))
 const NotFoundPage = page(() => import('@/pages/NotFoundPage'))
@@ -87,8 +87,10 @@ export default function App() {
                         <Route path="progres" element={<ProgressPage />} />
                         <Route path="teman" element={<FriendsPage />} />
                         <Route path="notifikasi" element={<NotificationsPage />} />
-                        <Route path="pengaturan" element={<SettingsPage />} />
-                        <Route path="profil" element={<ProfilePage />} />
+                        {/* Profil dan Pengaturan digabung; alamat lama /pengaturan tetap berfungsi. */}
+                        <Route path="profil" element={<ProfileSettingsPage />} />
+                        <Route path="pengaturan" element={<Navigate to="/profil?tab=pengaturan" replace />} />
+                        <Route path="pengumuman" element={<AnnouncementsPage />} />
                         <Route path="bantuan" element={<HelpdeskPage />} />
                         <Route path="achievements" element={<AchievementsPage />} />
 

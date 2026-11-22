@@ -1,5 +1,5 @@
 import {
-  Award, Bell, CalendarDays, Flag, Home, LifeBuoy, ListChecks, Megaphone, ScrollText, Settings,
+  Award, BellRing, CalendarDays, Flag, Home, Inbox, KeyRound, LifeBuoy, ListChecks, Megaphone, ScrollText,
   ShieldCheck, Target, Timer, TrendingUp, Trophy, UserCog, UserRound, Users,
 } from 'lucide-react'
 
@@ -27,9 +27,8 @@ export const navGroups = [
     label: 'Lainnya',
     items: [
       { to: '/teman', label: 'Teman', icon: Users },
-      { to: '/notifikasi', label: 'Notifikasi', icon: Bell },
-      { to: '/profil', label: 'Profil', icon: UserRound },
-      { to: '/pengaturan', label: 'Pengaturan', icon: Settings },
+      { to: '/notifikasi', label: 'Notifikasi', icon: BellRing, ring: true },
+      { to: '/profil', label: 'Profil & Pengaturan', icon: UserRound },
       { to: '/bantuan', label: 'Bantuan', icon: LifeBuoy },
     ],
   },
@@ -42,7 +41,16 @@ export const adminNavGroups = [
       { to: '/admin', label: 'Ringkasan', icon: ShieldCheck },
       { to: '/admin/pengguna', label: 'Pengguna', icon: UserCog },
       { to: '/admin/pengumuman', label: 'Pengumuman', icon: Megaphone },
-      { to: '/admin/helpdesk', label: 'Helpdesk & Account Assistance', short: 'Helpdesk', icon: LifeBuoy },
+      // Grup yang bisa dibuka: Account Assistance adalah laporan kategori "lupa akun atau email" (filter lewat URL).
+      {
+        key: 'admin-helpdesk',
+        label: 'Helpdesk',
+        icon: LifeBuoy,
+        children: [
+          { key: 'admin-helpdesk-all', to: '/admin/helpdesk', excludeQuery: 'kategori=account_recovery', label: 'Semua laporan', icon: Inbox },
+          { key: 'admin-helpdesk-recovery', to: '/admin/helpdesk?kategori=account_recovery', label: 'Account Assistance', icon: KeyRound },
+        ],
+      },
       { to: '/admin/log', label: 'Log', icon: ScrollText },
     ],
   },
@@ -59,3 +67,16 @@ export const adminNavGroups = [
 // Empat menu yang tampil langsung di bottom navigation mobile; sisanya ada di "Lainnya".
 export const mobilePrimary = ['/', '/tugas', '/timer', '/kalender']
 export const adminMobilePrimary = ['/admin', '/admin/pengguna', '/admin/misi', '/admin/pengumuman']
+
+
+/** Item menu aktif menurut alamat sekarang; item bisa punya ?query (mis. filter kategori) atau mengecualikannya. */
+export function isItemActive(item, pathname, search) {
+  const [path, query] = item.to.split('?')
+  const onPath = path === '/' || path === '/admin' ? pathname === path : pathname.startsWith(path)
+  if (!onPath) return false
+  if (query) return search.includes(query)
+  return !(item.excludeQuery && search.includes(item.excludeQuery))
+}
+
+/** Daftar rata: item grup digantikan anak-anaknya (dipakai di menu mobile). */
+export const flattenItems = (items) => items.flatMap((i) => i.children ?? [i])

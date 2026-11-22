@@ -23,14 +23,14 @@ function Profile({ data }) {
       <section aria-label="Profil" className="mb-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
         <Avatar name={user.name} src={user.avatar_url} size="xl" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-[2rem] sm:text-[2.5rem]">{user.name}</h1>
+          <h2 className="font-display text-[1.75rem] font-medium leading-tight tracking-tight sm:text-[2.125rem]">{user.name}</h2>
           <p className="mt-1 text-ink-2">{[educationLabel[user.education_level], user.institution].filter(Boolean).join(' · ') || 'Lengkapi jenjang dan institusi di Pengaturan'}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge tone="sage">{user.privacy_show_progress ? 'Statistik terlihat oleh teman' : 'Statistik disembunyikan'}</Badge>
             <Badge tone="neutral">Target {user.daily_goal_minutes} menit/hari</Badge>
           </div>
         </div>
-        <Link to="/pengaturan" className="inline-flex h-11 items-center gap-2 rounded-control bg-raised px-4.5 font-semibold shadow-raised transition-[background-color,transform] hover:bg-surface-hover active:scale-[0.98]">
+        <Link to="/profil?tab=pengaturan" className="inline-flex h-11 items-center gap-2 rounded-control bg-raised px-4.5 font-semibold shadow-raised transition-[background-color,transform] hover:bg-surface-hover active:scale-[0.98]">
           <Pencil className="size-4" aria-hidden="true" /> Ubah profil
         </Link>
       </section>

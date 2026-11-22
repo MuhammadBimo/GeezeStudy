@@ -52,16 +52,17 @@ Tersedia **mode terang dan gelap**. Pergantiannya berupa lingkaran yang melebar 
 - **Study Timer**: sesi fokus yang divalidasi server (durasi, tumpang tindih, batas harian).
 - **Goals dan Misi**: target harian atau mingguan dengan progres otomatis dari aktivitas nyata.
 - **Progres dan Achievements**: Points, Level, dan Streak dihitung di server, bukan di klien.
-- **Teman, Notifikasi, Profil**: peringkat teman, preferensi notifikasi dan jam tenang, foto profil opsional
+- **Teman dan Notifikasi**: peringkat teman; notifikasi aktivitas dikelompokkan per hari (misi dan achievement menampilkan Points yang didapat, streak dirayakan), dengan preferensi dan jam tenang. Foto profil opsional
   (bisa **dipotong dan di-zoom** sebelum diunggah, tersedia di Pengaturan).
-- **Pengaturan**: profil, target belajar harian, privasi, tema (terang, gelap, otomatis).
-- **Bantuan (Helpdesk)**: kirim laporan bug, kendala login, atau pertanyaan (dengan screenshot opsional), dapat nomor tiket, lalu pantau status dan balasan admin.
+- **Profil & Pengaturan**: ringkasan profil, lalu profil, target belajar harian, privasi, dan tema (terang, gelap, otomatis) dalam satu menu.
+- **Pengumuman**: informasi resmi dari Admin tampil sebagai banner di Beranda; yang sudah ditutup tidak muncul lagi, dan semuanya bisa dibaca di riwayat pengumuman.
+- **Bantuan (Helpdesk)**: kirim laporan bug, kendala login, atau pertanyaan (dengan screenshot opsional), dapat nomor laporan, lalu pantau status dan balasan admin.
 
 **Akun**: masuk, daftar (tampil/sembunyikan password, indikator kekuatan password), lupa dan atur ulang password,
 verifikasi email, onboarding singkat. Yang tidak bisa masuk (lupa email, akun tidak bisa diakses) bisa mengirim permintaan lewat **Bantuan akun** tanpa login; balasan admin dikirim ke email kontak.
 
 **Admin**: ringkasan, pengguna (tangguhkan, kirim tautan reset password), misi, Points dan level, achievements,
-pengumuman, log audit, dan **Helpdesk & Account Assistance** (tiket, balasan, status, dan pemulihan email akun setelah kepemilikan diverifikasi).
+pengumuman, log audit, dan **Helpdesk & Account Assistance** (laporan, balasan, status, dan pemulihan email akun setelah kepemilikan diverifikasi).
 
 **Desain**: terinspirasi minimalisme Apple, editorial, dan earthy (Warm Ivory, Forest Green, Sand Beige, Soft Sage).
 Komponen kustom tanpa library tambahan: select (bisa dicari dan multi-pilih), date picker, time picker, menu dan

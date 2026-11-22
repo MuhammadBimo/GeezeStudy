@@ -60,26 +60,42 @@ class SupportTicketController extends Controller
         return $this->resource(SupportTicket::findOrFail($ticket));
     }
 
+    /**
+     * Balasan bersifat opsional: admin boleh hanya mengubah status. Pesan kosong tidak pernah disimpan.
+     * Status Resolved otomatis menjadi Closed (diterapkan di SupportDesk::setStatus).
+     */
     public function reply(Request $request, int $ticket): SupportTicketResource
     {
         $model = SupportTicket::findOrFail($ticket);
         $data = $request->validate([
-            'body' => ['required', 'string', 'min:2', 'max:3000'],
-            'status' => ['nullable', Rule::in(['in_progress', 'waiting_user', 'resolved', 'closed'])],
+            'body' => ['nullable', 'string', 'max:3000'],
+            'status' => ['nullable', Rule::in(SupportTicket::STATUSES)],
         ]);
 
-        $this->guardOpen($model);
-        $this->desk->message($model, $request->user(), trim($data['body']), true);
+        $this->guardOpen($model, 'body');
 
-        // Tanpa status eksplisit, tiket yang baru dibalas berarti sedang ditangani.
-        $next = $data['status'] ?? ($model->status === 'pending' ? 'in_progress' : $model->status);
-        $changed = $this->desk->setStatus($model, $next, $request->user(), notify: false);
+        $body = trim((string) ($data['body'] ?? ''));
+        $target = ($data['status'] ?? null) === 'resolved' ? 'closed' : ($data['status'] ?? null);
 
-        $this->desk->notify($model, "Admin membalas tiket {$model->code}", Str::limit(trim($data['body']), 140));
-        $this->desk->mail($model, "Balasan untuk tiket {$model->code}", trim($data['body'])."\n\nStatus tiket: ".SupportDesk::STATUS_LABELS[$next].".\nJangan kirim password kepada siapa pun, termasuk tim GeezeStudy.");
+        if ($body === '' && ($target === null || $target === $model->status)) {
+            throw ValidationException::withMessages(['body' => 'Tulis balasan atau pilih status baru.']);
+        }
+
+        if ($body !== '') {
+            $this->desk->message($model, $request->user(), $body, true);
+        }
+
+        // Tanpa status eksplisit, laporan yang baru dibalas berarti sedang ditangani.
+        $next = $target ?? ($body !== '' && $model->status === 'pending' ? 'in_progress' : $model->status);
+        $changed = $this->desk->setStatus($model, $next, $request->user(), notify: $body === '' || $next === 'closed');
+
+        if ($body !== '') {
+            $this->desk->notify($model, "Admin membalas laporan {$model->code}", Str::limit($body, 140));
+            $this->desk->mail($model, "Balasan untuk laporan {$model->code}", $body."\n\nStatus laporan: ".SupportDesk::STATUS_LABELS[$model->status].".\nJangan kirim password kepada siapa pun, termasuk tim GeezeStudy.");
+        }
 
         if ($changed) {
-            AuditLog::record($request->user(), "Membalas tiket {$model->code} dan mengubah status menjadi {$next}", ['ticket_id' => $model->id]);
+            AuditLog::record($request->user(), "Mengubah status laporan {$model->code} menjadi {$model->status}", ['ticket_id' => $model->id]);
         }
 
         return $this->resource($model);
@@ -90,9 +106,13 @@ class SupportTicketController extends Controller
         $model = SupportTicket::findOrFail($ticket);
         $data = $request->validate(['status' => ['required', Rule::in(SupportTicket::STATUSES)]]);
 
+        $this->guardOpen($model, 'status');
+
         if ($this->desk->setStatus($model, $data['status'], $request->user())) {
-            AuditLog::record($request->user(), "Mengubah status tiket {$model->code} menjadi {$data['status']}", ['ticket_id' => $model->id]);
-            $this->desk->mail($model, "Status tiket {$model->code} berubah", 'Status tiketmu sekarang: '.SupportDesk::STATUS_LABELS[$data['status']].'.');
+            AuditLog::record($request->user(), "Mengubah status laporan {$model->code} menjadi {$model->status}", ['ticket_id' => $model->id]);
+            if ($model->status !== 'closed') {
+                $this->desk->mail($model, "Status laporan {$model->code} berubah", 'Status laporanmu sekarang: '.SupportDesk::STATUS_LABELS[$model->status].'.');
+            }
         }
 
         return $this->resource($model);
@@ -101,7 +121,7 @@ class SupportTicketController extends Controller
     /**
      * Pulihkan akses akun: mengganti email akun dengan email kontak yang dikirim pelapor.
      * Admin harus menyatakan sudah memverifikasi kepemilikan; email baru tidak boleh bebas diisi
-     * (harus sama dengan email kontak di tiket), email berstatus belum terverifikasi, dan semua sesi lama dicabut.
+     * (harus sama dengan email kontak di laporan), email berstatus belum terverifikasi, dan semua sesi lama dicabut.
      * Password tidak pernah dilihat atau diubah di sini; pemilik akun mengaturnya lewat "Lupa password".
      */
     public function changeEmail(Request $request, int $ticket): SupportTicketResource
@@ -112,10 +132,10 @@ class SupportTicketController extends Controller
             'verified' => ['accepted'],
         ], ['verified.accepted' => 'Konfirmasi dulu bahwa kepemilikan akun sudah kamu verifikasi.']);
 
-        $this->guardOpen($model);
+        $this->guardOpen($model, 'user_id');
 
         if ($model->category !== 'account_recovery') {
-            throw ValidationException::withMessages(['user_id' => 'Perubahan email hanya untuk tiket Lupa Akun atau Email.']);
+            throw ValidationException::withMessages(['user_id' => 'Perubahan email hanya untuk laporan Lupa Akun atau Email.']);
         }
 
         $account = User::find($data['user_id']);
@@ -147,9 +167,9 @@ class SupportTicketController extends Controller
         $model->forceFill(['user_id' => $account->id])->save();
         $this->desk->message($model, $request->user(), 'Email akun sudah diperbarui ke email kontakmu setelah kepemilikan akun diverifikasi. Tautan verifikasi dikirim ke email baru. Setelah memverifikasi, atur password barumu lewat "Lupa password" di halaman masuk.', true);
         $this->desk->setStatus($model, 'waiting_user', $request->user(), notify: false);
-        $this->desk->mail($model, "Email akunmu sudah diperbarui (tiket {$model->code})", "Email akun GeezeStudy sudah diganti ke alamat ini setelah kepemilikan akun diverifikasi.\nBuka tautan verifikasi yang dikirim terpisah ke email ini, lalu atur password barumu lewat \"Lupa password\" di halaman masuk.\nJangan kirim password kepada siapa pun, termasuk tim GeezeStudy.");
+        $this->desk->mail($model, "Email akunmu sudah diperbarui (laporan {$model->code})", "Email akun GeezeStudy sudah diganti ke alamat ini setelah kepemilikan akun diverifikasi.\nBuka tautan verifikasi yang dikirim terpisah ke email ini, lalu atur password barumu lewat \"Lupa password\" di halaman masuk.\nJangan kirim password kepada siapa pun, termasuk tim GeezeStudy.");
 
-        AuditLog::record($request->user(), "Mengubah email akun {$account->name} lewat tiket {$model->code}", [
+        AuditLog::record($request->user(), "Mengubah email akun {$account->name} lewat laporan {$model->code}", [
             'ticket_id' => $model->id,
             'user_id' => $account->id,
             'from' => SupportDesk::maskEmail($oldEmail),
@@ -182,10 +202,11 @@ class SupportTicketController extends Controller
         ]);
     }
 
-    private function guardOpen(SupportTicket $ticket): void
+    /** Laporan yang sudah ditutup terkunci: tidak bisa dibalas, diubah statusnya, atau dipulihkan lagi. Riwayat tetap bisa dibaca. */
+    private function guardOpen(SupportTicket $ticket, string $field): void
     {
         if ($ticket->isClosed()) {
-            throw ValidationException::withMessages(['body' => 'Tiket sudah ditutup. Ubah status dulu jika perlu membukanya kembali.']);
+            throw ValidationException::withMessages([$field => 'Laporan ini sudah ditutup dan tidak bisa diubah lagi.']);
         }
     }
 

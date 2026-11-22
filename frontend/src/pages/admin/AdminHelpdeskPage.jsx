@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Send } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { Lock, Send } from 'lucide-react'
 import AttachmentLink from '@/components/helpdesk/AttachmentLink'
 import RecoveryPanel from '@/components/helpdesk/RecoveryPanel'
 import StatusBadge from '@/components/helpdesk/StatusBadge'
@@ -13,19 +14,26 @@ import PageHeader from '@/components/ui/PageHeader'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useResource } from '@/hooks/useResource'
 import { useToast } from '@/hooks/useToast'
 import { api, errorMessage, fieldErrors } from '@/lib/api'
 import { refreshBadges } from '@/lib/badges'
-import { categories, categoryLabel, statuses } from '@/lib/helpdesk'
+import { adminStatusOptions, categories, categoryLabel, isClosing, statuses } from '@/lib/helpdesk'
 import { dayTime } from '@/lib/mappers'
 import { educationLabel } from '@/lib/profile'
 
 const categoryOptions = [{ value: '', label: 'Semua kategori' }, ...categories.map((c) => ({ value: c.value, label: c.label }))]
-const statusOptions = statuses.map((s) => ({ value: s.value, label: s.label }))
+
+const closeCopy = {
+  title: 'Tutup laporan ini?',
+  description: 'Laporan akan ditutup dan percakapannya terkunci: tidak ada yang bisa membalas lagi. Riwayat tetap bisa dilihat.',
+  confirmLabel: 'Tutup laporan',
+}
 
 function Detail({ id, onChanged }) {
   const toast = useToast()
+  const confirm = useConfirm()
   const resource = useResource(`/admin/helpdesk/${id}`)
   const [body, setBody] = useState('')
   const [status, setStatus] = useState('')
@@ -34,33 +42,48 @@ function Detail({ id, onChanged }) {
 
   const update = (data) => { resource.mutate(() => data); onChanged(); refreshBadges() }
 
+  // Balasan opsional: boleh hanya membalas, hanya mengubah status, atau keduanya.
   const send = async (e, t) => {
     e.preventDefault()
-    if (body.trim().length < 2) return setError('Tulis balasan dulu.')
+    const text = body.trim()
+    const target = status && status !== t.status ? status : ''
+    if (!text && !target) return setError('Tulis balasan atau pilih status baru.')
+    if (isClosing(target) && !(await confirm(closeCopy))) return undefined
+
     setSending(true)
     try {
-      const { data } = await api.post(`/admin/helpdesk/${id}/replies`, { body: body.trim(), ...(status && status !== t.status && { status }) })
+      const { data } = await api.post(`/admin/helpdesk/${id}/replies`, { ...(text && { body: text }), ...(target && { status: target }) })
       update(data)
       setBody('')
       setStatus('')
       setError('')
-      toast.success('Balasan terkirim')
+      toast.success(isClosing(target) ? 'Laporan berhasil ditutup' : text ? 'Balasan terkirim' : 'Status diperbarui')
     } catch (err) {
-      setError(fieldErrors(err).body ?? errorMessage(err))
+      const f = fieldErrors(err)
+      setError(f.body ?? f.status ?? errorMessage(err))
     } finally {
       setSending(false)
     }
     return undefined
   }
 
-  const changeStatus = async (value) => {
+  const closeTicket = async () => {
+    if (!(await confirm(closeCopy))) return
     try {
-      const { data } = await api.patch(`/admin/helpdesk/${id}/status`, { status: value })
+      const { data } = await api.patch(`/admin/helpdesk/${id}/status`, { status: 'resolved' })
       update(data)
-      toast.success('Status diperbarui')
+      toast.success('Laporan berhasil ditutup')
     } catch (err) {
       toast(errorMessage(err), 'error')
     }
+  }
+
+  const submitLabel = (t) => {
+    const text = body.trim()
+    const target = status && status !== t.status ? status : ''
+    if (text) return isClosing(target) ? 'Kirim dan tutup laporan' : 'Kirim balasan'
+    if (target) return isClosing(target) ? 'Tutup laporan' : 'Simpan status'
+    return 'Kirim'
   }
 
   return (
@@ -93,20 +116,26 @@ function Detail({ id, onChanged }) {
           {t.category === 'account_recovery' && t.status !== 'closed' && <RecoveryPanel ticket={t} onDone={update} />}
 
           {t.status === 'closed' ? (
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-canvas p-4 text-sm text-ink-2">
-              Tiket ini sudah ditutup.
-              <Button size="sm" variant="secondary" onClick={() => changeStatus('in_progress')}>Buka kembali</Button>
-            </div>
+            <p role="status" className="flex items-start gap-2.5 rounded-xl bg-canvas p-4 text-sm text-ink-2">
+              <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              Laporan ini sudah ditutup. Percakapan terkunci dan tidak bisa dibalas lagi, tetapi riwayatnya tetap bisa dibaca.
+            </p>
           ) : (
             <form onSubmit={(e) => send(e, t)} noValidate className="flex flex-col gap-3 border-t border-line pt-4">
-              <Textarea label="Balasan untuk pelapor" rows={3} maxLength={3000} value={body} onChange={(e) => setBody(e.target.value)} error={error} hint={t.is_guest ? 'Balasan dikirim ke email kontak. Jangan minta atau menulis password.' : 'Pelapor menerima notifikasi. Jangan minta atau menulis password.'} />
+              <Textarea
+                label="Balasan (opsional)"
+                rows={3}
+                maxLength={3000}
+                value={body}
+                onChange={(e) => { setBody(e.target.value); setError('') }}
+                error={error}
+                hint={`${t.is_guest ? 'Balasan dikirim ke email kontak.' : 'Pelapor menerima notifikasi.'} Kosongkan untuk hanya mengubah status. Jangan minta atau menulis password.`}
+              />
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <Select className="sm:w-56" label="Ubah status" options={[{ value: '', label: 'Tetap sama' }, ...statusOptions]} value={status} onChange={(e) => setStatus(e.target.value)} />
-                <Button type="submit" loading={sending}><Send aria-hidden="true" /> Kirim balasan</Button>
+                <Select className="sm:w-60" label="Ubah status" options={[{ value: '', label: 'Tetap sama' }, ...adminStatusOptions]} value={status} onChange={(e) => { setStatus(e.target.value); setError('') }} />
+                <Button type="submit" loading={sending}><Send aria-hidden="true" /> {submitLabel(t)}</Button>
               </div>
-              {t.status !== 'resolved' && (
-                <Button variant="ghost" size="sm" className="self-start" onClick={() => changeStatus('resolved')}>Tandai selesai tanpa balasan</Button>
-              )}
+              <Button variant="ghost" size="sm" className="self-start" onClick={closeTicket}>Selesaikan dan tutup laporan</Button>
             </form>
           )}
         </div>
@@ -118,7 +147,10 @@ function Detail({ id, onChanged }) {
 export default function AdminHelpdeskPage() {
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
-  const [category, setCategory] = useState('')
+  // Kategori disimpan di URL (?kategori=...) agar submenu sidebar "Account Assistance" bisa menautkannya.
+  const [params, setParams] = useSearchParams()
+  const category = categories.some((c) => c.value === params.get('kategori')) ? params.get('kategori') : ''
+  const setCategory = (value) => setParams((p) => { if (value) p.set('kategori', value); else p.delete('kategori'); return p }, { replace: true })
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const [openId, setOpenId] = useState(null)
@@ -136,13 +168,13 @@ export default function AdminHelpdeskPage() {
   ]
 
   const columns = [
-    { key: 'code', label: 'Tiket', className: 'whitespace-nowrap font-semibold', render: (t) => t.code },
+    { key: 'code', label: 'No. laporan', className: 'whitespace-nowrap font-semibold', render: (t) => t.code },
     { key: 'requester_name', label: 'Pengguna', render: (t) => <span>{t.requester_name}{t.is_guest && <span className="block text-xs text-ink-2">belum masuk</span>}</span> },
     { key: 'category', label: 'Kategori', className: 'whitespace-nowrap', render: (t) => categoryLabel[t.category] },
     { key: 'subject', label: 'Judul', className: 'md:max-w-xs', render: (t) => <span className="line-clamp-2 break-words">{t.subject}</span> },
     { key: 'created_at', label: 'Dibuat', className: 'whitespace-nowrap', render: (t) => dayTime(t.created_at) },
     { key: 'status', label: 'Status', render: (t) => <StatusBadge status={t.status} /> },
-    { key: 'actions', label: 'Aksi', render: (t) => <Button size="sm" variant="secondary" onClick={() => setOpenId(t.id)} aria-label={`Buka tiket ${t.code}`}>Buka</Button> },
+    { key: 'actions', label: 'Aksi', render: (t) => <Button size="sm" variant="secondary" onClick={() => setOpenId(t.id)} aria-label={`Buka laporan ${t.code}`}>Buka</Button> },
   ]
 
   return (
@@ -151,7 +183,7 @@ export default function AdminHelpdeskPage() {
 
       <div className="mb-5 flex flex-col gap-3">
         <div className="flex flex-wrap items-end gap-3">
-          <Input className="w-full sm:w-72" label="Cari nomor tiket atau nama" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input className="w-full sm:w-72" label="Cari nomor laporan atau nama" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
           <Select className="w-full sm:w-56" label="Kategori" options={categoryOptions} value={category} onChange={(e) => { setCategory(e.target.value); setPage(1) }} />
         </div>
         <div className="thin-scroll -mx-1 overflow-x-auto px-1 pb-1">
@@ -162,9 +194,9 @@ export default function AdminHelpdeskPage() {
       <AsyncView resource={resource} rows={4}>
         {({ tickets }) => (
           <>
-            <DataTable caption="Daftar tiket Helpdesk" columns={columns} rows={tickets.data} empty="Belum ada tiket yang cocok." />
+            <DataTable caption="Daftar laporan Helpdesk" columns={columns} rows={tickets.data} empty="Belum ada laporan yang cocok." />
             <div className="mt-4 flex items-center justify-between gap-3 text-sm">
-              <p>{tickets.total} tiket · halaman {tickets.current_page} dari {tickets.last_page}</p>
+              <p>{tickets.total} laporan · halaman {tickets.current_page} dari {tickets.last_page}</p>
               <div className="flex gap-2">
                 <Button size="sm" variant="secondary" disabled={tickets.current_page <= 1} onClick={() => setPage(page - 1)}>Sebelumnya</Button>
                 <Button size="sm" variant="secondary" disabled={tickets.current_page >= tickets.last_page} onClick={() => setPage(page + 1)}>Berikutnya</Button>
@@ -174,7 +206,7 @@ export default function AdminHelpdeskPage() {
         )}
       </AsyncView>
 
-      <Modal open={openId !== null} onClose={() => setOpenId(null)} title="Detail tiket" size="lg">
+      <Modal open={openId !== null} onClose={() => setOpenId(null)} title="Detail laporan" size="lg">
         {openId !== null && <Detail id={openId} onChanged={resource.reload} />}
       </Modal>
     </>

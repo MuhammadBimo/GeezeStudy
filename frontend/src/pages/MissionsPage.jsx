@@ -39,7 +39,7 @@ function MissionBoard({ resource, missions }) {
     try {
       const { data } = await api.post(`/missions/${mission.id}/claim`)
       setUser(data.user)
-      toast.success(`+${data.reward_points} Points diklaim`, { description: mission.title })
+      toast.success('Misi selesai, Points diklaim', { description: mission.title, points: data.reward_points })
     } catch (error) {
       toast(errorMessage(error), 'error')
     } finally {

@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\GamificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -83,7 +84,7 @@ class StudyFeaturesTest extends TestCase
             'password' => 'NewPassword123',
             'password_confirmation' => 'NewPassword123',
         ])->assertOk();
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewPassword123', $student->fresh()->password));
+        $this->assertTrue(Hash::check('NewPassword123', $student->fresh()->password));
         $this->actingAs($student)->postJson("/api/admin/users/{$admin->id}/reset-password", [
             'password' => 'NewPassword123',
             'password_confirmation' => 'NewPassword123',

@@ -26,7 +26,7 @@ class RegisterRequest extends FormRequest
                 Rule::requiredIf(fn () => filled(config('services.turnstile.secret'))),
                 'nullable',
                 'string',
-                new TurnstileToken(),
+                new TurnstileToken,
             ],
         ];
     }
