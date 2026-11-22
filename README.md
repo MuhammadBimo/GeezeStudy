@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banner.svg" alt="GeezeStudy: tugas, jadwal, dan target belajar di satu tempat tenang" width="100%">
+  <img src="docs/tampilan/banner.svg" alt="GeezeStudy: tugas, jadwal, dan target belajar di satu tempat tenang" width="100%">
 </p>
 
 <p align="center">
@@ -20,30 +20,32 @@ Tidak ada chat, hewan peliharaan virtual, atau toko hadiah.
 
 ## Tampilan
 
-Tersedia **mode terang dan gelap**. Pergantiannya berupa lingkaran yang melebar dari tombol yang diklik.
-Setiap kali situs dibuka, lambang GeezeStudy tampil di **splash screen** singkat sampai halaman siap.
+Tersedia **mode terang dan gelap**; pergantiannya berupa lingkaran yang melebar dari tombol yang diklik. Setiap kali situs dibuka,
+lambang GeezeStudy tampil di **splash screen** singkat sampai halaman siap. Gambar di bawah diambil dari akun demo.
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="Beranda, mode terang" width="100%">
+  <img src="docs/tampilan/beranda.png" alt="Beranda, mode terang" width="100%">
 </p>
 <p align="center">
-  <img src="docs/screenshots/dark-dashboard.png" alt="Beranda, mode gelap" width="100%">
+  <img src="docs/tampilan/beranda-gelap.png" alt="Beranda, mode gelap" width="100%">
 </p>
 
 | Tugas | Kalender |
 |---|---|
-| <img src="docs/screenshots/tasks.png" alt="Tugas"> | <img src="docs/screenshots/calendar.png" alt="Kalender"> |
+| <img src="docs/tampilan/tugas.png" alt="Tugas"> | <img src="docs/tampilan/kalender.png" alt="Kalender"> |
 | **Study Timer** | **Progres** |
-| <img src="docs/screenshots/timer.png" alt="Study Timer"> | <img src="docs/screenshots/progress.png" alt="Progres"> |
-| **Notifikasi** | **Helpdesk Admin (gelap)** |
-| <img src="docs/screenshots/notifications.png" alt="Notifikasi aktivitas"> | <img src="docs/screenshots/dark-admin-helpdesk.png" alt="Helpdesk di panel Admin, mode gelap"> |
-| **Achievements (gelap)** | **Masuk** |
-| <img src="docs/screenshots/dark-achievements.png" alt="Achievements, mode gelap"> | <img src="docs/screenshots/login.png" alt="Halaman masuk"> |
+| <img src="docs/tampilan/timer.png" alt="Study Timer"> | <img src="docs/tampilan/progres.png" alt="Progres"> |
+| **Notifikasi** | **Bantuan (Helpdesk)** |
+| <img src="docs/tampilan/notifikasi.png" alt="Notifikasi aktivitas"> | <img src="docs/tampilan/bantuan.png" alt="Bantuan"> |
+| **Profil & Pengaturan (gelap)** | **Achievements (gelap)** |
+| <img src="docs/tampilan/profil-gelap.png" alt="Profil dan Pengaturan, mode gelap"> | <img src="docs/tampilan/achievements-gelap.png" alt="Achievements, mode gelap"> |
+| **Helpdesk Admin (gelap)** | **Masuk** |
+| <img src="docs/tampilan/admin-helpdesk-gelap.png" alt="Helpdesk di panel Admin, mode gelap"> | <img src="docs/tampilan/masuk.png" alt="Halaman masuk"> |
 
 <p align="center">
-  <img src="docs/screenshots/mobile.png" alt="Tampilan HP, mode terang" width="260">
+  <img src="docs/tampilan/hp-terang.png" alt="Tampilan HP, mode terang" width="260">
   &nbsp;&nbsp;
-  <img src="docs/screenshots/mobile-dark.png" alt="Tampilan HP, mode gelap" width="260">
+  <img src="docs/tampilan/hp-gelap.png" alt="Tampilan HP, mode gelap" width="260">
 </p>
 
 ## Fitur
@@ -185,7 +187,7 @@ backend/
 ├── app/Http/Controllers/   API (Admin/ untuk panel admin)
 ├── app/Services/           aturan Points, misi, achievements, streak, sesi belajar
 └── database/seeders/       data gamifikasi dan akun demo per jenjang
-docs/                       banner dan screenshot README
+docs/tampilan/              banner dan screenshot README
 ```
 
 ## Hosting (checklist)
