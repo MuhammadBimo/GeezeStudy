@@ -13,7 +13,7 @@ function Splash() {
   )
 }
 
-// Urutan alur: masuk -> verifikasi email -> onboarding -> aplikasi.
+// Urutan alur: masuk -> verifikasi email -> ganti password sementara (bila ada) -> onboarding -> aplikasi.
 export function RequireAuth() {
   const { user, status } = useAuth()
   const { pathname } = useLocation()
@@ -23,11 +23,15 @@ export function RequireAuth() {
   if (!user.email_verified) {
     return pathname === '/verifikasi-email' ? <Outlet /> : <Navigate to="/verifikasi-email" replace />
   }
+  // Password sementara dari Admin harus diganti sebelum memakai aplikasi.
+  if (user.must_change_password) {
+    return pathname === '/ganti-password' ? <Outlet /> : <Navigate to="/ganti-password" replace />
+  }
   // Admin tidak perlu onboarding Student.
   if (!user.onboarded && user.role !== 'admin') {
     return pathname === '/mulai' ? <Outlet /> : <Navigate to="/mulai" replace />
   }
-  if (pathname === '/verifikasi-email' || pathname === '/mulai') return <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace />
+  if (pathname === '/verifikasi-email' || pathname === '/mulai' || pathname === '/ganti-password') return <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace />
   return <Outlet />
 }
 

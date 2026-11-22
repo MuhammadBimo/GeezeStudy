@@ -34,6 +34,7 @@ const ResetPasswordPage = page(() => import('@/pages/auth/ResetPasswordPage'))
 const VerifyEmailPage = page(() => import('@/pages/auth/VerifyEmailPage'))
 const OnboardingPage = page(() => import('@/pages/auth/OnboardingPage'))
 const HelpPage = page(() => import('@/pages/auth/HelpPage'))
+const ChangePasswordRequiredPage = page(() => import('@/pages/auth/ChangePasswordRequiredPage'))
 
 const AdminOverviewPage = page(() => import('@/pages/admin/AdminOverviewPage'))
 const AdminUsersPage = page(() => import('@/pages/admin/AdminUsersPage'))
@@ -77,6 +78,7 @@ export default function App() {
                     <Route element={<RequireAuth />}>
                       <Route path="/verifikasi-email" element={<VerifyEmailPage />} />
                       <Route path="/mulai" element={<OnboardingPage />} />
+                      <Route path="/ganti-password" element={<ChangePasswordRequiredPage />} />
                       <Route element={<AppShell />}>
                         <Route index element={<DashboardPage />} />
                         <Route path="tugas" element={<TasksPage />} />

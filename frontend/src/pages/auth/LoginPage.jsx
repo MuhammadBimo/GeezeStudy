@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, Mail } from 'lucide-react'
 import AuthLayout from '@/components/layout/AuthLayout'
-import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
 import Input, { PasswordInput } from '@/components/ui/Input'
 import TurnstileWidget from '@/components/ui/TurnstileWidget'
@@ -11,15 +10,6 @@ const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY)
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { errorMessage, fieldErrors } from '@/lib/api'
-
-// Akun demo dari seeder backend. Hanya tampil saat pengembangan (npm run dev), tidak ikut build produksi.
-const demoAccounts = [
-  { name: 'Dina', level: 'SD', email: 'sd@geezestudy.test' },
-  { name: 'Raka', level: 'SMP', email: 'smp@geezestudy.test' },
-  { name: 'Salsa', level: 'SMA', email: 'sma@geezestudy.test' },
-  { name: 'Bimo', level: 'Mahasiswa', email: 'mahasiswa@geezestudy.test' },
-  { name: 'Admin', level: 'Admin', email: 'admin@geezestudy.test' },
-]
 
 export default function LoginPage() {
   const { login, serverDown } = useAuth()
@@ -95,30 +85,6 @@ export default function LoginPage() {
         <Link to="/bantuan-akun" className="font-medium text-accent underline-offset-4 hover:underline">Hubungi Helpdesk</Link>
       </nav>
 
-      {import.meta.env.DEV && (
-        <section aria-labelledby="demo-title" className="mt-8 border-t border-line pt-6">
-          <div className="flex items-baseline justify-between">
-            <h2 id="demo-title" className="text-sm font-semibold">Akun demo</h2>
-            <span className="text-xs text-ink-2">Password: <code className="font-mono">password123</code></span>
-          </div>
-          <ul className="mt-3 divide-y divide-line rounded-xl border border-line bg-surface">
-            {demoAccounts.map((a) => (
-              <li key={a.email}>
-                <button
-                  type="button"
-                  onClick={() => { setForm({ email: a.email, password: 'password123', remember: true }); setErrors({}) }}
-                  className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-hover"
-                >
-                  <Avatar name={a.name} size="xs" />
-                  <span className="flex-1 text-sm font-medium">{a.name}</span>
-                  <span className="text-xs text-ink-2">{a.level}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-xs text-muted">Klik salah satu untuk mengisi form. Panel ini hanya muncul di mode pengembangan.</p>
-        </section>
-      )}
     </AuthLayout>
   )
 }

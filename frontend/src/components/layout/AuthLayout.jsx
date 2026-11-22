@@ -1,6 +1,6 @@
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { Link } from 'react-router-dom'
-import { Flame, GraduationCap, Timer } from 'lucide-react'
+import { Flame, Timer } from 'lucide-react'
 import Ornament from '@/components/ui/Ornament'
 
 // Cuplikan tampilan aplikasi yang sebenarnya (bukan ilustrasi), supaya pengunjung tahu apa yang akan dipakai.
@@ -43,9 +43,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
       <main className="flex flex-col px-5 py-8 sm:px-10 lg:px-16">
         <div className="flex items-center justify-between">
         <Link to="/masuk" className="flex items-center gap-2.5 self-start rounded-lg">
-          <span className="grid size-8 place-items-center rounded-[0.6rem] bg-panel text-[#e8dcc4]">
-            <GraduationCap className="size-4.5" aria-hidden="true" />
-          </span>
+          <img src={`${import.meta.env.BASE_URL}brand-mark.png`} alt="" width="40" height="40" className="size-10 shrink-0 object-contain" />
           <span className="font-display text-[1.15rem] font-medium tracking-tight">GeezeStudy</span>
         </Link>
         <ThemeToggle />

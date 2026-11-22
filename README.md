@@ -21,6 +21,7 @@ Tidak ada chat, hewan peliharaan virtual, atau toko hadiah.
 ## Tampilan
 
 Tersedia **mode terang dan gelap**. Pergantiannya berupa lingkaran yang melebar dari tombol yang diklik.
+Setiap kali situs dibuka, lambang GeezeStudy tampil di **splash screen** singkat sampai halaman siap.
 
 <p align="center">
   <img src="docs/screenshots/dashboard.png" alt="Beranda, mode terang" width="100%">
@@ -34,6 +35,8 @@ Tersedia **mode terang dan gelap**. Pergantiannya berupa lingkaran yang melebar 
 | <img src="docs/screenshots/tasks.png" alt="Tugas"> | <img src="docs/screenshots/calendar.png" alt="Kalender"> |
 | **Study Timer** | **Progres** |
 | <img src="docs/screenshots/timer.png" alt="Study Timer"> | <img src="docs/screenshots/progress.png" alt="Progres"> |
+| **Notifikasi** | **Helpdesk Admin (gelap)** |
+| <img src="docs/screenshots/notifications.png" alt="Notifikasi aktivitas"> | <img src="docs/screenshots/dark-admin-helpdesk.png" alt="Helpdesk di panel Admin, mode gelap"> |
 | **Achievements (gelap)** | **Masuk** |
 | <img src="docs/screenshots/dark-achievements.png" alt="Achievements, mode gelap"> | <img src="docs/screenshots/login.png" alt="Halaman masuk"> |
 
@@ -52,21 +55,27 @@ Tersedia **mode terang dan gelap**. Pergantiannya berupa lingkaran yang melebar 
 - **Study Timer**: sesi fokus yang divalidasi server (durasi, tumpang tindih, batas harian).
 - **Goals dan Misi**: target harian atau mingguan dengan progres otomatis dari aktivitas nyata.
 - **Progres dan Achievements**: Points, Level, dan Streak dihitung di server, bukan di klien.
-- **Teman dan Notifikasi**: peringkat teman; notifikasi aktivitas dikelompokkan per hari (misi dan achievement menampilkan Points yang didapat, streak dirayakan), dengan preferensi dan jam tenang. Foto profil opsional
-  (bisa **dipotong dan di-zoom** sebelum diunggah, tersedia di Pengaturan).
-- **Profil & Pengaturan**: ringkasan profil, lalu profil, target belajar harian, privasi, dan tema (terang, gelap, otomatis) dalam satu menu.
+- **Teman**: peringkat teman berdasarkan jam belajar minggu ini (tanpa chat, hanya statistik).
+- **Notifikasi**: ringkasan hari ini, lalu linimasa per hari (Hari ini, Kemarin, Sebelumnya). Misi dan achievement menampilkan
+  Points yang didapat, streak dirayakan, dengan preferensi per jenis dan jam tenang. Lencana belum dibaca di menu, dan pop-up saat ada
+  pembaruan baru.
+- **Profil & Pengaturan**: ringkasan profil, lalu profil, foto profil opsional (bisa **dipotong dan di-zoom**), target belajar harian,
+  privasi, tema (terang, gelap, otomatis), dan **keamanan** (ganti password) dalam satu menu.
 - **Pengumuman**: informasi resmi dari Admin tampil sebagai banner di Beranda; yang sudah ditutup tidak muncul lagi, dan semuanya bisa dibaca di riwayat pengumuman.
 - **Bantuan (Helpdesk)**: kirim laporan bug, kendala login, atau pertanyaan (dengan screenshot opsional), dapat nomor laporan, lalu pantau status dan balasan admin.
 
-**Akun**: masuk, daftar (tampil/sembunyikan password, indikator kekuatan password), lupa dan atur ulang password,
-verifikasi email, onboarding singkat. Yang tidak bisa masuk (lupa email, akun tidak bisa diakses) bisa mengirim permintaan lewat **Bantuan akun** tanpa login; balasan admin dikirim ke email kontak.
+**Akun**: masuk, daftar sebagai Student (tampil/sembunyikan password, indikator kekuatan password), lupa dan atur ulang password,
+verifikasi email, onboarding singkat, ganti email (butuh password saat ini) dan ganti password. Yang tidak bisa masuk (lupa email,
+akun tidak bisa diakses) bisa mengirim permintaan lewat **Bantuan akun** tanpa login; balasan admin dikirim ke email kontak.
+Tidak ada pendaftaran Admin. Lihat [Alur akun](#alur-akun-ganti-dan-lupa-email-atau-password).
 
-**Admin**: ringkasan, pengguna (tangguhkan, kirim tautan reset password), misi, Points dan level, achievements,
+**Admin**: ringkasan, pengguna (tangguhkan, atur **password sementara** yang wajib diganti pengguna saat masuk), misi, Points dan level, achievements,
 pengumuman, log audit, dan **Helpdesk & Account Assistance** (laporan, balasan, status, dan pemulihan email akun setelah kepemilikan diverifikasi).
 
 **Desain**: terinspirasi minimalisme Apple, editorial, dan earthy (Warm Ivory, Forest Green, Sand Beige, Soft Sage).
 Komponen kustom tanpa library tambahan: select (bisa dicari dan multi-pilih), date picker, time picker, menu dan
-context menu, tooltip, dialog konfirmasi, modal, dan toast. Responsif penuh (navigasi bawah dan bottom sheet di HP),
+context menu, tooltip, dialog konfirmasi, modal, dan toast (termasuk toast hadiah Points). Ikon menu bergerak halus saat diklik.
+Responsif penuh (navigasi bawah dan bottom sheet di HP),
 mendukung `prefers-reduced-motion` dan navigasi keyboard.
 
 ## Teknologi
@@ -99,19 +108,49 @@ npm install
 npm run dev
 ```
 
-Buka http://localhost:5173. Di halaman Masuk (mode dev) ada daftar akun uji yang bisa diklik. Semua password: `password123`.
+Buka http://localhost:5173 dan masuk dengan salah satu akun demo di bawah. Semua password: `password123`.
 
-| Peran | Email |
+| Peran | Email | Isi data demo |
+|---|---|---|
+| Admin | admin@geezestudy.test | Panel Admin: pengguna, laporan Helpdesk, pengumuman, log |
+| SD | sd@geezestudy.test | Level 5, streak 4 hari |
+| SMP | smp@geezestudy.test | Level 7, streak 6 hari |
+| SMA | sma@geezestudy.test | Level 8, streak 9 hari |
+| Mahasiswa | mahasiswa@geezestudy.test | Level 10, streak 12 hari |
+
+Akun ini hanya dibuat saat `APP_ENV=local`, dan tidak ada pendaftaran Admin: akun Admin dibuat oleh seeder.
+Tiap akun Student berisi 1 sampai 2 bulan riwayat sesuai jenjangnya: tugas, deadline, jadwal, sesi belajar, goals, misi,
+achievements, teman, notifikasi aktivitas, dan contoh laporan Helpdesk. Points, level, dan streak dihitung dari aktivitas itu,
+dan tanggalnya relatif terhadap hari dijalankan, jadi dashboard selalu tampak terkini.
+
+### Setelah `git pull` (anggota tim)
+
+```bash
+cd backend
+composer install                   # bila ada paket baru
+php artisan migrate:fresh --seed   # MENGHAPUS isi database lokal, lalu mengisi ulang data demo
+cd ../frontend
+npm install
+npm run dev
+```
+
+Ingin mempertahankan data lokalmu? Pakai `php artisan migrate --seed`: akun demo yang sudah terisi dilewati dan data buatanmu
+tidak disentuh. Tidak perlu bertukar file `.sql`.
+
+Kalau memang menerima file `.sql` demo dari anggota tim: buat database kosong, impor filenya, lalu samakan `DB_DATABASE` di
+`backend/.env`. Tanggal di file `.sql` terkunci pada hari file dibuat, jadi untuk data yang selalu terkini lebih baik pakai seeder.
+
+### Alur akun: ganti dan lupa email atau password
+
+| Situasi | Yang dilakukan |
 |---|---|
-| Admin | admin@geezestudy.test |
-| SD | sd@geezestudy.test |
-| SMP | smp@geezestudy.test |
-| SMA | sma@geezestudy.test |
-| Mahasiswa | mahasiswa@geezestudy.test |
+| Ingin ganti password | Profil & Pengaturan, tab Pengaturan, bagian Keamanan: isi password saat ini lalu password baru. Sesi di perangkat lain dikeluarkan. |
+| Ingin ganti email | Profil & Pengaturan: isi email baru **dan password saat ini**, lalu buka tautan verifikasi di email baru. |
+| Lupa password, email masih bisa dibuka | Halaman Masuk, "Lupa password?": tautan reset dikirim ke email, lalu buat password baru sendiri. |
+| Lupa email atau email tidak bisa dibuka | Halaman Masuk, "Lupa email atau tidak bisa mengakses akun?": kirim permintaan ke Helpdesk. Admin memverifikasi kepemilikan, lalu mengganti email akun ke email kontak yang dikirim. Setelah itu pakai "Lupa password?". |
+| Admin membantu langsung | Admin mengatur **password sementara** di menu Pengguna. Saat masuk, pengguna **wajib** membuat password baru sebelum bisa memakai aplikasi, jadi Admin tidak pernah tahu password akhirnya. |
 
-Akun ini hanya dibuat saat `APP_ENV=local`. Tiap akun Student berisi data demo sesuai jenjangnya (tugas, deadline, jadwal,
-riwayat sesi belajar, goals, misi, achievements, teman, notifikasi). Points, level, dan streak dihitung dari aktivitas itu.
-`php artisan db:seed` aman diulang: akun yang sudah terisi dilewati dan data buatanmu tidak disentuh.
+Admin tidak bisa melihat password siapa pun, dan semua tindakan Admin pada akun tercatat di Log.
 
 Email verifikasi dan reset password di mode lokal tidak dikirim sungguhan: tautannya ditulis ke `backend/storage/logs/laravel.log`.
 
@@ -156,8 +195,10 @@ docs/                       banner dan screenshot README
 - **Backend**: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`, `FRONTEND_URL`, kredensial MySQL, `MAIL_*`
   (SMTP sungguhan agar email verifikasi dan reset terkirim), `php artisan migrate --force`, lalu
   `php artisan db:seed --class=GamificationSeeder --force` (tanpa akun contoh), `php artisan config:cache route:cache`.
-- **Penyimpanan berkas**: lampiran tugas dan foto profil disimpan di disk server (`storage/app/private`). Pilih hosting dengan
-  disk permanen, atau pindahkan disk `local` ke penyimpanan objek (S3, R2) agar berkas tidak hilang saat deploy ulang.
+- **Penyimpanan berkas**: lampiran tugas, lampiran laporan Helpdesk, dan foto profil memakai disk bawaan Laravel (`FILESYSTEM_DISK`).
+  Bawaannya `local` (`storage/app/private`), cocok untuk hosting dengan disk permanen. Untuk S3 atau yang kompatibel (mis. Cloudflare R2),
+  isi `FILESYSTEM_DISK=s3` beserta `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET` (dan `AWS_ENDPOINT`
+  untuk R2). Berkas lama di disk lokal tidak pindah otomatis.
 - Buat akun Admin pertama lewat `php artisan tinker` (set `role` = `admin`).
 - **Cookie Sanctum SPA**: frontend dan API harus satu situs (mis. `app.contoh.id` dan `api.contoh.id`), lalu isi
   `SESSION_DOMAIN=.contoh.id`, `SANCTUM_STATEFUL_DOMAINS=app.contoh.id`, `SESSION_SECURE_COOKIE=true`, dan

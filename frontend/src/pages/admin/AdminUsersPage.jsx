@@ -63,7 +63,7 @@ function UsersTable({ resource, page, onPage }) {
         password: form.password,
         password_confirmation: form.confirm,
       })
-      toast(`Password ${resetTarget.name} berhasil diubah`)
+      toast(`Password sementara untuk ${resetTarget.name} diatur`, 'success', { description: 'Pengguna wajib membuat password baru saat masuk.' })
       setResetTarget(null)
     } catch (error) {
       const fields = fieldErrors(error)
@@ -101,7 +101,7 @@ function UsersTable({ resource, page, onPage }) {
           <Button size="sm" variant="neutral" disabled={u.id === me.id} onClick={() => toggleStatus(u)} aria-label={`${u.status === 'active' ? 'Tangguhkan' : 'Aktifkan'} ${u.name}`}>
             {u.status === 'active' ? <UserX className="size-4" aria-hidden="true" /> : <UserCheck className="size-4" aria-hidden="true" />}
           </Button>
-          <Button size="sm" variant="neutral" onClick={() => openReset(u)} aria-label={`Ubah password ${u.name}`}>
+          <Button size="sm" variant="neutral" onClick={() => openReset(u)} aria-label={`Atur password sementara untuk ${u.name}`}>
             <KeyRound className="size-4" aria-hidden="true" />
           </Button>
         </div>
@@ -124,19 +124,19 @@ function UsersTable({ resource, page, onPage }) {
       <Modal
         open={Boolean(resetTarget)}
         onClose={() => !saving && setResetTarget(null)}
-        title="Ubah password"
-        description={resetTarget ? `Atur password baru untuk ${resetTarget.name} (${resetTarget.email}).` : ''}
+        title="Atur password sementara"
+        description={resetTarget ? `Untuk ${resetTarget.name} (${resetTarget.email}) yang tidak bisa memakai "Lupa password". Saat masuk, ia wajib membuat password baru sendiri. Sampaikan password ini secara langsung, bukan di grup.` : ''}
         size="sm"
         footer={(
           <>
             <Button variant="neutral" disabled={saving} onClick={() => setResetTarget(null)}>Batal</Button>
-            <Button type="submit" form="admin-reset-pw-form" loading={saving}>Simpan password</Button>
+            <Button type="submit" form="admin-reset-pw-form" loading={saving}>Simpan password sementara</Button>
           </>
         )}
       >
         <form id="admin-reset-pw-form" onSubmit={submitReset} noValidate className="flex flex-col gap-4">
           <PasswordInput
-            label="Password baru"
+            label="Password sementara"
             required
             showStrength
             autoComplete="new-password"
@@ -146,7 +146,7 @@ function UsersTable({ resource, page, onPage }) {
             hint="Minimal 8 karakter, kombinasi huruf dan angka."
           />
           <PasswordInput
-            label="Ulangi password baru"
+            label="Ulangi password sementara"
             required
             autoComplete="new-password"
             value={form.confirm}

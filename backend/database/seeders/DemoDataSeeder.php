@@ -9,9 +9,12 @@ use App\Models\Friendship;
 use App\Models\Mission;
 use App\Models\PointRule;
 use App\Models\PointTransaction;
+use App\Models\SupportTicket;
 use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\PointService;
+use App\Services\StreakService;
+use App\Services\SupportDesk;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +31,7 @@ class DemoDataSeeder extends Seeder
     {
         return [
             'sd@geezestudy.test' => [
-                'streak' => 4, 'minutes' => [15, 30], 'hours' => [15, 19],
+                'streak' => 4, 'history' => 30, 'chance' => 62, 'minutes' => [15, 30], 'hours' => [15, 19],
                 'done' => [
                     ['Latihan soal pecahan halaman 42', 'Matematika'],
                     ['Menulis cerita liburan', 'Bahasa Indonesia'],
@@ -56,7 +59,7 @@ class DemoDataSeeder extends Seeder
                 ],
             ],
             'smp@geezestudy.test' => [
-                'streak' => 6, 'minutes' => [25, 50], 'hours' => [15, 21],
+                'streak' => 6, 'history' => 28, 'chance' => 60, 'minutes' => [25, 50], 'hours' => [15, 21],
                 'done' => [
                     ['Rangkuman bab sistem pencernaan', 'IPA Terpadu'],
                     ['Latihan soal persamaan linear', 'Matematika'],
@@ -86,7 +89,7 @@ class DemoDataSeeder extends Seeder
                 ],
             ],
             'sma@geezestudy.test' => [
-                'streak' => 9, 'minutes' => [30, 75], 'hours' => [15, 22],
+                'streak' => 9, 'history' => 30, 'chance' => 60, 'minutes' => [30, 75], 'hours' => [15, 22],
                 'done' => [
                     ['Latihan soal limit fungsi', 'Matematika'],
                     ['Laporan praktikum titrasi', 'Kimia'],
@@ -119,7 +122,7 @@ class DemoDataSeeder extends Seeder
                 ],
             ],
             'mahasiswa@geezestudy.test' => [
-                'streak' => 12, 'minutes' => [40, 90], 'hours' => [9, 22],
+                'streak' => 12, 'history' => 50, 'chance' => 78, 'minutes' => [40, 90], 'hours' => [9, 22],
                 'done' => [
                     ['Laporan praktikum Basis Data modul 6', 'Basis Data'],
                     ['Kuis Statistika di LMS', 'Statistika'],
@@ -178,13 +181,13 @@ class DemoDataSeeder extends Seeder
     {
         $rules = ['task' => PointRule::value('task_completed', 20), 'per25' => PointRule::value('study_per_25_min', 25), 'cap' => PointRule::value('study_daily_cap', 200)];
 
-        // Hari aktif: rangkaian streak berakhir hari ini, lalu satu hari bolong, lalu riwayat acak 21 hari ke belakang.
+        // Hari aktif: rangkaian streak berakhir hari ini, lalu satu hari bolong, lalu riwayat acak ke belakang.
         $active = [];
         for ($i = 0; $i < $p['streak']; $i++) {
             $active[] = $i;
         }
-        for ($i = $p['streak'] + 1; $i <= 24; $i++) {
-            if (mt_rand(1, 100) <= 65) {
+        for ($i = $p['streak'] + 1; $i <= $p['history']; $i++) {
+            if (mt_rand(1, 100) <= $p['chance']) {
                 $active[] = $i;
             }
         }
@@ -263,12 +266,42 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->finalize($user, $active, $today);
+        $this->activityNotifications($user, $today);
 
         $user->appNotifications()->create(['category' => 'system', 'title' => 'Selamat datang di GeezeStudy', 'body' => 'Atur target harianmu di Pengaturan, lalu mulai sesi fokus pertama.', 'read_at' => now()->subDays(3), 'created_at' => now()->subDays(20)]);
         $soon = collect($openTasks)->first(fn ($t) => $t->due_at->between(now(), now()->addDays(2)));
         if ($soon) {
             $user->appNotifications()->create(['category' => 'deadline', 'title' => "Deadline segera: {$soon->title}", 'body' => 'Tenggat '.$soon->due_at->translatedFormat('j M, H:i').'.', 'dedupe_key' => "task:{$soon->id}:24h"]);
         }
+    }
+
+    /** Notifikasi aktivitas yang mencerminkan riwayat: klaim misi beberapa hari terakhir, streak, achievement terbaru. */
+    private function activityNotifications(User $user, Carbon $today): void
+    {
+        $claims = DB::table('mission_claims')->join('missions', 'missions.id', '=', 'mission_claims.mission_id')
+            ->where('mission_claims.user_id', $user->id)->where('claimed_at', '>=', $today->copy()->subDays(3))
+            ->orderBy('claimed_at')->get(['missions.id', 'missions.title', 'missions.reward_points', 'mission_claims.claimed_at', 'mission_claims.period_key']);
+        foreach ($claims as $c) {
+            $at = Carbon::parse($c->claimed_at);
+            AppNotification::create([
+                'user_id' => $user->id, 'category' => 'mission', 'title' => "Misi selesai: {$c->title}", 'body' => 'Hadiahnya sudah masuk ke Points-mu.',
+                'points' => $c->reward_points, 'dedupe_key' => "mission:{$c->id}:{$c->period_key}",
+                'read_at' => $at->lt($today->copy()->subDay()) ? $at->copy()->addHour() : null, 'created_at' => $at, 'updated_at' => $at,
+            ]);
+        }
+
+        // Streak: rayakan pencapaian terakhir yang sudah dilewati.
+        $reached = collect(StreakService::MILESTONES)->filter(fn ($m) => $m <= $user->current_streak)->last();
+        if ($reached) {
+            $at = $today->copy()->subDays($user->current_streak - $reached)->setTime(20, 5);
+            AppNotification::create([
+                'user_id' => $user->id, 'category' => 'streak', 'title' => "Streak {$reached} hari", 'body' => "Kamu belajar {$reached} hari berturut-turut. Pertahankan ritmenya.",
+                'dedupe_key' => "streak:{$reached}:{$at->toDateString()}", 'read_at' => $at->isToday() ? null : $at->copy()->addHours(2), 'created_at' => $at, 'updated_at' => $at,
+            ]);
+        }
+
+        // Achievement terbaru dibiarkan belum dibaca agar terlihat di Notifikasi.
+        AppNotification::where('user_id', $user->id)->where('category', 'achievement')->latest('id')->limit(1)->update(['read_at' => null]);
     }
 
     /** Hitung ulang Points, level, streak, lalu buka achievements yang memenuhi syarat. */
@@ -355,5 +388,56 @@ class DemoDataSeeder extends Seeder
             AuditLog::create(['actor_id' => $admin->id, 'action' => $action, 'level' => $level, 'created_at' => now()->subDays($daysAgo)]);
         }
         AuditLog::create(['actor_id' => null, 'action' => 'Sesi belajar ditolak: durasi fokus melebihi waktu sesi', 'level' => 'warning', 'created_at' => now()->subHours(5)]);
+
+        $b = new Announcement(['title' => 'Fitur baru: Bantuan dan Helpdesk', 'body' => 'Ada kendala akun atau menemukan bug? Kirim laporan lewat menu Bantuan. Balasan admin muncul di halaman yang sama.']);
+        $b->created_by = $admin->id;
+        $b->published_at = now()->subDays(4);
+        $b->save();
+
+        $this->seedHelpdesk($admin);
+    }
+
+    /** Contoh laporan Helpdesk dengan berbagai status, supaya panel Admin dan halaman Bantuan tidak kosong. */
+    private function seedHelpdesk(User $admin): void
+    {
+        $desk = app(SupportDesk::class);
+        $sma = User::where('email', 'sma@geezestudy.test')->first();
+        $mhs = User::where('email', 'mahasiswa@geezestudy.test')->first();
+        if (! $sma || ! $mhs) {
+            return;
+        }
+
+        // 1. Sudah selesai dan ditutup.
+        $closed = $desk->create(['category' => 'bug', 'subject' => 'Timer berhenti saat layar dikunci', 'description' => 'Sesi fokus berhenti sendiri setelah layar HP terkunci sekitar 10 menit.', 'contact_email' => $sma->email, 'requester_name' => $sma->name], $sma);
+        $desk->message($closed, $admin, 'Terima kasih laporannya. Timer sekarang tetap berjalan walau layar terkunci. Coba muat ulang aplikasi, ya.', true);
+        $desk->setStatus($closed, 'closed', $admin);
+        $this->backdate($closed, 6);
+
+        // 2. Sedang ditangani, menunggu jawaban pelapor.
+        $open = $desk->create(['category' => 'feature', 'subject' => 'Kalender tidak menampilkan jadwal mingguan', 'description' => 'Jadwal kuliah yang berulang tiap minggu hanya muncul di minggu pertama.', 'contact_email' => $mhs->email, 'requester_name' => $mhs->name], $mhs);
+        $desk->message($open, $admin, 'Bisa kirim screenshot tampilan minggu ini dan jenis perulangan yang dipilih?', true);
+        $desk->setStatus($open, 'waiting_user', $admin, notify: false);
+        $this->backdate($open, 1);
+
+        // 3. Permintaan bantuan akun dari pengunjung yang belum bisa masuk.
+        $guest = $desk->create(['category' => 'account_recovery', 'subject' => 'Lupa email akun', 'description' => 'Saya lupa email yang dipakai saat mendaftar dan tidak bisa masuk.', 'contact_email' => 'orangtua.dina@example.com', 'requester_name' => 'Ibu Dina', 'meta' => ['education_level' => 'sd', 'old_email' => 'dina@...']], null);
+        $this->backdate($guest, 0);
+    }
+
+    /** Geser waktu laporan dan pesannya ke beberapa hari lalu agar riwayatnya terasa nyata. */
+    private function backdate(SupportTicket $ticket, int $daysAgo): void
+    {
+        if ($daysAgo === 0) {
+            return;
+        }
+        $shift = fn ($t) => Carbon::parse($t)->subDays($daysAgo);
+        foreach ($ticket->messages as $m) {
+            $m->forceFill(['created_at' => $shift($m->created_at), 'updated_at' => $shift($m->updated_at)])->save();
+        }
+        $ticket->forceFill([
+            'created_at' => $shift($ticket->created_at), 'updated_at' => $shift($ticket->updated_at),
+            'last_activity_at' => $shift($ticket->last_activity_at), 'resolved_at' => $ticket->resolved_at ? $shift($ticket->resolved_at) : null,
+        ])->save();
+        AppNotification::where('support_ticket_id', $ticket->id)->get()->each(fn ($n) => $n->forceFill(['created_at' => $shift($n->created_at), 'read_at' => $shift($n->created_at)])->save());
     }
 }

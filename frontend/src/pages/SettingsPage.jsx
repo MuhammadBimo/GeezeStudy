@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { LogOut } from 'lucide-react'
+import ChangePasswordForm from '@/components/account/ChangePasswordForm'
 import AvatarPicker from '@/components/profile/AvatarPicker'
 import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
+import Input, { PasswordInput } from '@/components/ui/Input'
 import SegmentedControl from '@/components/ui/SegmentedControl'
 import Toggle from '@/components/ui/Toggle'
 import { useAuth } from '@/hooks/useAuth'
@@ -40,7 +41,7 @@ export default function SettingsPage() {
   const { user, updateProfile, setUser, logout } = useAuth()
   const toast = useToast()
   const confirm = useConfirm()
-  const [form, setForm] = useState({ name: user.name, email: user.email, education_level: user.education_level ?? 'sma', institution: user.institution ?? '' })
+  const [form, setForm] = useState({ name: user.name, email: user.email, education_level: user.education_level ?? 'sma', institution: user.institution ?? '', current_password: '' })
   const [goal, setGoal] = useState(String(user.daily_goal_minutes))
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState('')
@@ -68,7 +69,9 @@ export default function SettingsPage() {
     e.preventDefault()
     if (!form.name.trim()) return setErrors({ name: 'Nama tidak boleh kosong.' })
     const emailChanged = form.email.trim() !== user.email
-    return save('profile', { name: form.name.trim(), email: form.email.trim(), education_level: form.education_level, institution: form.institution.trim() || null },
+    // Email adalah kunci pemulihan akun, jadi menggantinya butuh password saat ini.
+    if (emailChanged && !form.current_password) return setErrors({ current_password: 'Masukkan password saat ini untuk mengganti email.' })
+    return save('profile', { name: form.name.trim(), email: form.email.trim(), education_level: form.education_level, institution: form.institution.trim() || null, ...(emailChanged && { current_password: form.current_password }) },
       emailChanged ? 'Profil disimpan. Cek email barumu untuk verifikasi.' : 'Profil disimpan')
   }
 
@@ -119,7 +122,10 @@ export default function SettingsPage() {
         <Row title="Profil" description="Nama dan institusi terlihat oleh temanmu.">
           <form onSubmit={saveProfile} noValidate className="grid max-w-xl gap-4">
             <Input label="Nama" required autoComplete="name" value={form.name} onChange={set('name')} error={errors.name} />
-            <Input label="Email" type="email" autoComplete="email" value={form.email} onChange={set('email')} error={errors.email} hint="Mengganti email meminta verifikasi ulang." />
+            <Input label="Email" type="email" autoComplete="email" value={form.email} onChange={set('email')} error={errors.email} hint="Mengganti email meminta password saat ini dan verifikasi ulang lewat email baru." />
+            {form.email.trim() !== user.email && (
+              <PasswordInput label="Password saat ini" required autoComplete="current-password" value={form.current_password} onChange={set('current_password')} error={errors.current_password} hint="Untuk memastikan yang mengganti email adalah kamu." />
+            )}
             <div>
               <p className="mb-1.5 text-sm font-medium">Jenjang pendidikan</p>
               <SegmentedControl label="Jenjang pendidikan" options={educationLevels.map((l) => ({ ...l, label: l.value === 'sma' ? 'SMA' : l.label }))} value={form.education_level} onChange={(v) => setForm((f) => ({ ...f, education_level: v }))} />
@@ -154,6 +160,10 @@ export default function SettingsPage() {
             </div>
             <Toggle label="Sinkronkan kegiatan ke Google Calendar" checked={user.calendar_sync} onChange={(v) => save('sync', { calendar_sync: v }, v ? 'Pilihan sinkronisasi disimpan' : 'Sinkronisasi dimatikan')} />
           </div>
+        </Row>
+
+        <Row title="Keamanan" description="Ganti password secara berkala. Sesi di perangkat lain akan dikeluarkan. Lupa password saat ini? Keluar, lalu pilih “Lupa password?” di halaman Masuk.">
+          <ChangePasswordForm onDone={() => toast.success('Password diganti', { description: 'Sesi di perangkat lain sudah dikeluarkan.' })} />
         </Row>
 
         <Row title="Akun" description="Keluar mengakhiri sesi di perangkat ini.">

@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -70,6 +71,15 @@ class AuthController extends Controller
     public function update(UpdateProfileRequest $request): UserResource
     {
         $user = $request->user();
+
+        // Mengganti email butuh password saat ini: email adalah kunci pemulihan akun.
+        if ($request->filled('email') && strcasecmp($request->input('email'), $user->email) !== 0) {
+            $request->validate(
+                ['current_password' => ['required', 'string', 'current_password']],
+                ['current_password.required' => 'Masukkan password saat ini untuk mengganti email.', 'current_password.current_password' => 'Password saat ini salah.'],
+            );
+        }
+
         $user->fill($request->validated());
 
         // Ganti email berarti harus verifikasi ulang.
@@ -101,6 +111,31 @@ class AuthController extends Controller
         return new UserResource($user);
     }
 
+    /**
+     * Ganti password oleh pemiliknya sendiri. Juga dipakai saat masuk dengan password sementara dari Admin.
+     * Sesi di perangkat lain dicabut; sesi ini tetap masuk.
+     */
+    public function changePassword(Request $request): UserResource
+    {
+        $data = $request->validate([
+            'current_password' => ['required', 'string', 'current_password'],
+            'password' => ['required', 'confirmed', 'different:current_password', \Illuminate\Validation\Rules\Password::min(8)->letters()->numbers()],
+        ], [
+            'current_password.current_password' => 'Password saat ini salah.',
+            'password.different' => 'Password baru harus berbeda dari password saat ini.',
+        ]);
+
+        $user = $request->user();
+        $user->forceFill(['password' => Hash::make($data['password']), 'must_change_password' => false, 'remember_token' => Str::random(60)])->save();
+
+        $user->tokens()->delete();
+        if (config('session.driver') === 'database' && $request->hasSession()) {
+            DB::table('sessions')->where('user_id', $user->id)->where('id', '!=', $request->session()->getId())->delete();
+        }
+
+        return new UserResource($user);
+    }
+
     public function forgotPassword(Request $request): JsonResponse
     {
         $request->validate(['email' => ['required', 'email']]);
@@ -124,7 +159,7 @@ class AuthController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
-                $user->forceFill(['password' => Hash::make($password), 'remember_token' => Str::random(60)])->save();
+                $user->forceFill(['password' => Hash::make($password), 'must_change_password' => false, 'remember_token' => Str::random(60)])->save();
                 event(new PasswordReset($user));
             },
         );

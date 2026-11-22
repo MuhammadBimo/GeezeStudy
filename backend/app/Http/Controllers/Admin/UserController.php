@@ -33,7 +33,10 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    /** Mengatur password baru pengguna secara langsung tanpa mengirim email reset. */
+    /**
+     * Mengatur password SEMENTARA untuk pengguna yang tidak bisa memakai "Lupa password" (mis. email tidak bisa dibuka).
+     * Pengguna wajib membuat password sendiri saat masuk, jadi Admin tidak mengetahui password akhirnya.
+     */
     public function sendReset(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([
@@ -42,6 +45,7 @@ class UserController extends Controller
 
         $user->forceFill([
             'password' => Hash::make($data['password']),
+            'must_change_password' => true,
             'remember_token' => Str::random(60),
         ])->save();
 
@@ -50,9 +54,9 @@ class UserController extends Controller
             DB::table('sessions')->where('user_id', $user->id)->delete();
         }
 
-        AuditLog::record($request->user(), "Mengubah password {$user->name}", ['user_id' => $user->id], 'warning');
+        AuditLog::record($request->user(), "Mengatur password sementara untuk {$user->name}", ['user_id' => $user->id], 'warning');
 
-        return response()->json(['message' => 'Password pengguna berhasil diperbarui.']);
+        return response()->json(['message' => 'Password sementara diatur. Pengguna wajib membuat password baru saat masuk.']);
     }
 
     /** Admin hanya boleh menangguhkan/mengaktifkan akun, bukan mengubah Points atau peran. */

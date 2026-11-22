@@ -36,6 +36,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/user', [AuthController::class, 'show']);
     Route::patch('/user', [AuthController::class, 'update']);
+    Route::put('/user/password', [AuthController::class, 'changePassword'])->middleware('throttle:6,1');
     Route::post('/onboarding', [AuthController::class, 'completeOnboarding']);
     Route::post('/user/avatar', [AvatarController::class, 'store'])->middleware('throttle:10,1');
     Route::delete('/user/avatar', [AvatarController::class, 'destroy']);
@@ -49,7 +50,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 });
 
 // Fitur Student (email harus terverifikasi)
-Route::middleware(['auth:sanctum', 'active', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'active', 'verified', 'password.changed'])->group(function () {
     Route::get('/dashboard', [ProgressController::class, 'dashboard']);
     Route::get('/progress', [ProgressController::class, 'progress']);
     Route::get('/announcements', [AnnouncementController::class, 'index']);
@@ -79,7 +80,7 @@ Route::middleware(['auth:sanctum', 'active', 'verified'])->group(function () {
 });
 
 // Panel Admin
-Route::middleware(['auth:sanctum', 'active', 'verified', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'active', 'verified', 'password.changed', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/overview', Admin\OverviewController::class);
     Route::get('/users', [Admin\UserController::class, 'index']);
     Route::patch('/users/{user}', [Admin\UserController::class, 'update']);

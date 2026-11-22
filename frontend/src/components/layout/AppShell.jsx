@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, m } from 'motion/react'
-import { ArrowLeft, BellRing, ChevronDown, GraduationCap, LayoutGrid, LogOut, ShieldCheck, UserRound } from 'lucide-react'
+import { ArrowLeft, BellRing, ChevronDown, LayoutGrid, LogOut, ShieldCheck, UserRound } from 'lucide-react'
 import Avatar from '@/components/ui/Avatar'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import Menu from '@/components/ui/Menu'
@@ -16,9 +16,8 @@ import { useToast } from '@/hooks/useToast'
 function Brand({ admin }) {
   return (
     <Link to={admin ? '/admin' : '/'} className="flex items-center gap-2.5 rounded-lg">
-      <span className="grid size-8 place-items-center rounded-[0.6rem] bg-panel text-[#e8dcc4]">
-        <GraduationCap className="size-4.5" aria-hidden="true" />
-      </span>
+      {/* Lambang GeezeStudy (bagian perisai "G" dari logo splash). */}
+      <img src={`${import.meta.env.BASE_URL}brand-mark.png`} alt="" width="40" height="40" className="size-10 shrink-0 object-contain" />
       <span className="font-display text-[1.15rem] font-medium tracking-tight">GeezeStudy</span>
       {admin && <span className="rounded-md bg-sand px-1.5 py-0.5 text-[0.6875rem] font-semibold text-sand-ink">Admin</span>}
     </Link>
